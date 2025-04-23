@@ -1,12 +1,3 @@
----
-name: Implementation
-about: For general implementation of something (feature, task, etc.)
-title: ''
-labels: ''
-assignees: ''
-
----
-
 ### Description
 What needs to be implemented and why.
 
