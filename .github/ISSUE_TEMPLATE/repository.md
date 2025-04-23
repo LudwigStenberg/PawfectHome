@@ -1,16 +1,20 @@
-Description
+### Endpoint Details
+Controller: [ControllerName]
+HTTP Method: [POST,GET,PUT,DELETE]
+Route: [Route]
+Method Name/Action: [ActionName]
 
-What needs to be implemented and why.
-Technical Details
+### Description
+Implement an endpoint that receives a [dto/parameter] and connects to the [service].
 
-How should it be implemented - any specific approaches or considerations.
-Dependencies
+### Technical Details
+How should it be implemented -  any specific approaches or considerations.
 
+### Dependencies
 Any other tasks that must be completed first (if applicable).
-Definition of Done
 
+### Definition of Done
 Checklist of criteria that must be met to consider this complete.
-
-- [] -
-- [] -
-- [] -
+- [ ] -
+- [x] - 
+- [ ] -
