@@ -6,18 +6,17 @@ labels: endpoint
 assignees: ''
 
 ---
+### Endpoint Details
+Controller: <ControllerName>
+HTTP Method: <POST,GET,PUT,DELETE>
+Route: <Route>
+Method Name/Action: <ActionName>
 
 ### Description
 Implement an endpoint that receives a [dto/parameter] and connects to the [service].
 
 ### Technical Details
 How should it be implemented -  any specific approaches or considerations.
-
-### Endpoint Details
-Controller: <ControllerName>
-HTTP Method: <POST,GET,PUT,DELETE>
-Route: <Route>
-Method Name/Action: <ActionName>
 
 ### Dependencies
 Any other tasks that must be completed first (if applicable).
