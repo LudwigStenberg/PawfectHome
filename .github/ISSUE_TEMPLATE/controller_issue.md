@@ -1,5 +1,5 @@
 ---
-name: Controller_endpoint
+name: Controller issue
 about: Use when you want to create a controller issue.
 title: 'Controller: [ Entity ] Method: [ Method Name ]'
 labels: endpoint
