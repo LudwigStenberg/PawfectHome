@@ -1,7 +1,7 @@
 ---
 name: Controller_endpoint
 about: For implementation of controller endpoint features
-title: 'Endpoint: [method name]'
+title: 'Controller: [ Entity ] Method: [ Method Name ]'
 labels: 'endpoint'
 assignees: ''
 ---
