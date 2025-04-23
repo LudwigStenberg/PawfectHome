@@ -11,6 +11,8 @@ Controller: [ControllerName]
 HTTP Method: [POST,GET,PUT,DELETE]
 Route: [Route]
 Method Name/Action: [ActionName]
+Response:
+Request:
 
 ### Description
 Implement an endpoint that receives a [dto/parameter] and connects to the [service].
