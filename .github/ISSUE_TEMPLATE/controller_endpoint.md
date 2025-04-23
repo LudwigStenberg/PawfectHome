@@ -1,6 +1,6 @@
 ---
 name: Controller_endpoint
-about: For implementation of controller endpoint features
+about: Use when you want to create a controller issue.
 title: 'Controller: [ Entity ] Method: [ Method Name ]'
 labels: endpoint
 assignees: ''
