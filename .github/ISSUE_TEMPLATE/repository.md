@@ -1,3 +1,12 @@
+---
+name: Repository issue
+about: Use when you want to create a repository issue.
+title: 'Repository: [ Entity ] Method: [ Method Name ]'
+labels: repository
+assignees: ''
+
+---
+
 ### Description
 What needs to be implemented and why.
 
