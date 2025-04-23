@@ -10,7 +10,6 @@ assignees: ''
 ## Description
 What needs to be implemented and why.
 
-
 ## Technical Details
 How should it be implemented -  any specific approaches or considerations.
 
