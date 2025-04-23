@@ -1,16 +1,23 @@
+---
+name: controller_endpoint
+about: 
+title: ''
+labels: feature
+assignees: ''
 
-### Description
-What needs to be implemented and why.
+---
 
-### Technical Details
-How should it be implemented -  any specific approaches or considerations.
+### Describe the bug
+A clear and concise description of what the bug is.
 
-### Dependencies
-Any other tasks that must be completed first (if applicable).
+### To Reproduce
+Steps to reproduce the behavior.
+
+### Expected behavior
+A clear and concise description of what you expected to happen.
 
 ### Definition of Done
-Checklist of criteria that must be met to consider this complete.
--[]
--[]
--[]
-
+What needs to happen for this bug to be considered fixed.
+ 
+### Additional context
+Add any other context about the problem here.
