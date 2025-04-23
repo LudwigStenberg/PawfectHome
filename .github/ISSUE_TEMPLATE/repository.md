@@ -11,6 +11,6 @@ Definition of Done
 
 Checklist of criteria that must be met to consider this complete.
 
-    - [] -
-    - [] -
-    - [] -
+- [] -
+- [] -
+- [] -
