@@ -8,10 +8,11 @@ assignees: ''
 ---
 
 ### Description
-What needs to be implemented and why.
+Implement a method [ Method Name ] that receives a request from the method [ Method Name] in [ Controller ].
+This method then calls on [ Method Name ] from [ Repository ] and returns the result.
 
 ### Technical Details
-How should it be implemented - any specific approaches or considerations.
+All implemented methods should be Async.
 
 ### Dependencies
 Any other tasks that must be completed first (if applicable).
