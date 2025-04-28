@@ -8,7 +8,7 @@ assignees: ''
 ---
 
 ### Description
-Implement a method [ Method Name ] that receives a request from the method [ Method Name] in [ Controller ].
+Implement a method [ Method Name ] that receives a request from the method [ Method Name ] in [ Controller ].
 This method then calls on [ Method Name ] from [ Repository ] and returns the result.
 
 ### Technical Details
