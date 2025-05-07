@@ -6,14 +6,22 @@ public class AppDbContext : DbContext
         : base(options)
     {
     }
-    public DbSet<Pet> Pets { get; set; }
-    public DbSet<User> Users { get; set; }
-    public DbSet<Shelter> Shelters { get; set; }
-    public DbSet<AdoptionApplication> AdoptionApplictions { get; set; }
+    public DbSet<PetEntity> Pets { get; set; }
+    public DbSet<UserEntity> Users { get; set; }
+    public DbSet<ShelterEntity> Shelters { get; set; }
+    public DbSet<AdoptionApplicationEntity> AdoptionApplictions { get; set; }
 
     protected override void OnModelCreating(ModelBuilder builder)
     {
         base.OnModelCreating(builder);
+
+        builder.Entity<PetEntity>(entity =>
+        {
+
+        });
+
+
+
     }
 
 
