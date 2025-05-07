@@ -14,8 +14,8 @@ public class PetEntity
     public required int ShelterId { get; set; }
 
     // Navigation Props
-    public ShelterEntity ShelterEntity { get; set; }
-    public ICollection<AdoptionApplicationEntity> AdoptionApplications { get; set; }
+    public ShelterEntity Shelter { get; set; } // Many-to-One
+    public ICollection<AdoptionApplicationEntity> AdoptionApplications { get; set; } = new List<AdoptionApplicationEntity>(); // One-to-Many
 }
 
 public enum Gender
