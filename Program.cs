@@ -15,8 +15,7 @@ public class Program
         builder.Services.AddControllers();
         builder.Services.AddAuthorization();
 
-        builder
-            .Services.AddIdentityApiEndpoints<UserEntity>()
+        builder.Services.AddIdentityApiEndpoints<UserEntity>()
                 .AddEntityFrameworkStores<AppDbContext>()
                 .AddDefaultTokenProviders();
 
