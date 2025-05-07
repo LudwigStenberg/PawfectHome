@@ -1,4 +1,5 @@
 
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Scalar.AspNetCore;
 
@@ -13,6 +14,12 @@ public class Program
         // Add services to the container.
         builder.Services.AddControllers();
         builder.Services.AddAuthorization();
+
+        builder
+            .Services.AddIdentityApiEndpoints<UserEntity>()
+                .AddEntityFrameworkStores<AppDbContext>()
+                .AddDefaultTokenProviders();
+
         builder.Services.AddDbContext<AppDbContext>(options =>
             options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 
@@ -30,9 +37,10 @@ public class Program
         }
 
         app.UseHttpsRedirection();
-        app.MapControllers();
-        app.UseAuthorization();
 
+        app.UseAuthentication();
+        app.UseAuthorization();
+        app.MapControllers();
         app.Run();
     }
 }
