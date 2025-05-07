@@ -9,6 +9,7 @@ public class AdoptionApplicationEntity
     public int UserId { get; set; }
     public int PetId { get; set; }
 
+    // Navigation Props
     public UserEntity UserEntity { get; set; }
     public PetEntity PetEntity { get; set; }
 }
