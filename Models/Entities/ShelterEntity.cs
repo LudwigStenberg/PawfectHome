@@ -5,8 +5,8 @@ public class ShelterEntity
     public required string Name { get; set; }
     public string Description { get; set; } = "No description";
     public required string Email { get; set; }
-    public int UserId { get; set; }
 
+    // public string UserId { get; set; }
 
     // Navigation props
     public UserEntity User { get; set; } // One-to-One

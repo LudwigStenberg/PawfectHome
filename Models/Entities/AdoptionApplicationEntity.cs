@@ -4,7 +4,7 @@ public class AdoptionApplicationEntity
     public int Id { get; set; }
     public DateTime CreatedDate { get; set; } = DateTime.UtcNow;
     public AdoptionStatus AdoptionStatus { get; set; } = AdoptionStatus.Pending;
-    public int UserId { get; set; }
+    public string UserId { get; set; }
     public int PetId { get; set; }
 
     // Navigation Props
