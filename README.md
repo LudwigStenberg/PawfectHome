@@ -1,13 +1,13 @@
 # Installation guide
 
-### Databas och Entity Framework
+### Database & Entity Framework
 
 - dotnet add package Npgsql.EntityFrameworkCore.PostgreSQL
 - dotnet add package Microsoft.EntityFrameworkCore
 - dotnet add package Microsoft.EntityFrameworkCore.Tools
 - dotnet add package Microsoft.EntityFrameworkCore.Design
 
-### Autentisering och identitetshantering
+### Authentication och Authorization
 
 - dotnet add package Microsoft.AspNetCore.Identity.EntityFrameworkCore
 - dotnet add package Microsoft.Extensions.Identity.Core
