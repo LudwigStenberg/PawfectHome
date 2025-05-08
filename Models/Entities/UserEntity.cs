@@ -5,7 +5,6 @@ public class UserEntity : IdentityUser
 {
     public string FirstName { get; set; }
     public string LastName { get; set; }
-    public int ShelterId { get; set; }
 
     // Navigation prop
     public ShelterEntity Shelter { get; set; } // One-to-One
