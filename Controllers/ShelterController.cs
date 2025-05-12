@@ -31,7 +31,8 @@ public class ShelterController : ControllerBase
                 return Unauthorized();
             }
 
-            var response =
+            var response = await shelterService.RegisterShelterAsync(userId);
+
 
         }
         catch (Exception)
