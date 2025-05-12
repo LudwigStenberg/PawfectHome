@@ -1,0 +1,20 @@
+meta {
+  name: Register User
+  type: http
+  seq: 2
+}
+
+post {
+  url: http://localhost:5245/Auth/register
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {   
+      "firstname": "mike@gmail.com",
+      "lastname": "mike@gmail.com",
+      "email": "mike@gmail.com",
+      "password": "Password123!"
+  }
+}
