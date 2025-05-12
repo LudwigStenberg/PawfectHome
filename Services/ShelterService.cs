@@ -1,10 +1,16 @@
-
-
 using System.ComponentModel.DataAnnotations;
 
 public class ShelterService : IShelterService
 {
-    public Task<CreateShelterResponse> RegisterShelterAsync(string userId, CreateShelterRequest request)
+
+    private readonly IShelterRepository shelterRepository;
+
+    public ShelterService(IShelterRepository shelterRepository)
+    {
+        this.shelterRepository = shelterRepository;
+    }
+
+    public async Task<CreateShelterResponse> RegisterShelterAsync(string userId, CreateShelterRequest request)
     {
         if (string.IsNullOrEmpty(userId))
         {
@@ -21,19 +27,19 @@ public class ShelterService : IShelterService
             throw new ValidationException("Invalid email format");
         }
 
-        if (string.IsNullOrEmpty(request.Name))
+        if (string.IsNullOrWhiteSpace(request.Name))
         {
             throw new ValidationException("The shelter name cannot be null");
         }
 
         if (request.Name.Length < 3)
         {
-            throw new ValidationException("The shelter name must be at least 3 characters long");
+            throw new ValidationException("The shelter must be at least 3 characters long");
         }
 
         if (request.Name.Length > 50)
         {
-            throw new ValidationException("The shelter cannot be more than 50 characters long");
+            throw new ValidationException("The shelter name cannot be more than 50 characters long");
         }
 
         if (!string.IsNullOrEmpty(request.Description) && request.Description.Length > 1000)
@@ -41,6 +47,33 @@ public class ShelterService : IShelterService
             throw new ValidationException("The shelter description cannot be more than 1000 characters long");
         }
 
+        // TODO: Add logic to check if the User already has a shelter
+        // This would be done through the GetShelter(ByUserId)
+        // var existingShelter = await shelterRepository.GetShelterByUserIdAsync(userId);
+        // if (existingShelter != null)
+        // {
+        //     throw new ValidationException("User already has a shelter. Each user can only have one shelter registered at a time");
+        // }
 
+        var newShelter = new ShelterEntity
+        {
+            Name = request.Name,
+            Description = request.Description ?? "No description",
+            Email = request.Email,
+            UserId = userId,
+        };
+
+        var createdShelter = await shelterRepository.CreateShelterAsync(newShelter);
+
+        var response = new CreateShelterResponse
+        {
+            Id = createdShelter.Id,
+            Name = createdShelter.Name,
+            Description = createdShelter.Description,
+            Email = createdShelter.Email,
+            UserId = createdShelter.UserId
+        };
+
+        return response;
     }
 }
