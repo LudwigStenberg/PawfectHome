@@ -35,7 +35,7 @@ public class SheltersController : ControllerBase
             // Make sure that service layer handles null
 
             // Reference GET method when it exists
-            return CreatedAtAction(nameof(CreateShelter), new { Id = response.id }, response);
+            return CreatedAtAction(nameof(CreateShelter), new { id = response.Id }, response);
 
         }
         catch (Exception) // Waiting to implement until service method has been implemented.
