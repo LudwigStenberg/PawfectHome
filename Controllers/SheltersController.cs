@@ -5,11 +5,11 @@ using Microsoft.AspNetCore.Mvc;
 [ApiController]
 [Route("[controller]")]
 
-public class ShelterController : ControllerBase
+public class SheltersController : ControllerBase
 {
 
     private readonly IShelterService shelterService;
-    public ShelterController(IShelterService shelterService)
+    public SheltersController(IShelterService shelterService)
     {
         this.shelterService = shelterService;
     }
@@ -38,7 +38,7 @@ public class ShelterController : ControllerBase
             return CreatedAtAction(nameof(CreateShelter), new { Id = response.id }, response);
 
         }
-        catch (Exception)
+        catch (Exception) // Waiting to implement until service method has been implemented.
         {
 
             throw;
