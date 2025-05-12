@@ -31,8 +31,11 @@ public class ShelterController : ControllerBase
                 return Unauthorized();
             }
 
-            var response = await shelterService.RegisterShelterAsync(userId);
+            var response = await shelterService.RegisterShelterAsync(userId, request);
+            // Make sure that service layer handles null
 
+            // Reference GET method when it exists
+            return CreatedAtAction(nameof(CreateShelter), new { Id = response.id }, response);
 
         }
         catch (Exception)
@@ -41,6 +44,4 @@ public class ShelterController : ControllerBase
             throw;
         }
     }
-
-
 }
