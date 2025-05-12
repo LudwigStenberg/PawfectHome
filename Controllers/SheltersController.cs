@@ -1,6 +1,8 @@
+using System.ComponentModel.DataAnnotations;
 using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 [ApiController]
 [Route("[controller]")]
@@ -32,16 +34,23 @@ public class SheltersController : ControllerBase
             }
 
             var response = await shelterService.RegisterShelterAsync(userId, request);
-            // Make sure that service layer handles null
 
             // Reference GET method when it exists
             return CreatedAtAction(nameof(CreateShelter), new { id = response.Id }, response);
 
+        } // TODO: Make sure that the catches matches the thrown exceptions and that the correct status codes are returned
+        catch (DbUpdateException)
+        {
+            // 500 + failure message
         }
-        catch (Exception) // Waiting to implement until service method has been implemented.
+        catch (ValidationException)
+        {
+            // BadRequest
+        }
+        catch (Exception)
         {
 
-            throw;
+            // 500 + unexpected error
         }
     }
 }
