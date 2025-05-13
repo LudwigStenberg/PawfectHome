@@ -2,11 +2,12 @@ using System.ComponentModel.DataAnnotations;
 
 public class ShelterService : IShelterService
 {
-
+    private readonly ILogger<ShelterService> logger;
     private readonly IShelterRepository shelterRepository;
 
-    public ShelterService(IShelterRepository shelterRepository)
+    public ShelterService(ILogger<ShelterService> logger, IShelterRepository shelterRepository)
     {
+        this.logger = logger;
         this.shelterRepository = shelterRepository;
     }
 
@@ -23,11 +24,14 @@ public class ShelterService : IShelterService
     public async Task<CreateShelterResponse> RegisterShelterAsync(string userId, CreateShelterRequest request)
     {
 
+        logger.LogInformation("Starting shelter registration for user {UserId}.", userId);
+
         ValidateCreateShelterRequest(userId, request);
 
         bool existingShelter = await shelterRepository.DoesShelterExistForUserAsync(userId);
         if (existingShelter)
         {
+            logger.LogWarning("User {UserId} attempted to register a second shelter.", userId);
             throw new ValidationException("User already has a shelter. Each user can only have one shelter registered at a time.");
         }
 
@@ -39,6 +43,7 @@ public class ShelterService : IShelterService
             UserId = userId,
         };
 
+        logger.LogInformation("Creating new shelter for user {UserId} with name {ShelterName}.", userId, newShelter.Name);
         var createdShelter = await shelterRepository.CreateShelterAsync(newShelter);
 
         var response = new CreateShelterResponse
@@ -50,6 +55,7 @@ public class ShelterService : IShelterService
             UserId = createdShelter.UserId
         };
 
+        logger.LogInformation("Successfully created shelter {ShelterId} for user {UserId}.", createdShelter.Id, userId);
         return response;
     }
 
@@ -64,38 +70,47 @@ public class ShelterService : IShelterService
     /// <exception cref="ValidationException">Thrown when any validation rule fails for Email format, Name (must not be empty and must be 3-50 characters), or Description (maximum 1000 characters if provided).</exception>
     private void ValidateCreateShelterRequest(string userId, CreateShelterRequest request)
     {
+        logger.LogDebug("Validating shelter registration request for user {UserId}", userId);
+
         if (string.IsNullOrEmpty(userId))
         {
+            logger.LogWarning("Shelter registration rejected: User ID is null or empty");
             throw new ArgumentException("User ID cannot be null or empty.", nameof(userId));
         }
 
         if (request == null)
         {
+            logger.LogWarning("Shelter registration rejected: Request object is null");
             throw new ArgumentException("Request cannot be null.", nameof(request));
         }
 
         if (!new EmailAddressAttribute().IsValid(request.Email))
         {
+            logger.LogWarning("Shelter registration rejected: Invalid email format");
             throw new ValidationException("Invalid email format.");
         }
 
         if (string.IsNullOrWhiteSpace(request.Name))
         {
+            logger.LogWarning("Shelter registration rejected: Name is null or whitespace");
             throw new ValidationException("The shelter name cannot be null.");
         }
 
         if (request.Name.Length < 3)
         {
+            logger.LogWarning("Shelter registration rejected: Name too short (length: {NameLength})", request.Name.Length);
             throw new ValidationException("The shelter name must be at least 3 characters.");
         }
 
         if (request.Name.Length > 50)
         {
+            logger.LogWarning("Shelter registration rejected: Name too long (length: {NameLength})", request.Name.Length);
             throw new ValidationException("The shelter name cannot be more than 50 characters.");
         }
 
         if (!string.IsNullOrEmpty(request.Description) && request.Description.Length > 1000)
         {
+            logger.LogWarning("Shelter registration rejected: Description too long (length: {DescriptionLength})", request.Description.Length);
             throw new ValidationException("The shelter description cannot be more than 1000 characters.");
         }
     }
