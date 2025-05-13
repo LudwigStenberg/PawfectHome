@@ -22,4 +22,10 @@ public class ShelterRepository : IShelterRepository
             .Include(s => s.Pets)
             .SingleOrDefaultAsync(s => s.UserId == userId);
     }
+
+    public async Task<bool> DoesShelterExistForUserAsync(string userId)
+    {
+        return await context.Shelters.AnyAsync(s => s.UserId == userId);
+    }
+
 }
