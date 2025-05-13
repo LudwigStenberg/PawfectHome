@@ -18,7 +18,7 @@ public class PetsController : ControllerBase
     {
         try
         {
-            var pet = await petService.FetchPetAsync(id);
+            var pet = await petService.GetPetAsync(id);
 
             if (pet == null)
             {
