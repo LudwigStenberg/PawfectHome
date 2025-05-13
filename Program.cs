@@ -15,9 +15,14 @@ public class Program
         builder.Services.AddScoped<IShelterService, ShelterService>();
         builder.Services.AddOpenApi();
         builder.Services.AddControllers();
-        builder.Services.AddAuthorization();
+        builder.Services.AddAuthorization(options =>
+        {
+            options.AddPolicy("CanDeleteShelter", policy =>
+                policy.RequireRole("ShelterOwner"));
+        });
 
         builder.Services.AddIdentityApiEndpoints<UserEntity>()
+                .AddRoles<IdentityRole>()
                 .AddEntityFrameworkStores<AppDbContext>()
                 .AddDefaultTokenProviders();
 
@@ -27,9 +32,19 @@ public class Program
 
         var app = builder.Build();
 
+        using (var scope = app.Services.CreateScope())
+        {
+            using var roleManager = scope.ServiceProvider
+                .GetRequiredService<RoleManager<IdentityRole>>();
+
+            if (!roleManager.RoleExistsAsync("ShelterOwner").Result)
+            {
+                var role = new IdentityRole("ShelterOwner");
+                var result = roleManager.CreateAsync(role).Result;
+            }
+        }
+
         app.MapOpenApi();
-
-
 
         if (app.Environment.IsDevelopment())
         {

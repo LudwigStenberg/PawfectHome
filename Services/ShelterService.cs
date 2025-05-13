@@ -1,20 +1,26 @@
 using System.ComponentModel.DataAnnotations;
+using Microsoft.AspNetCore.Identity;
 
 public class ShelterService : IShelterService
 {
     private readonly ILogger<ShelterService> logger;
     private readonly IShelterRepository shelterRepository;
+    private readonly UserManager<UserEntity> userManager;
 
-    public ShelterService(ILogger<ShelterService> logger, IShelterRepository shelterRepository)
+    public ShelterService(
+        ILogger<ShelterService> logger,
+        IShelterRepository shelterRepository,
+        UserManager<UserEntity> userManager)
     {
         this.logger = logger;
         this.shelterRepository = shelterRepository;
+        this.userManager = userManager;
     }
 
 
     /// <summary>
     /// Registers a new shelter for a user in the system. Enforces the business rule that a user 
-    /// can only have one shelter at a time.
+    /// can only have one shelter at a time. Additionally, assigns the user with a new role: "ShelterOwner" in a non-atomic operation.
     /// </summary>
     /// <param name="userId">The ID of the user that has requested the shelter registration.</param>
     /// <param name="request">The request DTO which contains properties for 'Name', 'Description' and 'Email'.</param>
@@ -44,7 +50,26 @@ public class ShelterService : IShelterService
         };
 
         logger.LogInformation("Creating new shelter for user {UserId} with name {ShelterName}.", userId, newShelter.Name);
+
         var createdShelter = await shelterRepository.CreateShelterAsync(newShelter);
+
+        var user = await userManager.FindByIdAsync(userId);
+        if (user != null)
+        {
+            logger.LogInformation("Assigning ShelterOwner role to user {UserId}.", userId);
+            var roleResult = await userManager.AddToRoleAsync(user, "ShelterOwner");
+
+            if (!roleResult.Succeeded)
+            {
+                var errorMessage = string.Join(", ", roleResult.Errors.Select(e => e.Description));
+                logger.LogWarning("Failed to assign ShelterOwner role to user {UserId}. Errors: {Errors}",
+                    userId, errorMessage);
+            }
+        }
+        else
+        {
+            logger.LogWarning("User {UserId} not found when trying to assign ShelterOwner role.", userId);
+        }
 
         var response = new CreateShelterResponse
         {
