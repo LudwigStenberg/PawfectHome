@@ -13,13 +13,9 @@ public class Program
 
         builder.Services.AddScoped<IShelterRepository, ShelterRepository>();
         builder.Services.AddScoped<IShelterService, ShelterService>();
-
-        // Add services to the container.
-        builder.Services.AddControllers();
-        // builder.Services.AddAuthentication()
-        // .AddBearerToken(IdentityConstants.BearerScheme);
-        builder.Services.AddAuthorization();
         builder.Services.AddOpenApi();
+        builder.Services.AddControllers();
+        builder.Services.AddAuthorization();
 
         builder.Services.AddIdentityApiEndpoints<UserEntity>()
                 .AddEntityFrameworkStores<AppDbContext>()
@@ -28,23 +24,24 @@ public class Program
         builder.Services.AddDbContext<AppDbContext>(options =>
             options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-        // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 
         var app = builder.Build();
 
         app.MapOpenApi();
-        // app.MapScalarApiEndpoints();
 
-        // Configure the HTTP request pipeline.
+
+
         if (app.Environment.IsDevelopment())
         {
             app.MapScalarApiReference();
         }
+
         app.MapIdentityApi<UserEntity>();
         app.UseHttpsRedirection();
         app.UseAuthentication();
         app.UseAuthorization();
         app.MapControllers();
+
         app.Run();
     }
 }
