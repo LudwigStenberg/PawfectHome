@@ -69,17 +69,17 @@ public class ShelterService : IShelterService
 
         if (request.Name.Length < 3)
         {
-            throw new ValidationException("The shelter must be at least 3 characters long.");
+            throw new ValidationException("The shelter name must be at least 3 characters.");
         }
 
         if (request.Name.Length > 50)
         {
-            throw new ValidationException("The shelter name cannot be more than 50 characters long.");
+            throw new ValidationException("The shelter name cannot be more than 50 characters.");
         }
 
         if (!string.IsNullOrEmpty(request.Description) && request.Description.Length > 1000)
         {
-            throw new ValidationException("The shelter description cannot be more than 1000 characters long.");
+            throw new ValidationException("The shelter description cannot be more than 1000 characters.");
         }
     }
 }
