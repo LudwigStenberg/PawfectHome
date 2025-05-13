@@ -13,12 +13,13 @@ public class PetsController : ControllerBase
         this.petService = petService;
     }
 
-    [HttpGet("get-pet/{id}")]
+    [HttpGet("{id}")]
     public async Task<IActionResult> GetPet(int id)
     {
         try
         {
             var pet = await petService.GetPetAsync(id);
+
 
             if (pet == null)
             {
@@ -29,7 +30,7 @@ public class PetsController : ControllerBase
         }
         catch (Exception)
         {
-            return StatusCode(500);
+            return StatusCode(500, "Your pet is dead...bitch");
         }
     }
 }

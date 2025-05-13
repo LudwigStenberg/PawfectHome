@@ -1,6 +1,6 @@
-
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Migrations.Operations;
 using Scalar.AspNetCore;
 
 namespace PawfectHome;
@@ -18,15 +18,18 @@ public class Program
         builder.Services.AddAuthorization();
         builder.Services.AddOpenApi();
 
-        builder.Services.AddIdentityApiEndpoints<UserEntity>()
-                .AddEntityFrameworkStores<AppDbContext>()
-                .AddDefaultTokenProviders();
+        builder
+            .Services.AddIdentityApiEndpoints<UserEntity>()
+            .AddEntityFrameworkStores<AppDbContext>()
+            .AddDefaultTokenProviders();
 
         builder.Services.AddDbContext<AppDbContext>(options =>
-            options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
+            options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"))
+        );
 
         // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
-
+        builder.Services.AddScoped<IPetService, PetService>();
+        
         var app = builder.Build();
 
         app.MapOpenApi();
