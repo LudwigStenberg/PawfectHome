@@ -10,6 +10,16 @@ public class ShelterService : IShelterService
         this.shelterRepository = shelterRepository;
     }
 
+
+    /// <summary>
+    /// Registers a new shelter for a user in the system. Enforces the business rule that a user 
+    /// can only have one shelter at a time.
+    /// </summary>
+    /// <param name="userId">The ID of the user that has requested the shelter registration.</param>
+    /// <param name="request">The request DTO which contains properties for 'Name', 'Description' and 'Email'.</param>
+    /// <returns>A CreateShelterResponse DTO which contains the shelter's 'Id', 'Name', 'Description', 'Email' and the 'UserId' for the associated user.</returns>
+    /// <exception cref="ArgumentException">Thrown when userId is null or empty, or when the request object is null.</exception>
+    /// <exception cref="ValidationException">Thrown when a user who already has a shelter attempts to register another one. Each user can only have one shelter at a time.</exception>
     public async Task<CreateShelterResponse> RegisterShelterAsync(string userId, CreateShelterRequest request)
     {
 
