@@ -12,6 +12,42 @@ public class ShelterService : IShelterService
 
     public async Task<CreateShelterResponse> RegisterShelterAsync(string userId, CreateShelterRequest request)
     {
+
+        ValidateCreateShelterRequest(userId, request);
+
+        // TODO: Add logic to check if the User already has a shelter
+        // This would be done through the GetShelter(ByUserId)
+        // var existingShelter = await shelterRepository.GetShelterByUserIdAsync(userId);
+        // if (existingShelter != null)
+        // {
+        //     throw new ValidationException("User already has a shelter. Each user can only have one shelter registered at a time");
+        // }
+
+        var newShelter = new ShelterEntity
+        {
+            Name = request.Name,
+            Description = request.Description ?? "No description",
+            Email = request.Email,
+            UserId = userId,
+        };
+
+        var createdShelter = await shelterRepository.CreateShelterAsync(newShelter);
+
+        var response = new CreateShelterResponse
+        {
+            Id = createdShelter.Id,
+            Name = createdShelter.Name,
+            Description = createdShelter.Description,
+            Email = createdShelter.Email,
+            UserId = createdShelter.UserId
+        };
+
+        return response;
+    }
+
+    // This is a helper method used within RegisterShelterAsync to make it more clean.
+    private void ValidateCreateShelterRequest(string userId, CreateShelterRequest request)
+    {
         if (string.IsNullOrEmpty(userId))
         {
             throw new ArgumentException("User ID cannot be null or empty", nameof(userId));
@@ -46,34 +82,5 @@ public class ShelterService : IShelterService
         {
             throw new ValidationException("The shelter description cannot be more than 1000 characters long");
         }
-
-        // TODO: Add logic to check if the User already has a shelter
-        // This would be done through the GetShelter(ByUserId)
-        // var existingShelter = await shelterRepository.GetShelterByUserIdAsync(userId);
-        // if (existingShelter != null)
-        // {
-        //     throw new ValidationException("User already has a shelter. Each user can only have one shelter registered at a time");
-        // }
-
-        var newShelter = new ShelterEntity
-        {
-            Name = request.Name,
-            Description = request.Description ?? "No description",
-            Email = request.Email,
-            UserId = userId,
-        };
-
-        var createdShelter = await shelterRepository.CreateShelterAsync(newShelter);
-
-        var response = new CreateShelterResponse
-        {
-            Id = createdShelter.Id,
-            Name = createdShelter.Name,
-            Description = createdShelter.Description,
-            Email = createdShelter.Email,
-            UserId = createdShelter.UserId
-        };
-
-        return response;
     }
 }
