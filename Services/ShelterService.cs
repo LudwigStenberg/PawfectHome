@@ -54,7 +54,14 @@ public class ShelterService : IShelterService
     }
 
 
-    // This is a helper method used within RegisterShelterAsync to make it more clean.
+    /// <summary>
+    /// Validates input parameters for shelter creation, ensuring all required data is present and properly formatted.
+    /// This is a private helper method called by RegisterShelterAsync().
+    /// </summary>
+    /// <param name="userId">The string userId which needs to be checked for null and empty.</param>
+    /// <param name="request">The request DTO that needs to be validated based on format of the Email provided, null and white space, Name.Length and Description.Length.</param>
+    /// <exception cref="ArgumentException">Thrown when the userId is null or empty or when the request object is null.</exception>
+    /// <exception cref="ValidationException">Thrown when any validation rule fails for Email format, Name (must not be empty and must be 3-50 characters), or Description (maximum 1000 characters if provided).</exception>
     private void ValidateCreateShelterRequest(string userId, CreateShelterRequest request)
     {
         if (string.IsNullOrEmpty(userId))
