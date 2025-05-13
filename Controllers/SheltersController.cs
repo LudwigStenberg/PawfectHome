@@ -17,7 +17,7 @@ public class SheltersController : ControllerBase
     }
 
     [HttpPost]
-    // [Authorize]
+    [Authorize]
     public async Task<IActionResult> CreateShelter(CreateShelterRequest request)
     {
         try
@@ -35,7 +35,6 @@ public class SheltersController : ControllerBase
 
             var response = await shelterService.RegisterShelterAsync(userId, request);
 
-            // Reference GET method when it exists
             return CreatedAtAction(nameof(CreateShelter), new { id = response.Id }, response);
 
         } // TODO: Make sure that the catches matches the thrown exceptions and that the correct status codes are returned
