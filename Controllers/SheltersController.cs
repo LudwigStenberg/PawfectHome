@@ -41,16 +41,16 @@ public class SheltersController : ControllerBase
         } // TODO: Make sure that the catches matches the thrown exceptions and that the correct status codes are returned
         catch (DbUpdateException)
         {
-            // 500 + failure message
+            return StatusCode(500, "An error occurred while saving to the database");
         }
-        catch (ValidationException)
+        catch (ValidationException ex)
         {
-            // BadRequest
+            return BadRequest(ex.Message);
         }
         catch (Exception)
         {
 
-            // 500 + unexpected error
+            return StatusCode(500, "An unexpected error occurred");
         }
     }
 }
