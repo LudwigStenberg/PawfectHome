@@ -45,6 +45,7 @@ public class ShelterService : IShelterService
         return response;
     }
 
+
     // This is a helper method used within RegisterShelterAsync to make it more clean.
     private void ValidateCreateShelterRequest(string userId, CreateShelterRequest request)
     {
