@@ -11,6 +11,9 @@ public class Program
     {
         var builder = WebApplication.CreateBuilder(args);
 
+        builder.Services.AddScoped<IShelterRepository, ShelterRepository>();
+        builder.Services.AddScoped<IShelterService, ShelterService>();
+
         // Add services to the container.
         builder.Services.AddControllers();
         // builder.Services.AddAuthentication()

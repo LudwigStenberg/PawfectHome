@@ -17,7 +17,7 @@ public class SheltersController : ControllerBase
     }
 
     [HttpPost]
-    [Authorize]
+    // [Authorize]
     public async Task<IActionResult> CreateShelter(CreateShelterRequest request)
     {
         try
@@ -49,7 +49,6 @@ public class SheltersController : ControllerBase
         }
         catch (Exception)
         {
-
             return StatusCode(500, "An unexpected error occurred");
         }
     }
