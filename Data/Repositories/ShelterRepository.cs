@@ -16,7 +16,14 @@ public class ShelterRepository : IShelterRepository
         return newShelter;
     }
 
-    public async Task<ShelterEntity?> GetShelterByUserIdAsync(string userId)
+    public async Task<ShelterEntity?> FetchShelterByIdAsync(int id)
+    {
+        return await context.Shelters
+            .Include(s => s.Pets)
+            .SingleOrDefaultAsync(s => s.Id == id);
+    }
+
+    public async Task<ShelterEntity?> FetchShelterByUserIdAsync(string userId)
     {
         return await context.Shelters
             .Include(s => s.Pets)
