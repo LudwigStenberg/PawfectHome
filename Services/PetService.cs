@@ -1,5 +1,3 @@
-using Microsoft.EntityFrameworkCore;
-
 public class PetService : IPetService
 {
     private readonly ILogger<PetService> logger;
