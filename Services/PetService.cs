@@ -2,16 +2,16 @@ using Microsoft.EntityFrameworkCore;
 
 public class PetService : IPetService
 {
-    private readonly AppDbContext dbContext;
+    private readonly IPetRepository petRepository;
 
     /// <summary>
     /// Initialize instance of the PetService class.
     /// </summary>
     /// <param name="appdbContext"> The database context for pet operations.</param>
 
-    public PetService(AppDbContext appdbContext)
+    public PetService(IPetRepository petRepository)
     {
-        dbContext = appdbContext;
+        this.petRepository = petRepository;
     }
 
     /// <summary>
@@ -23,7 +23,7 @@ public class PetService : IPetService
 
     public async Task<PetEntity> GetPetAsync(int id)
     {
-        var pet = await dbContext.Pets.FirstOrDefaultAsync(p => p.Id == id);
+        var pet = await petRepository.FetchPetAsync(id);
 
         if (pet == null)
         {
