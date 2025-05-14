@@ -10,9 +10,8 @@ public class RegisterPetRequest
     )]
     public required string Name { get; set; }
 
-    [Required(ErrorMessage = "Age cannot be null")]
-
-    public int Age { get; set; }
+    [Required(ErrorMessage = "Birthdate cannot be null")]
+    public DateTime Birthdate { get; set; }
     public Gender Gender { get; set; } = Gender.Unknown;
     public Species Species { get; set; } = Species.Undefined;
     public string Breed { get; set; } = "Undefined";
