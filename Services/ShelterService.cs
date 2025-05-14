@@ -112,6 +112,10 @@ public class ShelterService : IShelterService
         };
     }
 
+    /// <summary>
+    /// Asynchronously retrieves an ICollection of summarized information for all shelters. 
+    /// </summary>
+    /// <returns>Either a populated list of ShelterSummaryResponse objects, or an empty list.</returns>
     public async Task<ICollection<ShelterSummaryResponse>> GetAllSheltersAsync()
     {
         var allShelters = await shelterRepository.FetchAllSheltersAsync();
