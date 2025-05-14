@@ -116,6 +116,8 @@ public class ShelterService : IShelterService
     {
         var allShelters = await shelterRepository.FetchAllSheltersAsync();
 
+        logger.LogInformation("Retrieved {Count} shelters from the repository", allShelters.Count);
+
         return allShelters.Select(shelter => new ShelterSummaryResponse()
         {
             Id = shelter.Id,
