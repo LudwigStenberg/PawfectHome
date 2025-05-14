@@ -111,9 +111,12 @@ public class SheltersController : ControllerBase
         {
             return NotFound();
         }
+        catch (UnauthorizedAccessException)
+        {
+            return Unauthorized();
+        }
         catch (Exception)
         {
-
             return StatusCode(500, "An error occurred while processing your request.");
         }
     }
