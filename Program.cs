@@ -10,39 +10,53 @@ public class Program
     {
         var builder = WebApplication.CreateBuilder(args);
 
-        // Add services to the container.
-        builder.Services.AddControllers();
-        // builder.Services.AddAuthentication()
-        // .AddBearerToken(IdentityConstants.BearerScheme);
-        builder.Services.AddAuthorization();
+        builder.Services.AddScoped<IShelterRepository, ShelterRepository>();
+        builder.Services.AddScoped<IShelterService, ShelterService>();
         builder.Services.AddOpenApi();
+        builder.Services.AddControllers();
+        builder.Services.AddAuthorization(options =>
+        {
+            options.AddPolicy("CanDeleteShelter", policy =>
+                policy.RequireRole("ShelterOwner"));
+        });
 
-        builder
-            .Services.AddIdentityApiEndpoints<UserEntity>()
-            .AddEntityFrameworkStores<AppDbContext>()
-            .AddDefaultTokenProviders();
+        builder.Services.AddIdentityApiEndpoints<UserEntity>()
+                .AddRoles<IdentityRole>()
+                .AddEntityFrameworkStores<AppDbContext>()
+                .AddDefaultTokenProviders();
 
         builder.Services.AddDbContext<AppDbContext>(options =>
             options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"))
         );
 
-        // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 
         var app = builder.Build();
 
-        app.MapOpenApi();
-        // app.MapScalarApiEndpoints();
+        using (var scope = app.Services.CreateScope())
+        {
+            using var roleManager = scope.ServiceProvider
+                .GetRequiredService<RoleManager<IdentityRole>>();
 
-        // Configure the HTTP request pipeline.
+            if (!roleManager.RoleExistsAsync("ShelterOwner").Result)
+            {
+                var role = new IdentityRole("ShelterOwner");
+                var result = roleManager.CreateAsync(role).Result;
+            }
+        }
+
+        app.MapOpenApi();
+
         if (app.Environment.IsDevelopment())
         {
             app.MapScalarApiReference();
         }
+
         app.MapIdentityApi<UserEntity>();
         app.UseHttpsRedirection();
         app.UseAuthentication();
         app.UseAuthorization();
         app.MapControllers();
+
         app.Run();
     }
 }
