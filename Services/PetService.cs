@@ -2,16 +2,13 @@ using Microsoft.EntityFrameworkCore;
 
 public class PetService : IPetService
 {
+    private readonly ILogger<PetService> logger;
     private readonly IPetRepository petRepository;
-
-    /// <summary>
-    /// Initialize instance of the PetService class.
-    /// </summary>
-    /// <param name="appdbContext"> The database context for pet operations.</param>
 
     public PetService(IPetRepository petRepository)
     {
         this.petRepository = petRepository;
+        this.logger = logger;
     }
 
     /// <summary>
@@ -27,6 +24,7 @@ public class PetService : IPetService
 
         if (pet == null)
         {
+            logger.LogWarning("Pet with id {petId} was not found", id);
             throw new KeyNotFoundException("Pet not found");
         }
         return pet;
