@@ -18,7 +18,7 @@ public class PetService : IPetService
     /// <returns>the task result contains the pet entity</returns>
     /// <exception cref="KeyNotFoundException"> Throw when no pet with the specified id is found.</exception>
 
-    public async Task<PetEntity> GetPetAsync(int id)
+    public async Task<GetPetResponse> GetPetAsync(int id)
     {
         var pet = await petRepository.FetchPetAsync(id);
 
@@ -27,6 +27,32 @@ public class PetService : IPetService
             logger.LogWarning("Pet with id {petId} was not found", id);
             throw new KeyNotFoundException("Pet not found");
         }
-        return pet;
+
+        var response = new GetPetResponse
+        {
+            Id = pet.Id,
+            Name = pet.Name,
+            Age = pet.Age,
+            Gender = pet.Gender,
+            Species = pet.Species,
+            Breed = pet.Breed,
+            Description = pet.Description,
+            ImageURL = pet.ImageURL,
+            IsNeutured = pet.IsNeutured,
+            HasPedigree = pet.HasPedigree,
+            ShelterId = pet.ShelterId,
+        };
+
+        if (pet.Shelter != null)
+        {
+            response.shelter = new ShelterSummaryResponse
+            {
+                Id = pet.Shelter.Id,
+                Name = pet.Shelter.Name,
+                Description = pet.Shelter.Description,
+                Email = pet.Shelter.Email,
+            };
+        }
+        return response;
     }
 }
