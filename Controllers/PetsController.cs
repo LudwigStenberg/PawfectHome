@@ -1,5 +1,4 @@
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 
 [ApiController]
@@ -34,6 +33,22 @@ public class PetsController : ControllerBase
         catch (Exception)
         {
             return StatusCode(500, "Your pet is dead...bitch");
+        }
+    }
+
+    [Authorize]
+    [HttpPost]
+    public async Task<IActionResult> CreatePet(RegisterPetRequest request)
+    {
+        try
+        {
+            var result = petService.RegisterPetAsync(request);
+            return CreatedAtAction(nameof(GetPet), new { id = result.Id }, result);
+        }
+        catch (Exception ex)
+        {
+            // TODO: Implement logging.
+            return StatusCode(500, "An error occurred while registering the pet.");
         }
     }
 }

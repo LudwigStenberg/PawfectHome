@@ -17,7 +17,7 @@ public class SheltersController : ControllerBase
 
     [HttpPost]
     [Authorize]
-    public async Task<IActionResult> CreateShelter(CreateShelterRequest request)
+    public async Task<IActionResult> CreateShelter(RegisterShelterRequest request)
     {
         try
         {
@@ -34,8 +34,9 @@ public class SheltersController : ControllerBase
 
             var response = await shelterService.RegisterShelterAsync(userId, request);
 
-            return CreatedAtAction(nameof(CreateShelter), new { id = response.Id }, response);
-        } // TODO: Make sure that the catches matches the thrown exceptions and that the correct status codes are returned
+            return CreatedAtAction(nameof(GetShelter), new { id = response.Id }, response);
+
+        }
         catch (DbUpdateException)
         {
             return StatusCode(500, "An error occurred while saving to the database");
@@ -49,4 +50,41 @@ public class SheltersController : ControllerBase
             return StatusCode(500, "An unexpected error occurred");
         }
     }
+
+
+    [HttpGet("{id}")]
+    public async Task<IActionResult> GetShelter(int id)
+    {
+        try
+        {
+            var response = await shelterService.GetShelterAsync(id);
+
+            return Ok(response);
+
+        } // TODO: Add specific exceptions
+        catch (KeyNotFoundException ex)
+        {
+            return NotFound(ex.Message);
+        }
+        catch (Exception)
+        {
+            return StatusCode(500, "An error occurred while processing your request.");
+        }
+    }
+
+    [HttpGet]
+    public async Task<IActionResult> GetAllShelters()
+    {
+        try
+        {
+            var response = await shelterService.GetAllSheltersAsync();
+
+            return Ok(response);
+        }
+        catch (Exception)
+        {
+            return StatusCode(500, "An error occurred while processing your request.");
+        }
+    }
+
 }
