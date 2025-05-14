@@ -43,16 +43,6 @@ public class PetsController : ControllerBase
                 new { Message = "Validation failed. Please check the errors.", Errors = ex.Errors }
             );
         }
-        catch (InvalidOperationException ex)
-        {
-            logger.LogWarning(
-                ex,
-                "Business logic validation failed for UserId: {UserId}. Message: {Message}",
-                userId,
-                ex.Message
-            );
-            return BadRequest(new { Message = ex.Message });
-        }
         catch (Exception ex)
         {
             logger.LogError(
