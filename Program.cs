@@ -12,6 +12,7 @@ public class Program
 
         builder.Services.AddScoped<IShelterRepository, ShelterRepository>();
         builder.Services.AddScoped<IShelterService, ShelterService>();
+        builder.Services.AddLogging();
         builder.Services.AddOpenApi();
         builder.Services.AddControllers();
         builder.Services.AddAuthorization(options =>
