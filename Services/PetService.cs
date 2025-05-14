@@ -15,7 +15,7 @@ public class PetService : IPetService
     }
 
     /// <summary>
-    /// Fetch specific pet from database using id.
+    /// Retrieves a pet from the database by its ID, or throws an exception if not found.
     /// </summary>
     /// <param name="id">unique identifier of specific pet to be retrieved.</param>
     /// <returns>the task result contains the pet entity</returns>
