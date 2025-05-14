@@ -144,6 +144,15 @@ public class ShelterService : IShelterService
         }).ToList();
     }
 
+    /// <summary>
+    ///  Updates a shelter based on the ShelterUpdateRequest which contains nullable property values which allows for partial updating within the model.
+    /// </summary>
+    /// <param name="id">The ID of the shelter resource to be updated.</param>
+    /// <param name="userId">The ID of the user requesting the update.</param>
+    /// <param name="request">The ShelterUpdateRequest DTO which contains the new value or values.</param>
+    /// <returns>A ShelterDetailResponse DTO containing Id, Name, Description, Email, UserId and a list of Pets.</returns>
+    /// <exception cref="KeyNotFoundException">Thrown when FetchShelterById method fails and the shelter cannot be found.</exception>
+    /// <exception cref="UnauthorizedAccessException">Thrown when the retrieved shelter's UserId does not match the userId method parameter.</exception>
     public async Task<ShelterDetailResponse> UpdateShelterAsync(int id, string userId, ShelterUpdateRequest request)
     {
         var existingShelter = await shelterRepository.FetchShelterByIdAsync(id);
