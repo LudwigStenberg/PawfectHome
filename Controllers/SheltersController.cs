@@ -104,7 +104,7 @@ public class SheltersController : ControllerBase
                 return Unauthorized();
             }
 
-            var response = await shelterService.UpdateShelterAsync(userId, id, request);
+            var response = await shelterService.UpdateShelterAsync(id, userId, request);
             return Ok(response);
         }
         catch (KeyNotFoundException)
