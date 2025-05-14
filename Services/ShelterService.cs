@@ -112,13 +112,18 @@ public class ShelterService : IShelterService
         };
     }
 
-    public async Task<ICollection<ShelterDetailResponse>> GetAllSheltersAsync()
+    public async Task<ICollection<ShelterSummaryResponse>> GetAllSheltersAsync()
     {
         var allShelters = await shelterRepository.FetchAllSheltersAsync();
 
-        var shelterList = allShelters.ToList();
-
-        return allShelters.Select(shelter => new ShelterDetailResponse)
+        return allShelters.Select(shelter => new ShelterSummaryResponse()
+        {
+            Id = shelter.Id,
+            Name = shelter.Name,
+            Description = shelter.Description,
+            Email = shelter.Email,
+            PetCount = shelter.PetCount,
+        }).ToList();
     }
 
     /// <summary>
