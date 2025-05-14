@@ -5,7 +5,7 @@ public class PetService : IPetService
     private readonly ILogger<PetService> logger;
     private readonly IPetRepository petRepository;
 
-    public PetService(IPetRepository petRepository)
+    public PetService(IPetRepository petRepository, ILogger<PetService> logger)
     {
         this.petRepository = petRepository;
         this.logger = logger;
