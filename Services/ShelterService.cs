@@ -140,6 +140,7 @@ public class ShelterService : IShelterService
             Description = shelter.Description,
             Email = shelter.Email,
             PetCount = shelter.PetCount
+
         }).ToList();
     }
 
