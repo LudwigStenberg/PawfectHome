@@ -10,16 +10,16 @@ public class ShelterService : IShelterService
     public ShelterService(
         ILogger<ShelterService> logger,
         IShelterRepository shelterRepository,
-        UserManager<UserEntity> userManager)
+        UserManager<UserEntity> userManager
+    )
     {
         this.logger = logger;
         this.shelterRepository = shelterRepository;
         this.userManager = userManager;
     }
 
-
     /// <summary>
-    /// Asyncronously registers a new shelter for a user in the system. Enforces the business rule that a user 
+    /// Asyncronously registers a new shelter for a user in the system. Enforces the business rule that a user
     /// can only have one shelter at a time. Additionally, assigns the user with a new role: "ShelterOwner" in a non-atomic operation.
     /// </summary>
     /// <param name="userId">The ID of the user that has requested the shelter registration.</param>
@@ -27,9 +27,11 @@ public class ShelterService : IShelterService
     /// <returns>A RegisterShelterDetailResponse DTO which contains the shelter's 'Id', 'Name', 'Description', 'Email' and the 'UserId' for the associated user.</returns>
     /// <exception cref="ArgumentException">Thrown when userId is null or empty, or when the request object is null.</exception>
     /// <exception cref="ValidationException">Thrown when a user who already has a shelter attempts to register another one. Each user can only have one shelter at a time.</exception>
-    public async Task<RegisterShelterDetailResponse> RegisterShelterAsync(string userId, RegisterShelterRequest request)
+    public async Task<RegisterShelterDetailResponse> RegisterShelterAsync(
+        string userId,
+        RegisterShelterRequest request
+    )
     {
-
         logger.LogInformation("Starting shelter registration for user {UserId}.", userId);
 
         ValidateRegisterShelterRequest(userId, request);
@@ -38,7 +40,9 @@ public class ShelterService : IShelterService
         if (existingShelter)
         {
             logger.LogWarning("User {UserId} attempted to register a second shelter.", userId);
-            throw new ValidationException("User already has a shelter. Each user can only have one shelter registered at a time.");
+            throw new ValidationException(
+                "User already has a shelter. Each user can only have one shelter registered at a time."
+            );
         }
 
         var newShelter = new ShelterEntity
@@ -49,7 +53,11 @@ public class ShelterService : IShelterService
             UserId = userId,
         };
 
-        logger.LogInformation("Creating new shelter for user {UserId} with name {ShelterName}.", userId, newShelter.Name);
+        logger.LogInformation(
+            "Creating new shelter for user {UserId} with name {ShelterName}.",
+            userId,
+            newShelter.Name
+        );
 
         var createdShelter = await shelterRepository.CreateShelterAsync(newShelter);
 
@@ -62,13 +70,19 @@ public class ShelterService : IShelterService
             if (!roleResult.Succeeded)
             {
                 var errorMessage = string.Join(", ", roleResult.Errors.Select(e => e.Description));
-                logger.LogWarning("Failed to assign ShelterOwner role to user {UserId}. Errors: {Errors}",
-                    userId, errorMessage);
+                logger.LogWarning(
+                    "Failed to assign ShelterOwner role to user {UserId}. Errors: {Errors}",
+                    userId,
+                    errorMessage
+                );
             }
         }
         else
         {
-            logger.LogWarning("User {UserId} not found when trying to assign ShelterOwner role.", userId);
+            logger.LogWarning(
+                "User {UserId} not found when trying to assign ShelterOwner role.",
+                userId
+            );
         }
 
         var response = new RegisterShelterDetailResponse
@@ -77,14 +91,16 @@ public class ShelterService : IShelterService
             Name = createdShelter.Name,
             Description = createdShelter.Description,
             Email = createdShelter.Email,
-            UserId = createdShelter.UserId
+            UserId = createdShelter.UserId,
         };
 
-        logger.LogInformation("Successfully created shelter {ShelterId} for user {UserId}.", createdShelter.Id, userId);
+        logger.LogInformation(
+            "Successfully created shelter {ShelterId} for user {UserId}.",
+            createdShelter.Id,
+            userId
+        );
         return response;
     }
-
-
 
     /// <summary>
     /// Asynchronously retrieves information about a shelter based on the shelter ID provided. Also includes a collection of pets associated with that shelter.
@@ -94,7 +110,10 @@ public class ShelterService : IShelterService
     /// <exception cref="KeyNotFoundException">Thrown when the shelter cannot be found.</exception>
     public async Task<ShelterDetailResponse> GetShelterAsync(int id)
     {
-        logger.LogInformation("Starting retrieval of shelter information for shelter with ID: {ShelterId}.", id);
+        logger.LogInformation(
+            "Starting retrieval of shelter information for shelter with ID: {ShelterId}.",
+            id
+        );
 
         var shelter = await shelterRepository.FetchShelterByIdAsync(id);
 
@@ -113,18 +132,19 @@ public class ShelterService : IShelterService
             UserId = shelter.UserId,
 
             // TODO: Replace the PetResponseTemp with actual PetResponse when it is ready.
-            Pets = shelter.Pets.Select(pet => new PetResponseTemp
-            {
-                Id = pet.Id,
-                Name = pet.Name,
-                Species = pet.Species,
-
-            }).ToList()
+            Pets = shelter
+                .Pets.Select(pet => new PetResponseTemp
+                {
+                    Id = pet.Id,
+                    Name = pet.Name,
+                    Species = pet.Species,
+                })
+                .ToList(),
         };
     }
 
     /// <summary>
-    /// Asynchronously retrieves a collection of summarized information for all shelters. 
+    /// Asynchronously retrieves a collection of summarized information for all shelters.
     /// </summary>
     /// <returns>A collection of ShelterSummaryResponse objects. This collection may be empty if no shelters exist in the system.</returns>
     public async Task<ICollection<ShelterSummaryResponse>> GetAllSheltersAsync()
@@ -133,14 +153,16 @@ public class ShelterService : IShelterService
 
         logger.LogInformation("Retrieved {Count} shelters from the repository", allShelters.Count);
 
-        return allShelters.Select(shelter => new ShelterSummaryResponse()
-        {
-            Id = shelter.Id,
-            Name = shelter.Name,
-            Description = shelter.Description,
-            Email = shelter.Email,
-            PetCount = shelter.PetCount,
-        }).ToList();
+        return allShelters
+            .Select(shelter => new ShelterSummaryResponse()
+            {
+                Id = shelter.Id,
+                Name = shelter.Name,
+                Description = shelter.Description,
+                Email = shelter.Email,
+                PetCount = shelter.PetCount,
+            })
+            .ToList();
     }
 
     /// <summary>
@@ -181,20 +203,31 @@ public class ShelterService : IShelterService
 
         if (request.Name.Length < 3)
         {
-            logger.LogWarning("Shelter registration rejected: Name too short (length: {NameLength})", request.Name.Length);
+            logger.LogWarning(
+                "Shelter registration rejected: Name too short (length: {NameLength})",
+                request.Name.Length
+            );
             throw new ValidationException("The shelter name must be at least 3 characters.");
         }
 
         if (request.Name.Length > 50)
         {
-            logger.LogWarning("Shelter registration rejected: Name too long (length: {NameLength})", request.Name.Length);
+            logger.LogWarning(
+                "Shelter registration rejected: Name too long (length: {NameLength})",
+                request.Name.Length
+            );
             throw new ValidationException("The shelter name cannot be more than 50 characters.");
         }
 
         if (!string.IsNullOrEmpty(request.Description) && request.Description.Length > 1000)
         {
-            logger.LogWarning("Shelter registration rejected: Description too long (length: {DescriptionLength})", request.Description.Length);
-            throw new ValidationException("The shelter description cannot be more than 1000 characters.");
+            logger.LogWarning(
+                "Shelter registration rejected: Description too long (length: {DescriptionLength})",
+                request.Description.Length
+            );
+            throw new ValidationException(
+                "The shelter description cannot be more than 1000 characters."
+            );
         }
     }
 }

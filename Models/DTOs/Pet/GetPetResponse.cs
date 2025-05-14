@@ -12,13 +12,13 @@ public class GetPetResponse
     public bool HasPedigree { get; set; }
     public int ShelterId { get; set; }
 
-    public ShelterSummaryResponse? shelter { get; set; }
+    public ShelterSummary? Shelter { get; set; }
 }
 
-public class ShelterSummaryResponse
+public class ShelterSummary
 {
     public int Id { get; set; }
-    public required string Name { get; set; }
-    public string Description { get; set; }
-    public required string Email { get; set; }
+    public string Name { get; set; } = string.Empty;
+    public string Description { get; set; } = string.Empty;
+    public string Email { get; set; } = string.Empty;
 }
