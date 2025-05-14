@@ -53,7 +53,6 @@ public class SheltersController : ControllerBase
     }
 
     [HttpGet("{id}")]
-    [Authorize]
     public async Task<IActionResult> GetShelter(int id)
     {
         try
@@ -67,8 +66,13 @@ public class SheltersController : ControllerBase
             var response = await shelterService.GetShelterAsync(id);
 
             return Ok(response);
+
+        } // TODO: Add specific exceptions
+        catch (KeyNotFoundException ex)
+        {
+            return NotFound(ex.Message);
         }
-        catch (System.Exception)
+        catch (Exception)
         {
 
             throw;
