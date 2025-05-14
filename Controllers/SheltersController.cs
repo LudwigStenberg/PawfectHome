@@ -35,7 +35,7 @@ public class SheltersController : ControllerBase
 
             var response = await shelterService.RegisterShelterAsync(userId, request);
 
-            return CreatedAtAction(nameof(CreateShelter), new { id = response.Id }, response);
+            return CreatedAtAction(nameof(GetShelter), new { id = response.Id }, response);
 
         }
         catch (DbUpdateException)
