@@ -37,7 +37,7 @@ public class SheltersController : ControllerBase
 
             return CreatedAtAction(nameof(CreateShelter), new { id = response.Id }, response);
 
-        } // TODO: Make sure that the catches matches the thrown exceptions and that the correct status codes are returned
+        }
         catch (DbUpdateException)
         {
             return StatusCode(500, "An error occurred while saving to the database");
@@ -51,4 +51,5 @@ public class SheltersController : ControllerBase
             return StatusCode(500, "An unexpected error occurred");
         }
     }
+
 }

@@ -24,10 +24,10 @@ public class ShelterService : IShelterService
     /// </summary>
     /// <param name="userId">The ID of the user that has requested the shelter registration.</param>
     /// <param name="request">The request DTO which contains properties for 'Name', 'Description' and 'Email'.</param>
-    /// <returns>A RegisterShelterResponse DTO which contains the shelter's 'Id', 'Name', 'Description', 'Email' and the 'UserId' for the associated user.</returns>
+    /// <returns>A ShelterResponse DTO which contains the shelter's 'Id', 'Name', 'Description', 'Email' and the 'UserId' for the associated user.</returns>
     /// <exception cref="ArgumentException">Thrown when userId is null or empty, or when the request object is null.</exception>
     /// <exception cref="ValidationException">Thrown when a user who already has a shelter attempts to register another one. Each user can only have one shelter at a time.</exception>
-    public async Task<RegisterShelterResponse> RegisterShelterAsync(string userId, RegisterShelterRequest request)
+    public async Task<ShelterResponse> RegisterShelterAsync(string userId, RegisterShelterRequest request)
     {
 
         logger.LogInformation("Starting shelter registration for user {UserId}.", userId);
@@ -71,7 +71,7 @@ public class ShelterService : IShelterService
             logger.LogWarning("User {UserId} not found when trying to assign ShelterOwner role.", userId);
         }
 
-        var response = new RegisterShelterResponse
+        var response = new ShelterResponse
         {
             Id = createdShelter.Id,
             Name = createdShelter.Name,
