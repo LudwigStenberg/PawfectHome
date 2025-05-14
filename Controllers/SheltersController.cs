@@ -52,7 +52,6 @@ public class SheltersController : ControllerBase
         }
     }
 
-
     [HttpGet("{id}")]
     public async Task<IActionResult> GetShelter(int id)
     {
@@ -87,5 +86,4 @@ public class SheltersController : ControllerBase
             return StatusCode(500, "An error occurred while processing your request.");
         }
     }
-
 }
