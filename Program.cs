@@ -1,4 +1,3 @@
-
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Scalar.AspNetCore;
@@ -18,12 +17,14 @@ public class Program
         builder.Services.AddAuthorization();
         builder.Services.AddOpenApi();
 
-        builder.Services.AddIdentityApiEndpoints<UserEntity>()
-                .AddEntityFrameworkStores<AppDbContext>()
-                .AddDefaultTokenProviders();
+        builder
+            .Services.AddIdentityApiEndpoints<UserEntity>()
+            .AddEntityFrameworkStores<AppDbContext>()
+            .AddDefaultTokenProviders();
 
         builder.Services.AddDbContext<AppDbContext>(options =>
-            options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
+            options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"))
+        );
 
         // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 
