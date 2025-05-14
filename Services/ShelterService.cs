@@ -24,15 +24,15 @@ public class ShelterService : IShelterService
     /// </summary>
     /// <param name="userId">The ID of the user that has requested the shelter registration.</param>
     /// <param name="request">The request DTO which contains properties for 'Name', 'Description' and 'Email'.</param>
-    /// <returns>A CreateShelterResponse DTO which contains the shelter's 'Id', 'Name', 'Description', 'Email' and the 'UserId' for the associated user.</returns>
+    /// <returns>A RegisterShelterResponse DTO which contains the shelter's 'Id', 'Name', 'Description', 'Email' and the 'UserId' for the associated user.</returns>
     /// <exception cref="ArgumentException">Thrown when userId is null or empty, or when the request object is null.</exception>
     /// <exception cref="ValidationException">Thrown when a user who already has a shelter attempts to register another one. Each user can only have one shelter at a time.</exception>
-    public async Task<CreateShelterResponse> RegisterShelterAsync(string userId, CreateShelterRequest request)
+    public async Task<RegisterShelterResponse> RegisterShelterAsync(string userId, RegisterShelterRequest request)
     {
 
         logger.LogInformation("Starting shelter registration for user {UserId}.", userId);
 
-        ValidateCreateShelterRequest(userId, request);
+        ValidateRegisterShelterRequest(userId, request);
 
         bool existingShelter = await shelterRepository.DoesShelterExistForUserAsync(userId);
         if (existingShelter)
@@ -71,7 +71,7 @@ public class ShelterService : IShelterService
             logger.LogWarning("User {UserId} not found when trying to assign ShelterOwner role.", userId);
         }
 
-        var response = new CreateShelterResponse
+        var response = new RegisterShelterResponse
         {
             Id = createdShelter.Id,
             Name = createdShelter.Name,
@@ -93,7 +93,7 @@ public class ShelterService : IShelterService
     /// <param name="request">The request DTO that needs to be validated based on format of the Email provided, null and white space, Name.Length and Description.Length.</param>
     /// <exception cref="ArgumentException">Thrown when the userId is null or empty or when the request object is null.</exception>
     /// <exception cref="ValidationException">Thrown when any validation rule fails for Email format, Name (must not be empty and must be 3-50 characters), or Description (maximum 1000 characters if provided).</exception>
-    private void ValidateCreateShelterRequest(string userId, CreateShelterRequest request)
+    private void ValidateRegisterShelterRequest(string userId, RegisterShelterRequest request)
     {
         logger.LogDebug("Validating shelter registration request for user {UserId}", userId);
 

@@ -18,7 +18,7 @@ public class SheltersController : ControllerBase
 
     [HttpPost]
     [Authorize]
-    public async Task<IActionResult> CreateShelter(CreateShelterRequest request)
+    public async Task<IActionResult> CreateShelter(RegisterShelterRequest request)
     {
         try
         {

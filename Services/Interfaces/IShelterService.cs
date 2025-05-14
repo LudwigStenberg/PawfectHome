@@ -1,5 +1,5 @@
 
 public interface IShelterService
 {
-    Task<CreateShelterResponse> RegisterShelterAsync(string userId, CreateShelterRequest request);
+    Task<RegisterShelterResponse> RegisterShelterAsync(string userId, RegisterShelterRequest request);
 }
