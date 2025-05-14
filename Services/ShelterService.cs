@@ -24,10 +24,10 @@ public class ShelterService : IShelterService
     /// </summary>
     /// <param name="userId">The ID of the user that has requested the shelter registration.</param>
     /// <param name="request">The request DTO which contains properties for 'Name', 'Description' and 'Email'.</param>
-    /// <returns>A ShelterResponse DTO which contains the shelter's 'Id', 'Name', 'Description', 'Email' and the 'UserId' for the associated user.</returns>
+    /// <returns>A RegisterShelterResponse DTO which contains the shelter's 'Id', 'Name', 'Description', 'Email' and the 'UserId' for the associated user.</returns>
     /// <exception cref="ArgumentException">Thrown when userId is null or empty, or when the request object is null.</exception>
     /// <exception cref="ValidationException">Thrown when a user who already has a shelter attempts to register another one. Each user can only have one shelter at a time.</exception>
-    public async Task<ShelterResponse> RegisterShelterAsync(string userId, RegisterShelterRequest request)
+    public async Task<RegisterShelterResponse> RegisterShelterAsync(string userId, RegisterShelterRequest request)
     {
 
         logger.LogInformation("Starting shelter registration for user {UserId}.", userId);
@@ -71,7 +71,7 @@ public class ShelterService : IShelterService
             logger.LogWarning("User {UserId} not found when trying to assign ShelterOwner role.", userId);
         }
 
-        var response = new ShelterResponse
+        var response = new RegisterShelterResponse
         {
             Id = createdShelter.Id,
             Name = createdShelter.Name,
@@ -84,10 +84,37 @@ public class ShelterService : IShelterService
         return response;
     }
 
-    public async Task<ShelterResponse?> GetShelterAsync(int id)
+
+
+    public async Task<ShelterResponse> GetShelterAsync(int id)
     {
-        var shelter = await shelterRepository.FetchShelterByIdAsync(id) ?? throw new KeyNotFoundException("The shelter could not be found.");
+        var shelter = await shelterRepository.FetchShelterByIdAsync(id);
+
+        if (shelter is null)
+        {
+            throw new KeyNotFoundException($"Shelter with ID {id} could not be found.");
+        }
+
+        return new ShelterResponse()
+        {
+            Id = shelter.Id,
+            Name = shelter.Name,
+            Description = shelter.Description,
+            Email = shelter.Email,
+            UserId = shelter.UserId,
+
+            // TODO: Replace the PetResponseTemp with actual PetResponse when it is ready.
+            Pets = shelter.Pets.Select(pet => new PetResponseTemp
+            {
+                Id = pet.Id,
+                Name = pet.Name,
+                Species = pet.Species,
+
+            }).ToList()
+        };
     }
+
+
 
     /// <summary>
     /// Validates input parameters for shelter creation, ensuring all required data is present and properly formatted.

@@ -26,7 +26,6 @@ public class ShelterRepository : IShelterRepository
     public async Task<ShelterEntity?> FetchShelterByUserIdAsync(string userId)
     {
         return await context.Shelters
-            .Include(s => s.Pets)
             .SingleOrDefaultAsync(s => s.UserId == userId);
     }
 
