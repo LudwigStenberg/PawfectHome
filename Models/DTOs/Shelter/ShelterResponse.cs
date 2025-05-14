@@ -1,5 +1,5 @@
 
-public class ShelterResponse
+public class ShelterDetailResponse
 {
     public int Id { get; set; }
     public required string Name { get; set; }

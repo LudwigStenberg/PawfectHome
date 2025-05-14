@@ -1,5 +1,5 @@
 
-public class RegisterShelterResponse
+public class RegisterShelterDetailResponse
 {
     public int Id { get; set; }
     public required string Name { get; set; }
