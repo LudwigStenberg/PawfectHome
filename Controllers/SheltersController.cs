@@ -68,7 +68,26 @@ public class SheltersController : ControllerBase
         }
         catch (Exception)
         {
-            return StatusCode(500, "An error occurred while processing your request");
+            return StatusCode(500, "An error occurred while processing your request.");
+        }
+    }
+
+    [HttpGet]
+    public async Task<IActionResult> GetAllShelters()
+    {
+        try
+        {
+            var response = await shelterService.GetAllSheltersAsync();
+
+            return Ok(response);
+        }
+        catch (KeyNotFoundException ex)
+        {
+            return NotFound(ex.Message);
+        }
+        catch (Exception)
+        {
+            return StatusCode(500, "An error occurred while processing your request.");
         }
     }
 
