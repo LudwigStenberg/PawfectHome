@@ -17,14 +17,14 @@ public class Program
         builder.Services.AddControllers();
         builder.Services.AddAuthorization(options =>
         {
-            options.AddPolicy("CanDeleteShelter", policy =>
-                policy.RequireRole("ShelterOwner"));
+            options.AddPolicy("CanDeleteShelter", policy => policy.RequireRole("ShelterOwner"));
         });
 
-        builder.Services.AddIdentityApiEndpoints<UserEntity>()
-                .AddRoles<IdentityRole>()
-                .AddEntityFrameworkStores<AppDbContext>()
-                .AddDefaultTokenProviders();
+        builder
+            .Services.AddIdentityApiEndpoints<UserEntity>()
+            .AddRoles<IdentityRole>()
+            .AddEntityFrameworkStores<AppDbContext>()
+            .AddDefaultTokenProviders();
 
         builder.Services.AddDbContext<AppDbContext>(options =>
             options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"))
@@ -38,8 +38,9 @@ public class Program
 
         using (var scope = app.Services.CreateScope())
         {
-            using var roleManager = scope.ServiceProvider
-                .GetRequiredService<RoleManager<IdentityRole>>();
+            using var roleManager = scope.ServiceProvider.GetRequiredService<
+                RoleManager<IdentityRole>
+            >();
 
             if (!roleManager.RoleExistsAsync("ShelterOwner").Result)
             {

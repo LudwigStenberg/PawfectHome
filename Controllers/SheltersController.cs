@@ -6,11 +6,10 @@ using Microsoft.EntityFrameworkCore;
 
 [ApiController]
 [Route("[controller]")]
-
 public class SheltersController : ControllerBase
 {
-
     private readonly IShelterService shelterService;
+
     public SheltersController(IShelterService shelterService)
     {
         this.shelterService = shelterService;
@@ -36,7 +35,6 @@ public class SheltersController : ControllerBase
             var response = await shelterService.RegisterShelterAsync(userId, request);
 
             return CreatedAtAction(nameof(CreateShelter), new { id = response.Id }, response);
-
         } // TODO: Make sure that the catches matches the thrown exceptions and that the correct status codes are returned
         catch (DbUpdateException)
         {
