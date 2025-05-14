@@ -84,6 +84,10 @@ public class ShelterService : IShelterService
         return response;
     }
 
+    public async Task<ShelterResponse?> GetShelterAsync(int id)
+    {
+        var shelter = await shelterRepository.FetchShelterByIdAsync(id) ?? throw new KeyNotFoundException("The shelter could not be found.");
+    }
 
     /// <summary>
     /// Validates input parameters for shelter creation, ensuring all required data is present and properly formatted.
