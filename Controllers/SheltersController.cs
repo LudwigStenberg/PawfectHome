@@ -52,26 +52,23 @@ public class SheltersController : ControllerBase
         }
     }
 
+
     [HttpGet("{id}")]
-    [Authorize]
     public async Task<IActionResult> GetShelter(int id)
     {
         try
         {
-            string? userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            if (string.IsNullOrEmpty(userId))
-            {
-                return Unauthorized();
-            }
-
             var response = await shelterService.GetShelterAsync(id);
 
             return Ok(response);
         }
-        catch (System.Exception)
+        catch (KeyNotFoundException ex)
         {
-
-            throw;
+            return NotFound(ex.Message);
+        }
+        catch (Exception)
+        {
+            return StatusCode(500, "An error occurred while processing your request");
         }
     }
 
