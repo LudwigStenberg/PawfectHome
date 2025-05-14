@@ -11,6 +11,10 @@ public class PetRepository : IPetRepository
 
     public async Task<PetEntity> FetchPetAsync(int id)
     {
-        return await appDbContext.Pets.FirstOrDefaultAsync(p => p.Id == id);
+        var pet = await appDbContext
+            .Pets.Include(p => p.Shelter)
+            .FirstOrDefaultAsync(p => p.Id == id);
+
+        return pet;
     }
 }
