@@ -13,6 +13,11 @@ public class PetsController : ControllerBase
         this.petService = petService;
     }
 
+    /// <summary>
+    /// Get pet by id.
+    /// </summary>
+    /// <param name="id"> Unique identifier of the pet id.</param>
+    /// <returns>The pet if found otherwise </returns>
     [HttpGet("{id}")]
     public async Task<IActionResult> GetPet(int id)
     {
@@ -20,13 +25,11 @@ public class PetsController : ControllerBase
         {
             var pet = await petService.GetPetAsync(id);
 
-
-            if (pet == null)
-            {
-                return NotFound($"Pet not found");
-            }
-
             return Ok(pet);
+        }
+        catch (KeyNotFoundException ex)
+        {
+            return NotFound(ex.Message);
         }
         catch (Exception)
         {
