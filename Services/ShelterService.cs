@@ -19,7 +19,7 @@ public class ShelterService : IShelterService
 
 
     /// <summary>
-    /// Registers a new shelter for a user in the system. Enforces the business rule that a user 
+    /// Asyncronously registers a new shelter for a user in the system. Enforces the business rule that a user 
     /// can only have one shelter at a time. Additionally, assigns the user with a new role: "ShelterOwner" in a non-atomic operation.
     /// </summary>
     /// <param name="userId">The ID of the user that has requested the shelter registration.</param>
@@ -85,15 +85,25 @@ public class ShelterService : IShelterService
     }
 
 
-
+    /// <summary>
+    /// Asynchronously retrieves information about a shelter based on the shelter ID provided. Also includes a collection of pets associated with that shelter.
+    /// </summary>
+    /// <param name="id">The ID of the shelter that is used in the retrieval request.</param>
+    /// <returns>A ShelterResponse DTO which includes basic information about the shelter in addition to a list of PetResponses associated with it.</returns>
+    /// <exception cref="KeyNotFoundException">Thrown when the shelter cannot be found.</exception>
     public async Task<ShelterResponse> GetShelterAsync(int id)
     {
+        logger.LogInformation("Starting retrieval of shelter information for shelter with ID: {ShelterId}.", id);
+
         var shelter = await shelterRepository.FetchShelterByIdAsync(id);
 
         if (shelter is null)
         {
+            logger.LogWarning("Shelter with ID: {ShelterId} could not be found.", id);
             throw new KeyNotFoundException($"Shelter with ID {id} could not be found.");
         }
+
+        logger.LogDebug("Successfully retrieved shelter '{ShelterName}' (ID: {ShelterId}) with {PetCount} pets.", shelter.Name, id, shelter.Pets.Count);
 
         return new ShelterResponse()
         {
@@ -113,7 +123,6 @@ public class ShelterService : IShelterService
             }).ToList()
         };
     }
-
 
 
     /// <summary>
