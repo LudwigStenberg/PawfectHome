@@ -68,11 +68,6 @@ public class SheltersController : ControllerBase
             return NotFound(ex.Message);
         }
         catch (Exception)
-        catch (KeyNotFoundException ex)
-        {
-            return NotFound(ex.Message);
-        }
-        catch (Exception)
         {
             return StatusCode(500, "An error occurred while processing your request");
         }
