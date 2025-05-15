@@ -6,11 +6,10 @@ using Microsoft.EntityFrameworkCore;
 
 [ApiController]
 [Route("[controller]")]
-
 public class SheltersController : ControllerBase
 {
-
     private readonly IShelterService shelterService;
+
     public SheltersController(IShelterService shelterService)
     {
         this.shelterService = shelterService;

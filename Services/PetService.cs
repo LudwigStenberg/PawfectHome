@@ -3,15 +3,15 @@ using Microsoft.EntityFrameworkCore;
 public class PetService : IPetService
 {
     private readonly AppDbContext dbContext;
+    private readonly ILogger<IPetService> logger;
     private readonly IPetRepository petRepository;
     private readonly ModelValidator modelValidator;
-    private readonly ILogger<IPetService> logger;
 
     public PetService(
-        AppDbContext appdbContext,
         IPetRepository petRepository,
-        ModelValidator modelValidator,
-        ILogger<IPetService> logger
+        ILogger<IPetService> logger,
+        AppDbContext appdbContext,
+        ModelValidator modelValidator
     )
     {
         dbContext = appdbContext;
@@ -20,15 +20,48 @@ public class PetService : IPetService
         this.logger = logger;
     }
 
-    public async Task<PetEntity> GetPetAsync(int id)
+    /// <summary>
+    /// Retrieves a pet from the database by its ID, or throws an exception if not found.
+    /// </summary>
+    /// <param name="id">unique identifier of specific pet to be retrieved.</param>
+    /// <returns>the task result contains the pet entity</returns>
+    /// <exception cref="KeyNotFoundException"> Throw when no pet with the specified id is found.</exception>
+
+    public async Task<GetPetResponse> GetPetAsync(int id)
     {
-        var pet = await dbContext.Pets.FirstOrDefaultAsync(p => p.Id == id);
+        var pet = await petRepository.FetchPetAsync(id);
 
         if (pet == null)
         {
+            logger.LogWarning("Pet with id {petId} was not found", id);
             throw new KeyNotFoundException("Pet not found");
         }
-        return pet;
+
+        var response = new GetPetResponse
+        {
+            Id = pet.Id,
+            Name = pet.Name,
+            Birthdate = pet.Birthdate,
+            Gender = pet.Gender,
+            Species = pet.Species,
+            Breed = pet.Breed,
+            Description = pet.Description,
+            ImageURL = pet.ImageURL,
+            IsNeutured = pet.IsNeutered,
+            HasPedigree = pet.HasPedigree,
+            ShelterId = pet.ShelterId,
+        };
+        if (pet.Shelter != null)
+        {
+            response.Shelter = new ShelterSummary
+            {
+                Id = pet.Shelter.Id,
+                Name = pet.Shelter.Name ?? "Unknown",
+                Description = pet.Shelter.Description ?? "No description",
+                Email = pet.Shelter.Email ?? "noemail@example.com",
+            };
+        }
+        return response;
     }
 
     public async Task<RegisterPetResponse> RegisterPetAsync(RegisterPetRequest request)

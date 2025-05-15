@@ -9,6 +9,11 @@ public class PetRepository : IPetRepository
         appDbContext = dbContext;
     }
 
+    public Task<PetEntity> CreatePetAsync()
+    {
+        throw new NotImplementedException();
+    }
+
     public async Task<PetEntity> FetchPetAsync(int id)
     {
         var pet = await appDbContext
