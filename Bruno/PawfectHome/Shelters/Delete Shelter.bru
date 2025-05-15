@@ -1,10 +1,10 @@
 meta {
-  name: Get Shelter
+  name: Delete Shelter
   type: http
-  seq: 2
+  seq: 5
 }
 
-get {
+delete {
   url: http://localhost:5245/Shelters/:id
   body: none
   auth: inherit
@@ -12,4 +12,8 @@ get {
 
 params:path {
   id: 4
+}
+
+headers {
+  Authorization: Bearer
 }

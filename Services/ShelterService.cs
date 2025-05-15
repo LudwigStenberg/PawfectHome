@@ -174,7 +174,7 @@ public class ShelterService : IShelterService
     /// <exception cref="UnauthorizedAccessException">Thrown when the retrieved shelter's UserId does not match the userId method parameter.</exception>
     public async Task<ShelterDetailResponse> UpdateShelterAsync(int id, string userId, ShelterUpdateRequest request)
     {
-        logger.LogInformation("Starting update for shelter with ID: {ShelterId} belonging to the user with ID: {UserId}.", id, userId);
+        logger.LogInformation("Starting update for shelter with ID: {ShelterId}. Update request made by user ID: {RequestingUserId}", id, userId);
         var existingShelter = await shelterRepository.FetchShelterByIdAsync(id);
         if (existingShelter == null)
         {
@@ -228,6 +228,98 @@ public class ShelterService : IShelterService
                 Species = pet.Species
             }).ToList()
         };
+    }
+
+    /// <summary>
+    ///  Removes a shelter based on the shelter ID passed as an argument. Retrieves the shelter entity to make sure 
+    ///  that the shelter belongs to the user ID which is also passed as an argument. After the deletion of a shelter
+    ///  the user's role 'ShelterOwner' will be unassigned.
+    /// </summary>
+    /// <param name="id">The ID of the shelter resource to be deleted.</param>
+    /// <param name="userId">The ID of the user requesting the deletion.</param>
+    /// <returns>Returns a Task representing the asynchronous operation. No data is returned upon completion.</returns>
+    /// <exception cref="KeyNotFoundException">Thrown when the retrieved shelter is null. The shelter could not be found.</exception>
+    /// <exception cref="UnauthorizedAccessException">Thrown when the User ID associated with the shelter does not match the user ID that was passed in.</exception>
+    /// <remarks>
+    /// This method will trigger cascade deletion of all pets associated with the shelter due to database configuration.
+    /// However, adoption applications related to those pets will remain in the database to preserve historical data.
+    /// The method performs ownership verification before deletion to ensure users can only delete their own shelters.
+    /// </remarks>
+    public async Task RemoveShelterAsync(int id, string userId)
+    {
+        logger.LogInformation("Starting deletion of shelter with ID: {ShelterId}. Deletion request made by user ID: {RequestingUserId}", id, userId);
+
+        var shelter = await shelterRepository.FetchShelterByIdAsync(id);
+        if (shelter == null)
+        {
+            logger.LogWarning("The shelter with ID: {ShelterId} could not be found", id);
+            throw new KeyNotFoundException($"The shelter with ID: {id} could not be found.");
+        }
+
+        if (shelter.UserId != userId)
+        {
+            logger.LogWarning("Authorization failure: User {RequestingUserId} attempted to delete shelter {ShelterId} owned by user {UserId}", userId, id, shelter.UserId);
+            throw new UnauthorizedAccessException("You do not have permission to delete this shelter.");
+        }
+
+        logger.LogDebug("Deleting shelter {ShelterId} with {PetCount} associated pets.", id, shelter.Pets.Count);
+
+        await shelterRepository.DeleteShelterAsync(shelter);
+
+        logger.LogDebug("Successfully deleted shelter with ID: {ShelterId} belonging to user {UserId}.", id, userId);
+
+        await TryRemoveShelterOwnerRoleAsync(userId);
+    }
+
+    #region Helper Methods
+
+    /// <summary>
+    ///  Attempts to remove the ShelterOwner role from a user with retry capability.
+    /// </summary>
+    /// <param name="userId">The ID of the user from whom to remove the ShelterOwner role.</param>
+    /// <remarks>
+    /// This method will attempt to remove the role 3 times, exponentially increasing the delay (ms) 
+    /// between each try. The operation is considered complete if any attempt succeeds or after all retry attempts
+    /// have been exhausted.
+    /// </remarks>
+    private async Task TryRemoveShelterOwnerRoleAsync(string userId)
+    {
+        var user = await userManager.FindByIdAsync(userId);
+        if (user == null)
+        {
+            logger.LogWarning("Could not find user with ID: {UserId} to remove ShelterOwner role", userId);
+            return;
+        }
+
+        const int maxRetries = 3;
+        bool roleRemoved = false;
+        int attempt = 0;
+
+        while (!roleRemoved && attempt < maxRetries)
+        {
+            attempt++;
+            logger.LogDebug("Attempt {Attempt} to remove 'ShelterOwner' role from user {UserId}", attempt, userId);
+
+            var roleResult = await userManager.RemoveFromRoleAsync(user, "ShelterOwner");
+            roleRemoved = roleResult.Succeeded;
+
+            if (roleRemoved)
+            {
+                logger.LogDebug("Successfully removed 'ShelterOwner' role from user {UserId}", userId);
+                return;
+            }
+
+            if (attempt < maxRetries)
+            {
+                int delayMilliseconds = 100 * (int)Math.Pow(2, attempt - 1);
+                logger.LogWarning("Failed to remove ShelterOwner role. Retrying in {Delay}ms...", delayMilliseconds);
+                await Task.Delay(delayMilliseconds);
+            }
+            else
+            {
+                logger.LogError("All attempts to remove ShelterOwner role from user {UserId} failed", userId);
+            }
+        }
     }
 
     /// <summary>
@@ -295,4 +387,6 @@ public class ShelterService : IShelterService
             );
         }
     }
+
+    #endregion
 }
