@@ -1,3 +1,5 @@
+using System.ComponentModel.DataAnnotations;
+using System.Globalization;
 using Microsoft.EntityFrameworkCore;
 
 public class PetService : IPetService
@@ -33,17 +35,34 @@ public class PetService : IPetService
 
     public async Task<RegisterPetResponse> RegisterPetAsync(RegisterPetRequest request)
     {
-        logger.LogInformation("Validatin RegisterPetRequest for registration");
+        logger.LogInformation("Validating RegisterPetRequest for registration");
         modelValidator.ValidateModel(request);
 
         var shelterExists = await dbContext.Shelters.AnyAsync(s => s.Id == request.ShelterId);
         if (!shelterExists)
+        {
             throw new KeyNotFoundException($"No shelter found with ID {request.ShelterId}.");
+        }
+
+        if (!DateTime.TryParseExact(request.Birthdate, "yyyy-MM-dd", null, DateTimeStyles.AssumeUniversal, out DateTime parsedBirthdate))
+        {
+        
+            var errors = new List<ValidationResult>
+            {
+                new ValidationResult("Invalid birthdate format. Please use 'yyyy-MM-dd'.", new[] { "Birthdate" })
+            };
+
+            throw ValidationFailedException.FromValidationResults(errors);
+        }
+        DateTime utcBirthdate =
+            parsedBirthdate.Kind == DateTimeKind.Utc
+                ? parsedBirthdate
+                : parsedBirthdate.ToUniversalTime();
 
         var petEntity = new PetEntity
         {
             Name = request.Name,
-            Birthdate = request.Birthdate,
+            Birthdate = utcBirthdate,
             Gender = request.Gender,
             Species = request.Species,
             Breed = request.Breed,
