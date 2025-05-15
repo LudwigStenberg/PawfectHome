@@ -277,7 +277,7 @@ public class ShelterService : IShelterService
     /// <summary>
     ///  Attempts to remove the ShelterOwner role from a user with retry capability.
     /// </summary>
-    /// <param name="userId">The ID of hte user from whom to remove the ShelterOwner role.</param>
+    /// <param name="userId">The ID of the user from whom to remove the ShelterOwner role.</param>
     /// <remarks>
     /// This method will attempt to remove the role 3 times, exponentially increasing the delay (ms) 
     /// between each try. The operation is considered complete if any attempt succeeds or after all retry attempts
