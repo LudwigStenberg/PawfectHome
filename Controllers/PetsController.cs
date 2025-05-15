@@ -15,8 +15,8 @@ public class PetsController : ControllerBase
         this.logger = logger;
     }
 
-    // [Authorize]
     [HttpPost]
+    [Authorize(Roles = "ShelterOwner")]
     public async Task<IActionResult> CreatePet([FromBody] RegisterPetRequest request)
     {
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -28,8 +28,7 @@ public class PetsController : ControllerBase
                 result.Id,
                 userId
             );
-            return Ok();
-            // return CreatedAtAction(nameof(GetPet), new { id = result.Id }, result);
+            return CreatedAtAction(nameof(GetPet), new { id = result.Id }, result);
         }
         catch (ValidationFailedException ex)
         {
