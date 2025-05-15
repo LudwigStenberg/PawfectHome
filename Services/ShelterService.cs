@@ -271,7 +271,6 @@ public class ShelterService : IShelterService
         await TryRemoveShelterOwnerRoleAsync(userId);
     }
 
-
     #region Helper Methods
 
     /// <summary>

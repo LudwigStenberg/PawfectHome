@@ -5,11 +5,15 @@ meta {
 }
 
 delete {
-  url: http://localhost:5245/Shelters/id
+  url: http://localhost:5245/Shelters/:id
   body: none
   auth: inherit
 }
 
+params:path {
+  id: 4
+}
+
 headers {
-  Authorization: Bearer CfDJ8IStIIiZE3ZCj5swAoPWQOWjgiJ6N__USrT3C12i13ac44nzhdnmnWJfUM58ybeq6p5Qfq-OrORba5cryqpdSsJjfhXrQ55nf18PN9FL_fmCJFwkzvLWgiKgwwUmmu99YgHEUEV4_WXBj6jAsUPPgevDuRJKbAoiZbPs1MAncQegZgLqxOV2Sgwks16eKI20bAqzQT_0qCilRHtRnniFlJwOjcFIJbdSNq3gdSuEoT5XwXM3sr1ap8RybcdxldF-2rf7EixviNI_odcgq2VOU_vTqrRgJ7ZqP8cjebG9snGWYaiMa-1fODKeRGDSO27yEwerY5r5FzUArjqGlhyOEKtUAsepwSqH4VfSERLJl3C38lux9dymwwS8Ot0WHeoCpEqu3cqFDo67X1_StMfFaik3C9hrJDYXAPaLFgdH-IdNBlnyzrNUNi77zZ9Ic8Zom9gJ65cgWLxPtUqxmkbrJ7NHmtj9Bgk8aLJzWwwAOlBWL-02G4fHwNMiFOvxBwJtdR9-en2eEpNK-s1b6OmbPgL1YD97WAHwvaME-m-1cOLaxq3PUfi2b4ksOk_w_eshWQ9d8gjSZAcoapPQXmlTaqAmNGkq-UIp0G4avzRy1Icbt65yVPBWhh-UEWr7TsPfDsCGRPKep13vvxCepf0xuzbvj_zAgKtQrrkcRSiivreYKWLJjtnsVybSV2D8fTTJlJJW_KGg3lDBxsqHY5IyAyts05v3Y2xlLRBtPM3IME3C9Vmjfw9lcs5Pt49Bs3Okzd7v6Pr9Sb6E_oe6_7dxGJxyd7PRMGwOWAtOw1G9m-yz
+  Authorization: Bearer
 }
