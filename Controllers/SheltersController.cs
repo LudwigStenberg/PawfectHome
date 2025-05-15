@@ -10,7 +10,7 @@ public class SheltersController : ControllerBase
 {
     private readonly IShelterService shelterService;
 
-    public SheltersController(IShelterService shelterService, ILogger<SheltersController> logger)
+    public SheltersController(IShelterService shelterService)
     {
         this.shelterService = shelterService;
     }
