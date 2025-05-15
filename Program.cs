@@ -1,6 +1,6 @@
+
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Migrations.Operations;
 using Scalar.AspNetCore;
 
 namespace PawfectHome;
@@ -11,59 +11,37 @@ public class Program
     {
         var builder = WebApplication.CreateBuilder(args);
 
-        builder.Services.AddScoped<IShelterRepository, ShelterRepository>();
-        builder.Services.AddScoped<IShelterService, ShelterService>();
-        builder.Services.AddScoped<ModelValidator>();
-        builder.Services.AddLogging();
-        builder.Services.AddOpenApi();
+        // Add services to the container.
         builder.Services.AddControllers();
-        builder.Services.AddAuthorization(options =>
-        {
-            options.AddPolicy("CanDeleteShelter", policy => policy.RequireRole("ShelterOwner"));
-        });
+        // builder.Services.AddAuthentication()
+        // .AddBearerToken(IdentityConstants.BearerScheme);
+        builder.Services.AddAuthorization();
+        builder.Services.AddOpenApi();
 
-        builder
-            .Services.AddIdentityApiEndpoints<UserEntity>()
-            .AddRoles<IdentityRole>()
-            .AddEntityFrameworkStores<AppDbContext>()
-            .AddDefaultTokenProviders();
+        builder.Services.AddIdentityApiEndpoints<UserEntity>()
+                .AddEntityFrameworkStores<AppDbContext>()
+                .AddDefaultTokenProviders();
 
         builder.Services.AddDbContext<AppDbContext>(options =>
-            options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"))
-        );
+            options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 
         // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
-        builder.Services.AddScoped<IPetService, PetService>();
-        builder.Services.AddScoped<IPetRepository, PetRepository>();
 
         var app = builder.Build();
 
-        using (var scope = app.Services.CreateScope())
-        {
-            using var roleManager = scope.ServiceProvider.GetRequiredService<
-                RoleManager<IdentityRole>
-            >();
-
-            if (!roleManager.RoleExistsAsync("ShelterOwner").Result)
-            {
-                var role = new IdentityRole("ShelterOwner");
-                var result = roleManager.CreateAsync(role).Result;
-            }
-        }
-
         app.MapOpenApi();
+        // app.MapScalarApiEndpoints();
 
+        // Configure the HTTP request pipeline.
         if (app.Environment.IsDevelopment())
         {
             app.MapScalarApiReference();
         }
-
         app.MapIdentityApi<UserEntity>();
         app.UseHttpsRedirection();
         app.UseAuthentication();
         app.UseAuthorization();
         app.MapControllers();
-
         app.Run();
     }
 }
