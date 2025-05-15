@@ -273,6 +273,16 @@ public class ShelterService : IShelterService
 
 
     #region Helper Methods
+
+    /// <summary>
+    ///  Attempts to remove the ShelterOwner role from a user with retry capability.
+    /// </summary>
+    /// <param name="userId">The ID of hte user from whom to remove the ShelterOwner role.</param>
+    /// <remarks>
+    /// This method will attempt to remove the role 3 times, exponentially increasing the delay (ms) 
+    /// between each try. The operation is considered complete if any attempt succeeds or after all retry attempts
+    /// have been exhausted.
+    /// </remarks>
     private async Task TryRemoveShelterOwnerRoleAsync(string userId)
     {
         var user = await userManager.FindByIdAsync(userId);
@@ -312,8 +322,6 @@ public class ShelterService : IShelterService
             }
         }
     }
-
-
 
     /// <summary>
     /// Validates input parameters for shelter creation, ensuring all required data is present and properly formatted.
