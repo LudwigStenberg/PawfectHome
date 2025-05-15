@@ -65,6 +65,10 @@ public class AppDbContext : IdentityDbContext<UserEntity>
             entity.HasOne(s => s.User)
                 .WithOne(u => u.Shelter)
                 .HasForeignKey<ShelterEntity>(s => s.UserId);
+            entity.HasMany(s => s.Pets)
+            .WithOne(p => p.Shelter)
+            .HasForeignKey(p => p.ShelterId)
+            .OnDelete(DeleteBehavior.Cascade);
         });
 
         builder.Entity<UserEntity>(entity =>
