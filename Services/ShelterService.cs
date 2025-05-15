@@ -172,14 +172,9 @@ public class ShelterService : IShelterService
     /// <returns>A ShelterDetailResponse DTO containing Id, Name, Description, Email, UserId and a list of Pets.</returns>
     /// <exception cref="KeyNotFoundException">Thrown when FetchShelterById method fails and the shelter cannot be found.</exception>
     /// <exception cref="UnauthorizedAccessException">Thrown when the retrieved shelter's UserId does not match the userId method parameter.</exception>
-    /// <remarks>
-    /// This method will trigger cascade deletion of all pets associated with the shelter due to database configuration.
-    /// However, adoption applications related to those pets will remain in the database to preserve historical data.
-    /// The method performs ownership verification before deletion to ensure users can only delete their own shelters.
-    /// </remarks>
     public async Task<ShelterDetailResponse> UpdateShelterAsync(int id, string userId, ShelterUpdateRequest request)
     {
-        logger.LogInformation("Starting update for shelter with ID: {ShelterId} belonging to the user with ID: {UserId}.", id, userId);
+        logger.LogInformation("Starting update for shelter with ID: {ShelterId}. Update request made by user ID: {RequestingUserId}", id, userId);
         var existingShelter = await shelterRepository.FetchShelterByIdAsync(id);
         if (existingShelter == null)
         {
@@ -244,22 +239,32 @@ public class ShelterService : IShelterService
     /// <returns>Returns a Task representing the asynchronous operation. No data is returned upon completion.</returns>
     /// <exception cref="KeyNotFoundException">Thrown when the retrieved shelter is null. The shelter could not be found.</exception>
     /// <exception cref="UnauthorizedAccessException">Thrown when the User ID associated with the shelter does not match the user ID that was passed in.</exception>
+    /// <remarks>
+    /// This method will trigger cascade deletion of all pets associated with the shelter due to database configuration.
+    /// However, adoption applications related to those pets will remain in the database to preserve historical data.
+    /// The method performs ownership verification before deletion to ensure users can only delete their own shelters.
+    /// </remarks>
     public async Task RemoveShelterAsync(int id, string userId)
     {
+        logger.LogInformation("Starting deletion of shelter with ID: {ShelterId}. Deletion request made by user ID: {RequestingUserId}", id, userId);
+
         var shelter = await shelterRepository.FetchShelterByIdAsync(id);
         if (shelter == null)
         {
+            logger.LogWarning("The shelter with ID: {ShelterId} could not be found", id);
             throw new KeyNotFoundException($"The shelter with ID: {id} could not be found.");
         }
 
         if (shelter.UserId != userId)
         {
+            logger.LogWarning("Authorization failure: User {RequestingUserId} attempted to delete shelter {ShelterId} owned by user {UserId}", userId, id, shelter.UserId);
             throw new UnauthorizedAccessException("You do not have permission to delete this shelter.");
         }
 
-        // await shelterRepository.RemoveShelterAsync(id);
+        logger.LogDebug("Deleting shelter {ShelterId} with {PetCount} associated pets.", id, shelter.Pets.Count);
 
-
+        await shelterRepository.RemoveShelterAsync(shelter);
+        logger.LogDebug("Successfully deleted shelter with ID: {ShelterId} belonging to user {UserId}.", id, userId);
     }
 
     /// <summary>
