@@ -20,6 +20,10 @@ public class PetService : IPetService
         this.logger = logger;
     }
 
+    /// <summary>
+    /// Retrieves all pets from database
+    /// </summary>
+    /// <returns> A collection of pets</returns>
     public async Task<IEnumerable<GetPetResponse>> GetAllPetsAsync()
     {
         logger.LogInformation("Retrieveing all pets");
