@@ -60,30 +60,7 @@ public class ShelterService : IShelterService
         );
 
         var createdShelter = await shelterRepository.CreateShelterAsync(newShelter);
-
-        var user = await userManager.FindByIdAsync(userId);
-        if (user != null)
-        {
-            logger.LogInformation("Assigning ShelterOwner role to user {UserId}.", userId);
-            var roleResult = await userManager.AddToRoleAsync(user, "ShelterOwner");
-
-            if (!roleResult.Succeeded)
-            {
-                var errorMessage = string.Join(", ", roleResult.Errors.Select(e => e.Description));
-                logger.LogWarning(
-                    "Failed to assign ShelterOwner role to user {UserId}. Errors: {Errors}",
-                    userId,
-                    errorMessage
-                );
-            }
-        }
-        else
-        {
-            logger.LogWarning(
-                "User {UserId} not found when trying to assign ShelterOwner role.",
-                userId
-            );
-        }
+        await AssignShelterOwnerRoleAsync(userId);
 
         var response = new RegisterShelterDetailResponse
         {
@@ -274,6 +251,42 @@ public class ShelterService : IShelterService
     }
 
     #region Helper Methods
+
+    /// <summary>
+    /// Assigns the "ShelterOwner" role to a specified user.
+    /// </summary>
+    /// <param name="userId">The ID of the user to assign the role to.</param>
+    /// <returns>A task representing the asynchronous operation.</returns>
+    /// <remarks>
+    /// This method will log a warning if the user is not found or if the role assignment fails,
+    /// but it will not throw exceptions. This allows the shelter registration process to complete
+    /// even if role assignment fails.
+    /// </remarks>
+    private async Task AssignShelterOwnerRoleAsync(string userId)
+    {
+        var user = await userManager.FindByIdAsync(userId);
+        if (user != null)
+        {
+            logger.LogInformation("Assigning ShelterOwner role to user {UserId}.", userId);
+            var roleResult = await userManager.AddToRoleAsync(user, "ShelterOwner");
+            if (!roleResult.Succeeded)
+            {
+                var errorMessage = string.Join(", ", roleResult.Errors.Select(e => e.Description));
+                logger.LogWarning(
+                    "Failed to assign ShelterOwner role to user {UserId}. Errors: {Errors}",
+                    userId,
+                    errorMessage
+                );
+            }
+        }
+        else
+        {
+            logger.LogWarning(
+                "User {UserId} not found when trying to assign ShelterOwner role.",
+                userId
+            );
+        }
+    }
 
     /// <summary>
     ///  Attempts to remove the ShelterOwner role from a user with retry capability.
