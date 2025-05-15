@@ -39,6 +39,32 @@ public class PetsController : ControllerBase
         }
     }
 
+    /// <summary>
+    /// Get all pets
+    /// </summary>
+    /// <param name="request"></param>
+    /// <returns> List of all pets</returns>
+    [HttpGet]
+    public async Task<IActionResult> GetAllPets()
+    {
+        try
+        {
+            var pets = await petService.GetAllPetsAsync();
+
+            return Ok(pets);
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(
+                ex,
+                "Unexpected error retrieving all pets. Message: {Message}",
+                ex.Message
+            );
+
+            return StatusCode(500);
+        }
+    }
+
     [Authorize]
     [HttpPost]
     public async Task<IActionResult> CreatePet(RegisterPetRequest request)
