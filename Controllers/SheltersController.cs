@@ -116,7 +116,7 @@ public class SheltersController : ControllerBase
         }
         catch (Exception)
         {
-            return StatusCode(500, "An error occurred while processing your request.");
+            return StatusCode(500, "An unexpected error occurred while processing your request.");
         }
     }
 
@@ -132,7 +132,7 @@ public class SheltersController : ControllerBase
                 return Unauthorized();
             }
 
-            // var response = await shelterService.RemoveShelterAsync(id, userId);
+            // await shelterService.RemoveShelterAsync(id, userId);
 
             return NoContent();
         }
@@ -146,8 +146,7 @@ public class SheltersController : ControllerBase
         }
         catch (Exception)
         {
-
-            throw;
+            return StatusCode(500, "An unexpected error occurred while processing your request.");
         }
     }
 }
