@@ -132,7 +132,7 @@ public class SheltersController : ControllerBase
                 return Unauthorized();
             }
 
-            var response = shelterService.RemoveShelterAsync(id, userId);
+            // var response = await shelterService.RemoveShelterAsync(id, userId);
 
             return NoContent();
         }
@@ -149,8 +149,5 @@ public class SheltersController : ControllerBase
 
             throw;
         }
-
-
-
     }
 }
