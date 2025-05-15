@@ -232,7 +232,8 @@ public class ShelterService : IShelterService
 
     /// <summary>
     ///  Removes a shelter based on the shelter ID passed as an argument. Retrieves the shelter entity to make sure 
-    ///  that the shelter belongs to the user ID which is also passed as an argument.
+    ///  that the shelter belongs to the user ID which is also passed as an argument. After the deletion of a shelter
+    ///  the user's role 'ShelterOwner' will be unassigned.
     /// </summary>
     /// <param name="id">The ID of the shelter resource to be deleted.</param>
     /// <param name="userId">The ID of the user requesting the deletion.</param>
@@ -264,8 +265,55 @@ public class ShelterService : IShelterService
         logger.LogDebug("Deleting shelter {ShelterId} with {PetCount} associated pets.", id, shelter.Pets.Count);
 
         await shelterRepository.DeleteShelterAsync(shelter);
+
         logger.LogDebug("Successfully deleted shelter with ID: {ShelterId} belonging to user {UserId}.", id, userId);
+
+        await TryRemoveShelterOwnerRoleAsync(userId);
     }
+
+
+    #region Helper Methods
+    private async Task TryRemoveShelterOwnerRoleAsync(string userId)
+    {
+        var user = await userManager.FindByIdAsync(userId);
+        if (user == null)
+        {
+            logger.LogWarning("Could not find user with ID: {UserId} to remove ShelterOwner role", userId);
+            return;
+        }
+
+        const int maxRetries = 3;
+        bool roleRemoved = false;
+        int attempt = 0;
+
+        while (!roleRemoved && attempt < maxRetries)
+        {
+            attempt++;
+            logger.LogDebug("Attempt {Attempt} to remove 'ShelterOwner' role from user {UserId}", attempt, userId);
+
+            var roleResult = await userManager.RemoveFromRoleAsync(user, "ShelterOwner");
+            roleRemoved = roleResult.Succeeded;
+
+            if (roleRemoved)
+            {
+                logger.LogDebug("Successfully removed 'ShelterOwner' role from user {UserId}", userId);
+                return;
+            }
+
+            if (attempt < maxRetries)
+            {
+                int delayMilliseconds = 100 * (int)Math.Pow(2, attempt - 1);
+                logger.LogWarning("Failed to remove ShelterOwner role. Retrying in {Delay}ms...", delayMilliseconds);
+                await Task.Delay(delayMilliseconds);
+            }
+            else
+            {
+                logger.LogError("All attempts to remove ShelterOwner role from user {UserId} failed", userId);
+            }
+        }
+    }
+
+
 
     /// <summary>
     /// Validates input parameters for shelter creation, ensuring all required data is present and properly formatted.
@@ -332,4 +380,6 @@ public class ShelterService : IShelterService
             );
         }
     }
+
+    #endregion
 }
