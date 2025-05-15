@@ -22,4 +22,11 @@ public class PetRepository : IPetRepository
 
         return pet;
     }
+
+    public async Task<PetEntity> CreatePetAsync(PetEntity petEntity)
+    {
+        await appDbContext.Pets.AddAsync(petEntity);
+        await appDbContext.SaveChangesAsync();
+        return petEntity;
+    }
 }

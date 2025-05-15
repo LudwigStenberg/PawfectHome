@@ -1,21 +1,22 @@
-using System.ComponentModel.DataAnnotations;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
 public class PetService : IPetService
 {
     private readonly AppDbContext dbContext;
-    private readonly ILogger<PetService> logger;
+    private readonly ILogger<IPetService> logger;
     private readonly IPetRepository petRepository;
+    private readonly ModelValidator modelValidator;
 
     public PetService(
         IPetRepository petRepository,
-        ILogger<PetService> logger,
-        AppDbContext appdbContext
+        ILogger<IPetService> logger,
+        AppDbContext appdbContext,
+        ModelValidator modelValidator
     )
     {
         dbContext = appdbContext;
         this.petRepository = petRepository;
+        this.modelValidator = modelValidator;
         this.logger = logger;
     }
 
@@ -40,17 +41,16 @@ public class PetService : IPetService
         {
             Id = pet.Id,
             Name = pet.Name,
-            Age = pet.Age,
+            Birthdate = pet.Birthdate,
             Gender = pet.Gender,
             Species = pet.Species,
             Breed = pet.Breed,
             Description = pet.Description,
             ImageURL = pet.ImageURL,
-            IsNeutured = pet.IsNeutured,
+            IsNeutured = pet.IsNeutered,
             HasPedigree = pet.HasPedigree,
             ShelterId = pet.ShelterId,
         };
-
         if (pet.Shelter != null)
         {
             response.Shelter = new ShelterSummary
@@ -66,6 +66,9 @@ public class PetService : IPetService
 
     public async Task<RegisterPetResponse> RegisterPetAsync(RegisterPetRequest request)
     {
+        logger.LogInformation("Validatin RegisterPetRequest for registration");
+        modelValidator.ValidateModel(request);
+
         var shelterExists = await dbContext.Shelters.AnyAsync(s => s.Id == request.ShelterId);
         if (!shelterExists)
             throw new KeyNotFoundException($"No shelter found with ID {request.ShelterId}.");
@@ -73,34 +76,40 @@ public class PetService : IPetService
         var petEntity = new PetEntity
         {
             Name = request.Name,
-            Age = request.Age,
+            Birthdate = request.Birthdate,
             Gender = request.Gender,
             Species = request.Species,
             Breed = request.Breed,
             Description = request.Description,
             ImageURL = request.ImageURL,
-            IsNeutured = request.IsNeutured,
+            IsNeutered = request.IsNeutured,
             HasPedigree = request.HasPedigree,
             ShelterId = request.ShelterId,
         };
 
-        var createdPet = await petRepository.CreatePetAsync(petEntity);
+        var result = await petRepository.CreatePetAsync(petEntity);
 
         var response = new RegisterPetResponse
         {
-            Id = createdPet.Id,
-            Name = createdPet.Name,
-            Birthdate = createdPet.Birthdate,
-            Gender = createdPet.Gender,
-            Species = createdPet.Species,
-            Breed = createdPet.Breed,
-            Description = createdPet.Description,
-            ImageURL = createdPet.ImageURL,
-            IsNeutered = createdPet.IsNeutered,
-            HasPedigree = createdPet.HasPedigree,
-            ShelterId = createdPet.ShelterId,
+            Id = result.Id,
+            Name = result.Name,
+            Birthdate = result.Birthdate,
+            Gender = result.Gender,
+            Species = result.Species,
+            Breed = result.Breed,
+            Description = result.Description,
+            ImageURL = result.ImageURL,
+            IsNeutered = result.IsNeutered,
+            HasPedigree = result.HasPedigree,
+            ShelterId = result.ShelterId,
             CreatedAt = DateTime.UtcNow,
         };
+
+        logger.LogInformation(
+            "Pet successfully registered: {Name} for ShelterId: {ShelterId}.",
+            result.Name,
+            result.ShelterId
+        );
 
         return response;
     }

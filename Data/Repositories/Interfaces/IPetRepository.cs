@@ -2,5 +2,5 @@ public interface IPetRepository
 {
     Task<PetEntity> FetchPetAsync(int petId);
 
-    Task<PetEntity> CreatePetAsync();
+    public Task<PetEntity> CreatePetAsync(PetEntity petEntity);
 }
