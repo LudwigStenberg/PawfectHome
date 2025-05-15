@@ -52,7 +52,6 @@ public class SheltersController : ControllerBase
         }
     }
 
-
     [HttpGet("{id}")]
     public async Task<IActionResult> GetShelter(int id)
     {
@@ -88,4 +87,34 @@ public class SheltersController : ControllerBase
         }
     }
 
+    [HttpPut("{id}")]
+    [Authorize(Roles = "ShelterOwner")]
+    public async Task<IActionResult> UpdateShelter([FromRoute] int id, [FromBody] ShelterUpdateRequest request)
+    {
+        try
+        {
+            if (request.Id != 0 && request.Id != id)
+            {
+                return BadRequest("ID in the URL must match ID in the request body");
+            }
+
+            string? userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(userId))
+            {
+                return Unauthorized();
+            }
+
+            var response = await shelterService.UpdateShelterAsync(id, userId, request);
+            return Ok(response);
+        }
+        catch (KeyNotFoundException)
+        {
+            return NotFound();
+        }
+        catch (Exception)
+        {
+
+            return StatusCode(500, "An error occurred while processing your request.");
+        }
+    }
 }

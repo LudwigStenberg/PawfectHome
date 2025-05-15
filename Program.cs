@@ -18,7 +18,7 @@ public class Program
         builder.Services.AddControllers();
         builder.Services.AddAuthorization(options =>
         {
-            options.AddPolicy("CanDeleteShelter", policy => policy.RequireRole("ShelterOwner"));
+            options.AddPolicy("ShelterOwner", policy => policy.RequireRole("ShelterOwner"));
         });
 
         builder
