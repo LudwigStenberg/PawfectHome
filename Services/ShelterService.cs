@@ -263,7 +263,7 @@ public class ShelterService : IShelterService
 
         logger.LogDebug("Deleting shelter {ShelterId} with {PetCount} associated pets.", id, shelter.Pets.Count);
 
-        await shelterRepository.RemoveShelterAsync(shelter);
+        await shelterRepository.DeleteShelterAsync(shelter);
         logger.LogDebug("Successfully deleted shelter with ID: {ShelterId} belonging to user {UserId}.", id, userId);
     }
 
