@@ -172,6 +172,11 @@ public class ShelterService : IShelterService
     /// <returns>A ShelterDetailResponse DTO containing Id, Name, Description, Email, UserId and a list of Pets.</returns>
     /// <exception cref="KeyNotFoundException">Thrown when FetchShelterById method fails and the shelter cannot be found.</exception>
     /// <exception cref="UnauthorizedAccessException">Thrown when the retrieved shelter's UserId does not match the userId method parameter.</exception>
+    /// <remarks>
+    /// This method will trigger cascade deletion of all pets associated with the shelter due to database configuration.
+    /// However, adoption applications related to those pets will remain in the database to preserve historical data.
+    /// The method performs ownership verification before deletion to ensure users can only delete their own shelters.
+    /// </remarks>
     public async Task<ShelterDetailResponse> UpdateShelterAsync(int id, string userId, ShelterUpdateRequest request)
     {
         logger.LogInformation("Starting update for shelter with ID: {ShelterId} belonging to the user with ID: {UserId}.", id, userId);
@@ -230,6 +235,15 @@ public class ShelterService : IShelterService
         };
     }
 
+    /// <summary>
+    ///  Removes a shelter based on the shelter ID passed as an argument. Retrieves the shelter entity to make sure 
+    ///  that the shelter belongs to the user ID which is also passed as an argument.
+    /// </summary>
+    /// <param name="id">The ID of the shelter resource to be deleted.</param>
+    /// <param name="userId">The ID of the user requesting the deletion.</param>
+    /// <returns>Returns a Task representing the asynchronous operation. No data is returned upon completion.</returns>
+    /// <exception cref="KeyNotFoundException">Thrown when the retrieved shelter is null. The shelter could not be found.</exception>
+    /// <exception cref="UnauthorizedAccessException">Thrown when the User ID associated with the shelter does not match the user ID that was passed in.</exception>
     public async Task RemoveShelterAsync(int id, string userId)
     {
         var shelter = await shelterRepository.FetchShelterByIdAsync(id);
