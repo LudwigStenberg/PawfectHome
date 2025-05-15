@@ -55,7 +55,6 @@ public class PetService : IPetService
                         : null,
             })
             .ToList();
-
         return responses;
     }
 

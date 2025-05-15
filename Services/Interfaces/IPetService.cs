@@ -6,6 +6,4 @@ public interface IPetService
     Task<IEnumerable<GetPetResponse>> GetAllPetsAsync();
 
 
-
-
 }
