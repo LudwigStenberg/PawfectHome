@@ -24,6 +24,9 @@ public class Program
         builder.Services.AddDbContext<AppDbContext>(options =>
             options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 
+        builder.Services.AddScoped<IAdoptionService, AdoptionService>();
+        builder.Services.AddScoped<IAdoptionRepository, AdoptionRepository>();
+
         // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 
         var app = builder.Build();

@@ -1,3 +1,4 @@
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -9,19 +10,20 @@ public class AdoptionsController : ControllerBase
 
     private readonly IAdoptionService adoptionService;
 
-    public AdoptionsController(IAdoptionsService adoptionsService)
+    public AdoptionsController(IAdoptionService adoptionsService)
     {
         this.adoptionService = adoptionService;
     }
 
     [Authorize]
     [HttpPost]
-    public IActionResult CreateAdoptionApplication(RegisterAdoptionRequest request)
+    public async Task<IActionResult> CreateAdoptionApplication([FromBody] RegisterAdoptionRequest request)
     {
         try
         {
             var result = adoptionService.RegisterAdoptionApplicationAsync(request);
-            return CreatedAtAction(nameof(GetAdoptionApplication), new { id = result.Id }, result);
+            // return CreatedAtAction(nameof(GetAdoptionApplication), new { id = result.Id }, result);
+            return (IActionResult)result;
         }
 
         catch (Exception ex)

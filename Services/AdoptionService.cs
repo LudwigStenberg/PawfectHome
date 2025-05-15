@@ -18,17 +18,16 @@ public class AdoptionService : IAdoptionService
             PetId = request.PetId
         };
 
-        var createdAdoptionApplication = await adoptionRepository.RegisterAdoptionApplicationAsync(AdoptionApplicationEntity);
+        var createdAdoptionApplication = await adoptionRepository.CreateAdoptionAsync(AdoptionApplicationEntity);
 
         var response = new RegisterAdoptionResponse
         {
 
             Id = createdAdoptionApplication.Id,
-            CreatedDate = createdAdoptionApplication.DateTime.UtcNow,
-            AdoptionStatus = createdAdoptionApplication.AdoptionStatus.Pending,
+            CreatedDate = createdAdoptionApplication.CreatedDate,
+            AdoptionStatus = createdAdoptionApplication.AdoptionStatus,
         };
 
         return response;
     }
-
 }
