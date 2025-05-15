@@ -1,4 +1,3 @@
-
 public class ShelterEntity
 {
     public int Id { get; set; }

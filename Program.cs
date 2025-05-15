@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Migrations.Operations;
 using Scalar.AspNetCore;
 
 namespace PawfectHome;
@@ -20,7 +21,7 @@ public class Program
         builder.Services.AddControllers();
         builder.Services.AddAuthorization(options =>
         {
-            options.AddPolicy("CanDeleteShelter", policy => policy.RequireRole("ShelterOwner"));
+            options.AddPolicy("ShelterOwner", policy => policy.RequireRole("ShelterOwner"));
         });
 
         builder
@@ -32,6 +33,10 @@ public class Program
         builder.Services.AddDbContext<AppDbContext>(options =>
             options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"))
         );
+
+        // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
+        builder.Services.AddScoped<IPetService, PetService>();
+        builder.Services.AddScoped<IPetRepository, PetRepository>();
 
         var app = builder.Build();
 

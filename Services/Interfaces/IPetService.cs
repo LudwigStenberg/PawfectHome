@@ -1,5 +1,5 @@
 public interface IPetService
 {
-    Task<PetEntity> GetPetAsync(int id);
+    Task<GetPetResponse> GetPetAsync(int id);
     public Task<RegisterPetResponse> RegisterPetAsync(RegisterPetRequest request);
 }

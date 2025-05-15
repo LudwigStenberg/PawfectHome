@@ -15,9 +15,34 @@ public class PetsController : ControllerBase
         this.logger = logger;
     }
 
+    /// <summary>
+    /// Get pet by id.
+    /// </summary>
+    /// <param name="id"> Unique identifier of the pet id.</param>
+    /// <returns>The pet if found otherwise </returns>
+    [HttpGet("{id}")]
+    public async Task<IActionResult> GetPet(int id)
+    {
+        try
+        {
+            var pet = await petService.GetPetAsync(id);
+
+            return Ok(pet);
+        }
+        catch (KeyNotFoundException ex)
+        {
+            return NotFound(ex.Message);
+        }
+        catch (Exception)
+        {
+            return StatusCode(500, "Your pet is dead...bitch");
+        }
+    }
+    
     [HttpPost]
     [Authorize(Roles = "ShelterOwner")]
     public async Task<IActionResult> CreatePet([FromBody] RegisterPetRequest request)
+
     {
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
         try
@@ -51,7 +76,6 @@ public class PetsController : ControllerBase
                 ex.Message
             );
 
-            // 404 Not Found with a clear message
             return NotFound(new { Message = "The specified shelter could not be found."});
         }
         catch (Exception ex)

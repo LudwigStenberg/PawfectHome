@@ -1,7 +1,7 @@
 
 using System.ComponentModel.DataAnnotations;
 
-public class CreateShelterRequest
+public class RegisterShelterRequest
 {
     [Required(ErrorMessage = "Shelter name is required.")]
     [StringLength(50, MinimumLength = 3, ErrorMessage = "Shelter name must be between 3 and 50 characters.")]
