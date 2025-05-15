@@ -38,21 +38,21 @@ public class PetsController : ControllerBase
             return StatusCode(500, "Your pet is dead...bitch");
         }
     }
-
-    [Authorize]
+    
     [HttpPost]
-    public async Task<IActionResult> CreatePet(RegisterPetRequest request)
+    [Authorize(Roles = "ShelterOwner")]
+    public async Task<IActionResult> CreatePet([FromBody] RegisterPetRequest request)
+
     {
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
         try
         {
-            var result = petService.RegisterPetAsync(request);
+            var result = await petService.RegisterPetAsync(request);
             logger.LogInformation(
                 "Pet with ID {Id} successfully created for UserId: {UserId}",
                 result.Id,
                 userId
             );
-
             return CreatedAtAction(nameof(GetPet), new { id = result.Id }, result);
         }
         catch (ValidationFailedException ex)
@@ -66,6 +66,17 @@ public class PetsController : ControllerBase
             return BadRequest(
                 new { Message = "Validation failed. Please check the errors.", Errors = ex.Errors }
             );
+        }
+        catch (KeyNotFoundException ex)
+        {
+            logger.LogWarning(
+                ex,
+                "Shelter not found while creating a pet for UserId: {UserId}. Message: {Message}",
+                userId,
+                ex.Message
+            );
+
+            return NotFound(new { Message = "The specified shelter could not be found."});
         }
         catch (Exception ex)
         {
