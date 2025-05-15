@@ -6,6 +6,18 @@ meta {
 
 post {
   url: http://localhost:5245/Shelters/
-  body: none
+  body: json
   auth: none
+}
+
+headers {
+  Authorization: Bearer
+}
+
+body:json {
+  {
+    "name": "Peter's Prisoners",
+    "description": "Don't come in",
+    "email": "family@guy.com"
+  }
 }

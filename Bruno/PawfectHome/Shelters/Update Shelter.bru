@@ -5,20 +5,24 @@ meta {
 }
 
 put {
-  url: http://localhost:5245/Shelters/3
+  url: http://localhost:5245/Shelters/:id
   body: json
   auth: inherit
 }
 
+params:path {
+  id: 7
+}
+
 headers {
-  Authorization: Bearer CfDJ8IStIIiZE3ZCj5swAoPWQOV6n6taCWF6h5SMWLBANi5quQb0gk5xUPnJzwXh7EDGQnOWlfLFVwU33_TlrNif1H0RUUSma2T9mSUPiAm8wh5VVxFwvn9BWcCaCfPeNgumCrWDqBzR6mndPTyVSmUTRApnk2fSnyLqPFcCuKzOzV1MKDCUDeaxgD66i1nrCyMxcRdBRpA4fEJMVEve_o3pl0_03_6WnCv7qNrpK7KSJ1vLPCpoHoIn9261vxKVt2o3Q24Js1z67M9Q9uKbSAGF7ySXbRkf_Asq7sX3NB1BISwRhByGMPnzylxHwFzxf4GX1EM0iqKwIW_wE_nG20naN0JEXzUMDk9xSEST_J9JaD2_qxFIMDBKWcWaYsyfEcB7pZ8JQ-Qp7qPo43l31vMmouZxSY8VR9nZDEFY35UOtcIV0iT2WGHXXG4cPB9eBmEAOdGUvHs2NFcTroRqqY-XYecpqcoDf-QXOxSQ2LOY4eo_4H9Lv6PNqlVyYbYSzAo6isfqOOOh4kRq_FixVuxRclDRvvAXSu3wPQNYufD6ugXpXyn6oHJEV9gRKkfyChgaZrI-Ka3oPEpM3ZWndY9lOPs1TgTV0haVSFiBNiJ9VCB4CJ1r28uIGe3PifhUvt8FMCiSXysUsYXqR7NU2jQl_NbKtHN4NrKqdRnghWTAd1XZgKhuu1j4ebIuIEo3y-k3rOD9ihwr6ULyfEK5oCWl0OvTCFIkjQbR2_YTgZALnhycGPe9Gi1tseIvy_JUwcCQ1vBxH_sqDf_bXxOG7jnr5dNcrutFOMDbE8N9DxBvQ02h
+  Authorization: Bearer
 }
 
 body:json {
   {
-    "id": 3,
-    "name": "Alex DjurHem",
-    "description": "The animals love snus!",
-    "email": null
+    "id": 7,
+    "name": "Peter's Prisoners",
+    "description": "Don't come in!",
+    "email": "family@guy.com"
   }
 }
