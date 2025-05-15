@@ -50,7 +50,7 @@ public class ShelterService : IShelterService
             Name = request.Name,
             Description = request.Description ?? "No description",
             Email = request.Email,
-            UserId = userId,
+            UserId = userId
         };
 
         logger.LogInformation(
@@ -117,7 +117,7 @@ public class ShelterService : IShelterService
 
         var shelter = await shelterRepository.FetchShelterByIdAsync(id);
 
-        if (shelter is null)
+        if (shelter == null)
         {
             logger.LogWarning("Shelter with ID: {ShelterId} could not be found.", id);
             throw new KeyNotFoundException($"Shelter with ID {id} could not be found.");
@@ -132,14 +132,13 @@ public class ShelterService : IShelterService
             UserId = shelter.UserId,
 
             // TODO: Replace the PetResponseTemp with actual PetResponse when it is ready.
-            Pets = shelter
-                .Pets.Select(pet => new PetResponseTemp
-                {
-                    Id = pet.Id,
-                    Name = pet.Name,
-                    Species = pet.Species,
-                })
-                .ToList(),
+            Pets = shelter.Pets.Select(pet => new PetResponseTemp
+            {
+                Id = pet.Id,
+                Name = pet.Name,
+                Species = pet.Species
+
+            }).ToList()
         };
     }
 
@@ -153,16 +152,61 @@ public class ShelterService : IShelterService
 
         logger.LogInformation("Retrieved {Count} shelters from the repository", allShelters.Count);
 
-        return allShelters
-            .Select(shelter => new ShelterSummaryResponse()
+        return allShelters.Select(shelter => new ShelterSummaryResponse()
+        {
+            Id = shelter.Id,
+            Name = shelter.Name,
+            Description = shelter.Description,
+            Email = shelter.Email,
+            PetCount = shelter.PetCount
+
+        }).ToList();
+    }
+
+    public async Task<ShelterDetailResponse> UpdateShelterAsync(int id, string userId, ShelterUpdateRequest request)
+    {
+        var existingShelter = await shelterRepository.FetchShelterByIdAsync(id);
+        if (existingShelter == null)
+        {
+            throw new KeyNotFoundException($"Shelter with ID {id} could not be found.");
+        }
+
+        if (existingShelter.UserId != userId)
+        {
+            throw new UnauthorizedAccessException("You do not have permission to update this shelter.");
+        }
+
+        if (request.Name != null)
+        {
+            existingShelter.Name = request.Name;
+        }
+
+        if (request.Description != null)
+        {
+            existingShelter.Description = request.Description;
+        }
+
+        if (request.Email != null)
+        {
+            existingShelter.Email = request.Email;
+        }
+
+        await shelterRepository.UpdateShelterAsync(existingShelter);
+
+        return new ShelterDetailResponse
+        {
+            Id = existingShelter.Id,
+            Name = existingShelter.Name,
+            Description = existingShelter.Description,
+            Email = existingShelter.Email,
+            UserId = existingShelter.UserId,
+            Pets = existingShelter.Pets.Select(pet => new PetResponseTemp
             {
-                Id = shelter.Id,
-                Name = shelter.Name,
-                Description = shelter.Description,
-                Email = shelter.Email,
-                PetCount = shelter.PetCount,
-            })
-            .ToList();
+                Id = pet.Id,
+                Name = pet.Name,
+                Species = pet.Species
+            }).ToList()
+        };
     }
 
     /// <summary>

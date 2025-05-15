@@ -43,6 +43,12 @@ public class ShelterRepository : IShelterRepository
             }).ToListAsync();
     }
 
+    public async Task UpdateShelterAsync(ShelterEntity existingShelter)
+    {
+        context.Shelters.Update(existingShelter);
+        await context.SaveChangesAsync();
+    }
+
     public async Task<bool> DoesShelterExistForUserAsync(string userId)
     {
         return await context.Shelters.AnyAsync(s => s.UserId == userId);
