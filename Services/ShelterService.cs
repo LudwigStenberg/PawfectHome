@@ -230,7 +230,7 @@ public class ShelterService : IShelterService
         };
     }
 
-    public async Task RemoveShelter(int id, string userId)
+    public async Task RemoveShelterAsync(int id, string userId)
     {
         var shelter = await shelterRepository.FetchShelterByIdAsync(id);
         if (shelter == null)
@@ -243,7 +243,7 @@ public class ShelterService : IShelterService
             throw new UnauthorizedAccessException("You do not have permission to delete this shelter.");
         }
 
-        await shelterRepository.RemoveShelterAsync(id);
+        // await shelterRepository.RemoveShelterAsync(id);
 
 
     }
