@@ -49,6 +49,12 @@ public class ShelterRepository : IShelterRepository
         await context.SaveChangesAsync();
     }
 
+    public async Task DeleteShelterAsync(ShelterEntity shelter)
+    {
+        context.Shelters.Remove(shelter);
+        await context.SaveChangesAsync();
+    }
+
     public async Task<bool> DoesShelterExistForUserAsync(string userId)
     {
         return await context.Shelters.AnyAsync(s => s.UserId == userId);
