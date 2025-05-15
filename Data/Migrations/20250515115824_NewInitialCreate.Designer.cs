@@ -11,8 +11,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace PawfectHome.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20250515112201_AddPetGetAllFunctionality")]
-    partial class AddPetGetAllFunctionality
+    [Migration("20250515115824_NewInitialCreate")]
+    partial class NewInitialCreate
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
