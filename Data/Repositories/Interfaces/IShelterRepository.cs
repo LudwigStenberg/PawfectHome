@@ -6,5 +6,6 @@ public interface IShelterRepository
     Task<ShelterEntity?> FetchShelterByUserIdAsync(string userId);
     Task<ICollection<ShelterWithPetCountDto>> FetchAllSheltersAsync();
     Task UpdateShelterAsync(ShelterEntity existingShelter);
+    Task DelteShelterAsync(ShelterEntity shelter);
     Task<bool> DoesShelterExistForUserAsync(string userId);
 }
