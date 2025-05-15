@@ -164,7 +164,9 @@ public class ShelterService : IShelterService
     }
 
     /// <summary>
-    ///  Updates a shelter based on the ShelterUpdateRequest which contains nullable property values which allows for partial updating within the model.
+    /// Updates a shelter entity using a ShelterUpdateRequest DTO containing nullable properties,
+    /// enabling partial updates to the shelter model.
+    /// </summary>
     /// </summary>
     /// <param name="id">The ID of the shelter resource to be updated.</param>
     /// <param name="userId">The ID of the user requesting the update.</param>

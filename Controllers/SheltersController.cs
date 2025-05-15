@@ -10,7 +10,7 @@ public class SheltersController : ControllerBase
 {
     private readonly IShelterService shelterService;
 
-    public SheltersController(IShelterService shelterService)
+    public SheltersController(IShelterService shelterService, ILogger<SheltersController> logger)
     {
         this.shelterService = shelterService;
     }
@@ -33,6 +33,7 @@ public class SheltersController : ControllerBase
             }
 
             var response = await shelterService.RegisterShelterAsync(userId, request);
+
 
             return CreatedAtAction(nameof(GetShelter), new { id = response.Id }, response);
 
@@ -60,7 +61,7 @@ public class SheltersController : ControllerBase
 
             return Ok(response);
 
-        } // TODO: Add specific exceptions
+        }
         catch (KeyNotFoundException ex)
         {
             return NotFound(ex.Message);
