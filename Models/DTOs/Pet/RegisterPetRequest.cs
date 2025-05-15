@@ -2,7 +2,7 @@ using System.ComponentModel.DataAnnotations;
 
 public class RegisterPetRequest
 {
-    [Required(ErrorMessage = "Name cannot be null")]
+    [Required(ErrorMessage = "Name must be provided")]
     [StringLength(
         50,
         MinimumLength = 3,
@@ -10,7 +10,7 @@ public class RegisterPetRequest
     )]
     public required string Name { get; set; }
 
-    [Required(ErrorMessage = "Birthdate cannot be null")]
+    [Required(ErrorMessage = "Birthdate must be provided")]
     public DateTime Birthdate { get; set; }
     public Gender Gender { get; set; } = Gender.Unknown;
     public Species Species { get; set; } = Species.Undefined;

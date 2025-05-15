@@ -1,4 +1,5 @@
 using System.Security.Claims;
+
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -17,18 +18,17 @@ public class PetsController : ControllerBase
 
     [Authorize]
     [HttpPost]
-    public IActionResult CreatePet(RegisterPetRequest request)
+    public async Task<IActionResult> CreatePet([FromBody] RegisterPetRequest request)
     {
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
         try
         {
-            var result = petService.RegisterPetAsync(request);
+            var result = await petService.RegisterPetAsync(request);
             logger.LogInformation(
                 "Pet with ID {Id} successfully created for UserId: {UserId}",
                 result.Id,
                 userId
             );
-
             return CreatedAtAction(nameof(GetPet), new { id = result.Id }, result);
         }
         catch (ValidationFailedException ex)
