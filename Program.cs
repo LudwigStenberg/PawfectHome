@@ -13,6 +13,8 @@ public class Program
 
         builder.Services.AddScoped<IShelterRepository, ShelterRepository>();
         builder.Services.AddScoped<IShelterService, ShelterService>();
+        builder.Services.AddScoped<IPetService, PetService>();
+        builder.Services.AddScoped<IPetRepository, PetRepository>();
         builder.Services.AddScoped<ModelValidator>();
         builder.Services.AddLogging();
         builder.Services.AddOpenApi();

@@ -165,23 +165,30 @@ public class ShelterService : IShelterService
             .ToList();
     }
 
-    public async Task<ShelterDetailResponse> UpdateShelterAsync(
-        int id,
-        string userId,
-        ShelterUpdateRequest request
-    )
+    /// <summary>
+    ///  Updates a shelter based on the ShelterUpdateRequest which contains nullable property values which allows for partial updating within the model.
+    /// </summary>
+    /// <param name="id">The ID of the shelter resource to be updated.</param>
+    /// <param name="userId">The ID of the user requesting the update.</param>
+    /// <param name="request">The ShelterUpdateRequest DTO which contains the new value or values.</param>
+    /// <returns>A ShelterDetailResponse DTO containing Id, Name, Description, Email, UserId and a list of Pets.</returns>
+    /// <exception cref="KeyNotFoundException">Thrown when FetchShelterById method fails and the shelter cannot be found.</exception>
+    /// <exception cref="UnauthorizedAccessException">Thrown when the retrieved shelter's UserId does not match the userId method parameter.</exception>
+    public async Task<ShelterDetailResponse> UpdateShelterAsync(int id, string userId, ShelterUpdateRequest request)
     {
+        logger.LogInformation("Starting update for shelter with ID: {ShelterId} belonging to the user with ID: {UserId}.", id, userId);
         var existingShelter = await shelterRepository.FetchShelterByIdAsync(id);
         if (existingShelter == null)
         {
+            logger.LogWarning("The shelter with ID: {ShelterId} could not be found", id);
             throw new KeyNotFoundException($"Shelter with ID {id} could not be found.");
         }
 
         if (existingShelter.UserId != userId)
         {
-            throw new UnauthorizedAccessException(
-                "You do not have permission to update this shelter."
-            );
+            logger.LogWarning("Authorization failure: User {RequestingUserId} attempted to update shelter {ShelterId} owned by user {OwnerUserId}.",
+                userId, existingShelter.Id, existingShelter.UserId);
+            throw new UnauthorizedAccessException("You do not have permission to update this shelter.");
         }
 
         if (request.Name != null)
@@ -199,7 +206,15 @@ public class ShelterService : IShelterService
             existingShelter.Email = request.Email;
         }
 
+        logger.LogDebug("Updating shelter {ShelterId}: Name={NameUpdated}, Description={DescriptionUpdated}, Email={EmailUpdated}",
+            existingShelter.Id,
+            request.Name != null,
+            request.Description != null,
+            request.Email != null);
+
         await shelterRepository.UpdateShelterAsync(existingShelter);
+
+        logger.LogDebug("The update for shelter with ID: {ShelterId} was successful. Returning a new ShelterDetailResponse.", existingShelter.Id);
 
         return new ShelterDetailResponse
         {

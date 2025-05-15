@@ -88,7 +88,7 @@ public class SheltersController : ControllerBase
 
     [HttpPut("{id}")]
     [Authorize(Roles = "ShelterOwner")]
-    public async Task<IActionResult> UpdateShelter([FromRoute] int id, [FromBody] ShelterUpdateRequest request)
+    public async Task<IActionResult> UpdateShelter(int id, [FromBody] ShelterUpdateRequest request)
     {
         try
         {
@@ -110,10 +110,43 @@ public class SheltersController : ControllerBase
         {
             return NotFound();
         }
+        catch (UnauthorizedAccessException)
+        {
+            return Unauthorized();
+        }
         catch (Exception)
         {
+            return StatusCode(500, "An unexpected error occurred while processing your request.");
+        }
+    }
 
-            return StatusCode(500, "An error occurred while processing your request.");
+    [HttpDelete("{id}")]
+    [Authorize(Roles = "ShelterOwner")]
+    public async Task<IActionResult> DeleteShelter(int id)
+    {
+        try
+        {
+            string? userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(userId))
+            {
+                return Unauthorized();
+            }
+
+            // await shelterService.RemoveShelterAsync(id, userId);
+
+            return NoContent();
+        }
+        catch (KeyNotFoundException)
+        {
+            return NotFound();
+        }
+        catch (UnauthorizedAccessException)
+        {
+            return Unauthorized();
+        }
+        catch (Exception)
+        {
+            return StatusCode(500, "An unexpected error occurred while processing your request.");
         }
     }
 }
