@@ -1,0 +1,20 @@
+meta {
+  name: Update Shelter
+  type: http
+  seq: 4
+}
+
+put {
+  url: http://localhost:5245/Shelters/id
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "id": 1,
+    "name": null,
+    "description": null,
+    "email": null
+  }
+}
