@@ -230,6 +230,24 @@ public class ShelterService : IShelterService
         };
     }
 
+    public async Task RemoveShelter(int id, string userId)
+    {
+        var shelter = await shelterRepository.FetchShelterByIdAsync(id);
+        if (shelter == null)
+        {
+            throw new KeyNotFoundException($"The shelter with ID: {id} could not be found.");
+        }
+
+        if (shelter.UserId != userId)
+        {
+            throw new UnauthorizedAccessException("You do not have permission to delete this shelter.");
+        }
+
+        await shelterRepository.RemoveShelterAsync(id);
+
+
+    }
+
     /// <summary>
     /// Validates input parameters for shelter creation, ensuring all required data is present and properly formatted.
     /// This is a private helper method called by RegisterShelterAsync().

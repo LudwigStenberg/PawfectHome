@@ -132,7 +132,7 @@ public class SheltersController : ControllerBase
                 return Unauthorized();
             }
 
-            // await shelterService.RemoveShelterAsync(id, userId);
+            await shelterService.RemoveShelterAsync(id, userId);
             return NoContent();
         }
         catch (KeyNotFoundException)
