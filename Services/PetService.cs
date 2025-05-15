@@ -20,6 +20,41 @@ public class PetService : IPetService
         this.logger = logger;
     }
 
+    public async Task<IEnumerable<GetPetResponse>> GetAllPetsAsync()
+    {
+        logger.LogInformation("Retrieveing all pets");
+
+        var pets = await petRepository.FetchAllPetsAsync();
+
+        var responses = pets.Select(pet => new GetPetResponse
+            {
+                Id = pet.Id,
+                Name = pet.Name,
+                Birthdate = pet.Birthdate,
+                Gender = pet.Gender,
+                Species = pet.Species,
+                Breed = pet.Breed,
+                Description = pet.Description,
+                ImageURL = pet.ImageURL,
+                IsNeutured = pet.IsNeutered,
+                HasPedigree = pet.HasPedigree,
+                ShelterId = pet.ShelterId,
+                Shelter =
+                    pet.Shelter != null
+                        ? new ShelterSummary
+                        {
+                            Id = pet.Shelter.Id,
+                            Name = pet.Shelter.Name ?? "Unknown",
+                            Description = pet.Shelter.Description ?? "No description",
+                            Email = pet.Shelter.Email ?? "noemail@example.com",
+                        }
+                        : null,
+            })
+            .ToList();
+
+        return responses;
+    }
+
     /// <summary>
     /// Retrieves a pet from the database by its ID, or throws an exception if not found.
     /// </summary>
