@@ -262,30 +262,43 @@ public class ShelterService : IShelterService
     /// but it will not throw exceptions. This allows the shelter registration process to complete
     /// even if role assignment fails.
     /// </remarks>
-    private async Task AssignShelterOwnerRoleAsync(string userId)
+    private async Task<bool> AssignShelterOwnerRoleAsync(string userId)
     {
         var user = await userManager.FindByIdAsync(userId);
-        if (user != null)
-        {
-            logger.LogInformation("Assigning ShelterOwner role to user {UserId}.", userId);
-            var roleResult = await userManager.AddToRoleAsync(user, "ShelterOwner");
-            if (!roleResult.Succeeded)
-            {
-                var errorMessage = string.Join(", ", roleResult.Errors.Select(e => e.Description));
-                logger.LogWarning(
-                    "Failed to assign ShelterOwner role to user {UserId}. Errors: {Errors}",
-                    userId,
-                    errorMessage
-                );
-            }
-        }
-        else
+        if (user == null)
         {
             logger.LogWarning(
                 "User {UserId} not found when trying to assign ShelterOwner role.",
                 userId
             );
+            return false;
         }
+
+        bool alreadyHasRole = await userManager.IsInRoleAsync(user, "ShelterOwner");
+        if (alreadyHasRole)
+        {
+            logger.LogInformation(
+                "User {UserId} already has ShelterOwner role. No change needed.",
+                userId
+            );
+            return false;
+        }
+
+        logger.LogInformation("Assigning ShelterOwner role to user {UserId}.", userId);
+        var roleResult = await userManager.AddToRoleAsync(user, "ShelterOwner");
+
+        if (!roleResult.Succeeded)
+        {
+            var errorMessage = string.Join(", ", roleResult.Errors.Select(e => e.Description));
+            logger.LogWarning(
+                "Failed to assign ShelterOwner role to user {UserId}. Errors: {Errors}",
+                userId,
+                errorMessage
+            );
+            return false;
+        }
+
+        return true;
     }
 
     /// <summary>
