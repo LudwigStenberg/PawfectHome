@@ -32,9 +32,11 @@ public class SheltersController : ControllerBase
                 return Unauthorized();
             }
 
-            var result = await shelterService.RegisterShelterAsync(userId, request);
+            var (result, authChanged) = await shelterService.RegisterShelterAsync(userId, request);
 
             var response = new ApiResponse<RegisterShelterDetailResponse>(result);
+
+            response.Meta.AuthenticationChanged = authChanged;
 
             return CreatedAtAction(nameof(GetShelter), new { id = result.Id }, response);
 

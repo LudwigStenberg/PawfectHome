@@ -19,15 +19,19 @@ public class ShelterService : IShelterService
     }
 
     /// <summary>
-    /// Asyncronously registers a new shelter for a user in the system. Enforces the business rule that a user
+    /// Asynchronously registers a new shelter for a user in the system. Enforces the business rule that a user
     /// can only have one shelter at a time. Additionally, assigns the user with a new role: "ShelterOwner" in a non-atomic operation.
     /// </summary>
     /// <param name="userId">The ID of the user that has requested the shelter registration.</param>
     /// <param name="request">The request DTO which contains properties for 'Name', 'Description' and 'Email'.</param>
-    /// <returns>A RegisterShelterDetailResponse DTO which contains the shelter's 'Id', 'Name', 'Description', 'Email' and the 'UserId' for the associated user.</returns>
+    /// <returns>
+    /// A tuple containing:
+    ///   - Shelter: A RegisterShelterDetailResponse DTO with the shelter's 'Id', 'Name', 'Description', 'Email' and the 'UserId'
+    ///   - AuthChanged: A boolean indicating whether the user's authentication state was changed by assigning the ShelterOwner role
+    /// </returns>
     /// <exception cref="ArgumentException">Thrown when userId is null or empty, or when the request object is null.</exception>
     /// <exception cref="ValidationException">Thrown when a user who already has a shelter attempts to register another one. Each user can only have one shelter at a time.</exception>
-    public async Task<RegisterShelterDetailResponse> RegisterShelterAsync(
+    public async Task<(RegisterShelterDetailResponse Shelter, bool AuthChanged)> RegisterShelterAsync(
         string userId,
         RegisterShelterRequest request
     )
@@ -60,9 +64,9 @@ public class ShelterService : IShelterService
         );
 
         var createdShelter = await shelterRepository.CreateShelterAsync(newShelter);
-        await AssignShelterOwnerRoleAsync(userId);
+        bool authChanged = await AssignShelterOwnerRoleAsync(userId);
 
-        var response = new RegisterShelterDetailResponse
+        var shelter = new RegisterShelterDetailResponse
         {
             Id = createdShelter.Id,
             Name = createdShelter.Name,
@@ -76,7 +80,7 @@ public class ShelterService : IShelterService
             createdShelter.Id,
             userId
         );
-        return response;
+        return (Shelter: shelter, AuthChanged: authChanged);
     }
 
     /// <summary>
