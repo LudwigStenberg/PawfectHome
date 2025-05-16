@@ -32,10 +32,13 @@ public class SheltersController : ControllerBase
                 return Unauthorized();
             }
 
-            var response = await shelterService.RegisterShelterAsync(userId, request);
+            var (result, authChanged) = await shelterService.RegisterShelterAsync(userId, request);
 
+            var response = new ApiResponse<RegisterShelterDetailResponse>(result);
 
-            return CreatedAtAction(nameof(GetShelter), new { id = response.Id }, response);
+            response.Meta.AuthenticationChanged = authChanged;
+
+            return CreatedAtAction(nameof(GetShelter), new { id = result.Id }, response);
 
         }
         catch (DbUpdateException)
