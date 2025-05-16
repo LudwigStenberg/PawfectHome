@@ -253,10 +253,14 @@ public class ShelterService : IShelterService
     #region Helper Methods
 
     /// <summary>
-    /// Assigns the "ShelterOwner" role to a specified user.
+    /// Assigns the "ShelterOwner" role to a specified user and indicates whether the authentication state changed.
     /// </summary>
     /// <param name="userId">The ID of the user to assign the role to.</param>
-    /// <returns>A task representing the asynchronous operation.</returns>
+    /// <returns>
+    /// A boolean value indicating whether the authentication state was successfully changed:
+    /// - true: The ShelterOwner role was successfully assigned, changing the user's authentication state.
+    /// - false: No change occurred because the user wasn't found or the role assignment failed.
+    /// </returns>
     /// <remarks>
     /// This method will log a warning if the user is not found or if the role assignment fails,
     /// but it will not throw exceptions. This allows the shelter registration process to complete
