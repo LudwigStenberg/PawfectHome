@@ -1,6 +1,6 @@
 public interface IShelterService
 {
-    Task<RegisterShelterDetailResponse> RegisterShelterAsync(string userId, RegisterShelterRequest request);
+    Task<(RegisterShelterDetailResponse Shelter, bool AuthChanged)> RegisterShelterAsync(string userId, RegisterShelterRequest request);
     Task<ShelterDetailResponse> GetShelterAsync(int id);
     Task<ICollection<ShelterSummaryResponse>> GetAllSheltersAsync();
     Task<ShelterDetailResponse> UpdateShelterAsync(int id, string userId, ShelterUpdateRequest request);
