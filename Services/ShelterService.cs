@@ -6,19 +6,16 @@ public class ShelterService : IShelterService
     private readonly ILogger<ShelterService> logger;
     private readonly IShelterRepository shelterRepository;
     private readonly UserManager<UserEntity> userManager;
-    private readonly SignInManager<UserEntity> signInManager;
 
     public ShelterService(
         ILogger<ShelterService> logger,
         IShelterRepository shelterRepository,
-        UserManager<UserEntity> userManager,
-        SignInManager<UserEntity> signInManager
+        UserManager<UserEntity> userManager
     )
     {
         this.logger = logger;
         this.shelterRepository = shelterRepository;
         this.userManager = userManager;
-        this.signInManager = signInManager;
     }
 
     /// <summary>
@@ -290,7 +287,6 @@ public class ShelterService : IShelterService
             );
         }
     }
-
 
     /// <summary>
     ///  Attempts to remove the ShelterOwner role from a user with retry capability.
