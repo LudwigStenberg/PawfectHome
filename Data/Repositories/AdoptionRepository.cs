@@ -7,12 +7,10 @@ public class AdoptionRepository : IAdoptionRepository
     {
         this.context = context;
     }
-
     public async Task<AdoptionApplicationEntity> CreateAdoptionAsync(AdoptionApplicationEntity newAdoptionApplication)
     {
-        context.AdoptionApplictions.Add(newAdoptionApplication);
+        context.AdoptionApplications.Add(newAdoptionApplication);
         await context.SaveChangesAsync();
         return newAdoptionApplication;
-
     }
 }

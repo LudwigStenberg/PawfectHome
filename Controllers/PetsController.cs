@@ -39,14 +39,14 @@ public class PetsController : ControllerBase
         }
     }
 
-    [Authorize]
+    [Authorize(Roles = "ShelterOwner")]
     [HttpPost]
     public async Task<IActionResult> CreatePet(RegisterPetRequest request)
     {
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
         try
         {
-            var result = petService.RegisterPetAsync(request);
+            var result = await petService.RegisterPetAsync(request);
             logger.LogInformation(
                 "Pet with ID {Id} successfully created for UserId: {UserId}",
                 result.Id,

@@ -8,7 +8,7 @@ public class AppDbContext : IdentityDbContext<UserEntity>
     {
     }
 
-    public DbSet<AdoptionApplicationEntity> AdoptionApplictions { get; set; }
+    public DbSet<AdoptionApplicationEntity> AdoptionApplications { get; set; }
     public DbSet<PetEntity> Pets { get; set; }
     public DbSet<ShelterEntity> Shelters { get; set; }
 

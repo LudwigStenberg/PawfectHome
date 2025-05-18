@@ -1,6 +1,5 @@
-
 public class RegisterAdoptionRequest
 {
-    public string UserId { get; set; }
+    public required string UserId { get; set; }
     public int PetId { get; set; }
 }
