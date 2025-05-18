@@ -104,6 +104,21 @@ public class PetService : IPetService
         return response;
     }
 
+    /// <summary>
+    /// Registers a new pet in the database.
+    /// </summary>
+    /// <param name="request">
+    /// The pet details to be registered, including name, birthdate, species, and shelter ID.
+    /// </param>
+    /// <returns>
+    /// A response containing the registered pet's details.
+    /// </returns>
+    /// <exception cref="KeyNotFoundException">
+    /// Thrown when the specified shelter is not found.
+    /// </exception>
+    /// <exception cref="ValidationFailedException">
+    /// Thrown when the model validation fails or the birthdate format is invalid.
+    /// </exception>
     public async Task<RegisterPetResponse> RegisterPetAsync(RegisterPetRequest request)
     {
         logger.LogInformation("Validating RegisterPetRequest for registration");

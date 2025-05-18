@@ -32,9 +32,13 @@ public class SheltersController : ControllerBase
                 return Unauthorized();
             }
 
-            var response = await shelterService.RegisterShelterAsync(userId, request);
+            var (result, authChanged) = await shelterService.RegisterShelterAsync(userId, request);
 
-            return CreatedAtAction(nameof(GetShelter), new { id = response.Id }, response);
+            var response = new ApiResponse<RegisterShelterDetailResponse>(result);
+
+            response.Meta.AuthenticationChanged = authChanged;
+
+            return CreatedAtAction(nameof(GetShelter), new { id = result.Id }, response);
 
         }
         catch (DbUpdateException)
@@ -60,7 +64,7 @@ public class SheltersController : ControllerBase
 
             return Ok(response);
 
-        } // TODO: Add specific exceptions
+        }
         catch (KeyNotFoundException ex)
         {
             return NotFound(ex.Message);
@@ -132,8 +136,7 @@ public class SheltersController : ControllerBase
                 return Unauthorized();
             }
 
-            // await shelterService.RemoveShelterAsync(id, userId);
-
+            await shelterService.RemoveShelterAsync(id, userId);
             return NoContent();
         }
         catch (KeyNotFoundException)
