@@ -115,12 +115,22 @@ public class PetService : IPetService
             throw new KeyNotFoundException($"No shelter found with ID {request.ShelterId}.");
         }
 
-        if (!DateTime.TryParseExact(request.Birthdate, "yyyy-MM-dd", null, DateTimeStyles.AssumeUniversal, out DateTime parsedBirthdate))
+        if (
+            !DateTime.TryParseExact(
+                request.Birthdate,
+                "yyyy-MM-dd",
+                null,
+                DateTimeStyles.AssumeUniversal,
+                out DateTime parsedBirthdate
+            )
+        )
         {
-        
             var errors = new List<ValidationResult>
             {
-                new ValidationResult("Invalid birthdate format. Please use 'yyyy-MM-dd'.", new[] { "Birthdate" })
+                new ValidationResult(
+                    "Invalid birthdate format. Please use 'yyyy-MM-dd'.",
+                    new[] { "Birthdate" }
+                ),
             };
 
             throw ValidationFailedException.FromValidationResults(errors);

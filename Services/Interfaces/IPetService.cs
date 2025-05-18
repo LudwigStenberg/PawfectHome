@@ -4,6 +4,4 @@ public interface IPetService
     public Task<RegisterPetResponse> RegisterPetAsync(RegisterPetRequest request);
 
     Task<IEnumerable<GetPetResponse>> GetAllPetsAsync();
-
-
 }

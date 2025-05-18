@@ -39,6 +39,14 @@ public class PetsController : ControllerBase
         }
     }
 
+    [HttpGet]
+    public async Task<ActionResult<IEnumerable<GetPetResponse>>> GetAllPets()
+    {
+        var pets = await petService.GetAllPetsAsync();
+
+        return Ok(pets);
+    }
+
     [HttpPost]
     [Authorize(Roles = "ShelterOwner")]
     public async Task<IActionResult> CreatePet([FromBody] RegisterPetRequest request)
