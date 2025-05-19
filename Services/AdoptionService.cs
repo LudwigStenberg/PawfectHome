@@ -81,11 +81,20 @@ public class AdoptionService : IAdoptionService
         return response;
     }
 
+    /// <summary>
+    ///  Removes an adoption application based on the ID passed as an argument. Retrieves the adoption application entity to make sure 
+    ///  that it belongs to the user ID which is also passed as an argument.
+    /// </summary>
+    /// <param name="id">The ID of the adoption application to be removed.</param>
+    /// <param name="userId">The ID of the user requesting the removal of the adoption application.</param>
+    /// <returns>Returns a Task representing the asynchronous operation. No data is returned upon completion.</returns>
+    /// <exception cref="KeyNotFoundException">Thrown when retrieved adoption application is null. The resource could not be found.</exception>
+    /// <exception cref="UnauthorizedAccessException">Thrown when the retrieved adoption application's User ID does not match the User ID provided by the caller.</exception>
     public async Task RemoveAdoptionApplicationAsync(int id, string userId)
     {
         logger.LogInformation("Starting deletion of adoption application with ID: {AdoptionApplicationId}. Deletion request made by user ID: {RequestingUserId}", id, userId);
 
-        var adoptionApplication = await FetchAdoptionApplicationById(id);
+        var adoptionApplication = await FetchAdoptionApplicationByIdAsync(id);
         if (adoptionApplication == null)
         {
             logger.LogWarning("The adoption application with ID {AdoptionApplicationId} could not be found", id);
