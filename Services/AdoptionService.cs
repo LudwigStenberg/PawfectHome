@@ -80,4 +80,13 @@ public class AdoptionService : IAdoptionService
 
         return response;
     }
+
+    public async Task RemoveAdoptionApplicationAsync(int id, string userId)
+    {
+        // Retrieve the application (Eg: GET -- FetchAdoptionApplicationById())
+        // Make sure it's not null : else, throw
+        // Check that the User ID of the retrieved one matches the one in parameter
+        // Make sure it's a match : else, throw
+        // All good? call repository : DeleteAdoptionApplicationAsync()
+    }
 }
