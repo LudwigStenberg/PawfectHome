@@ -10,3 +10,4 @@ public class UserEntity : IdentityUser
     public ShelterEntity Shelter { get; set; } // One-to-One
     public ICollection<AdoptionApplicationEntity> AdoptionApplications { get; set; } = new List<AdoptionApplicationEntity>(); // One-to-Many
 }
+
