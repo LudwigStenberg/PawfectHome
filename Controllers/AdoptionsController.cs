@@ -75,14 +75,13 @@ public class AdoptionsController : ControllerBase
     {
         string? userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
+        if (string.IsNullOrEmpty(userId))
+        {
+            return Unauthorized();
+        }
+
         try
         {
-
-            if (string.IsNullOrEmpty(userId))
-            {
-                return Unauthorized();
-            }
-
             await adoptionService.RemoveAdoptionApplicationAsync(id, userId);
             return NoContent();
         }
@@ -97,8 +96,7 @@ public class AdoptionsController : ControllerBase
         catch (Exception ex)
         {
             logger.LogError(
-                ex, "An unexpected error occurred while deleting an adoption application for ID: {AdoptionApplicationId}, UserId: {UserId}. Message: {Message}",
-                    id, userId, ex.Message);
+                ex, "An unexpected error occurred while deleting adoption application with ID {AdoptionApplicationId} by user {UserId}", id, userId);
 
             return StatusCode(500, "An unexpected error occurred while deleting the adoption application.");
         }
