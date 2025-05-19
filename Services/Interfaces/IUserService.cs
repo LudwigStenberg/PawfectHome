@@ -1,4 +1,4 @@
-public class IUserService
+public interface IUserService
 {
-    public Task<GetUserReponse> GetUserAsync(int id);
+    public Task<UserSummaryResponse> GetUserAsync(int id);
 }
