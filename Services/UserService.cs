@@ -2,22 +2,16 @@ using Microsoft.EntityFrameworkCore;
 
 public class UserService : IUserService
 {
-    private readonly AppDbContext appDbContext;
     private readonly ILogger<IUserService> logger;
     private readonly IUserRepository userRepository;
 
-    public UserService(
-        IUserRepository userRepository,
-        ILogger<UserService> logger,
-        AppDbContext appDbContext
-    )
+    public UserService(IUserRepository userRepository, ILogger<UserService> logger)
     {
-        this.appDbContext = appDbContext;
         this.logger = logger;
         this.userRepository = userRepository;
     }
 
-    public async Task<UserSummaryResponse> GetUserAsync(int id)
+    public async Task<UserSummaryResponse> GetUserAsync(string id)
     {
         var user = await userRepository.FetchUserAsync(id);
 
