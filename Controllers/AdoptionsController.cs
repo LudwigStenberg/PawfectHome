@@ -68,4 +68,27 @@ public class AdoptionsController : ControllerBase
             return StatusCode(500, "An unexpected error occurred while registering the adoption application.");
         }
     }
+
+    [HttpDelete("{id}")]
+    [Authorize]
+    public async Task<IActionResult> DeleteAdoptionApplication(int id)
+    {
+        try
+        {
+            string? userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(userId))
+            {
+                return Unauthorized();
+            }
+
+            await DeleteAdoptionApplicationAsync(id, userId);
+            return NoContent();
+        }
+        catch (Exception)
+        {
+
+            throw;
+        }
+
+    }
 }
