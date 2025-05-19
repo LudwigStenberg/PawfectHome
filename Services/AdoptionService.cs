@@ -83,10 +83,17 @@ public class AdoptionService : IAdoptionService
 
     public async Task RemoveAdoptionApplicationAsync(int id, string userId)
     {
-        // Retrieve the application (Eg: GET -- FetchAdoptionApplicationById())
-        // Make sure it's not null : else, throw
-        // Check that the User ID of the retrieved one matches the one in parameter
-        // Make sure it's a match : else, throw
-        // All good? call repository : DeleteAdoptionApplicationAsync()
+        var adoptionApplication = await FetchAdoptionApplicationById(id);
+        if (adoptionApplication == null)
+        {
+            throw new KeyNotFoundException($"The adoption application with ID: {id} could not be found.");
+        }
+
+        if (adoptionApplication.UserId != userId)
+        {
+            throw new UnauthorizedAccessException($"You do not have permission to delete this adoption application.");
+        }
+
+        await adoptionRepository.DeleteAdoptionApplicationAsync(adoptionApplication);
     }
 }
