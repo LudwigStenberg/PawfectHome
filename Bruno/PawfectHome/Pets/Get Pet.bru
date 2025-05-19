@@ -5,9 +5,13 @@ meta {
 }
 
 get {
-  url: /Pets/{1}
+  url: http://localhost:5245/Pets/:Id
   body: none
-  auth: inherit
+  auth: none
+}
+
+params:path {
+  Id: 1
 }
 
 headers {
