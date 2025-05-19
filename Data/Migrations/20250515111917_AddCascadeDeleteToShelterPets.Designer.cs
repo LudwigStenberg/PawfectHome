@@ -11,8 +11,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace PawfectHome.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20250508081632_RelationshipsConstraints")]
-    partial class RelationshipsConstraints
+    [Migration("20250515111917_AddCascadeDeleteToShelterPets")]
+    partial class AddCascadeDeleteToShelterPets
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -195,8 +195,8 @@ namespace PawfectHome.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
-                    b.Property<int>("Age")
-                        .HasColumnType("integer");
+                    b.Property<DateTime>("Birthdate")
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("Breed")
                         .IsRequired()
@@ -216,7 +216,7 @@ namespace PawfectHome.Migrations
                     b.Property<string>("ImageURL")
                         .HasColumnType("text");
 
-                    b.Property<bool>("IsNeutured")
+                    b.Property<bool>("IsNeutered")
                         .HasColumnType("boolean");
 
                     b.Property<string>("Name")

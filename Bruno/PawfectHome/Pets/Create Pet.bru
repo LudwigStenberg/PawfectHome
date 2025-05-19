@@ -1,0 +1,30 @@
+meta {
+  name: Create Pet
+  type: http
+  seq: 2
+}
+
+post {
+  url: http://localhost:5245/Pets
+  body: json
+  auth: bearer
+}
+
+headers {
+  Authorization: Bearer
+}
+
+body:json {
+  {
+    "name": "Peter's burgers",
+    "birthdate": "2025-05-17",
+    "gender": 1,
+    "species": 2,
+    "breed": "Some kind of 4 legged thing",
+    "description": "Taste's good with some salt",
+    "imageURL": null,
+    "isNeutured": false,
+    "hasPedigree": false,
+    "shelterId": 7
+  }
+}

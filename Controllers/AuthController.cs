@@ -1,7 +1,6 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 
-
 [ApiController]
 [Route("[controller]")]
 public class AuthController : ControllerBase
@@ -32,8 +31,6 @@ public class AuthController : ControllerBase
         if (!result.Succeeded)
             return BadRequest(result.Errors);
 
-
         return Ok(new { message = "User registered successfully!" });
     }
-
 }

@@ -1,3 +1,5 @@
+using System.ComponentModel.DataAnnotations;
+using System.Globalization;
 using Microsoft.EntityFrameworkCore;
 
 public class PetService : IPetService
@@ -18,6 +20,44 @@ public class PetService : IPetService
         this.petRepository = petRepository;
         this.modelValidator = modelValidator;
         this.logger = logger;
+    }
+
+    /// <summary>
+    /// Retrieves all pets from database
+    /// </summary>
+    /// <returns> A collection of pets</returns>
+    public async Task<IEnumerable<GetPetResponse>> GetAllPetsAsync()
+    {
+        logger.LogInformation("Retrieveing all pets");
+
+        var pets = await petRepository.FetchAllPetsAsync();
+
+        var responses = pets.Select(pet => new GetPetResponse
+            {
+                Id = pet.Id,
+                Name = pet.Name,
+                Birthdate = pet.Birthdate,
+                Gender = pet.Gender,
+                Species = pet.Species,
+                Breed = pet.Breed,
+                Description = pet.Description,
+                ImageURL = pet.ImageURL,
+                IsNeutured = pet.IsNeutered,
+                HasPedigree = pet.HasPedigree,
+                ShelterId = pet.ShelterId,
+                Shelter =
+                    pet.Shelter != null
+                        ? new ShelterSummary
+                        {
+                            Id = pet.Shelter.Id,
+                            Name = pet.Shelter.Name ?? "Unknown",
+                            Description = pet.Shelter.Description ?? "No description",
+                            Email = pet.Shelter.Email ?? "noemail@example.com",
+                        }
+                        : null,
+            })
+            .ToList();
+        return responses;
     }
 
     /// <summary>
@@ -64,19 +104,61 @@ public class PetService : IPetService
         return response;
     }
 
+    /// <summary>
+    /// Registers a new pet in the database.
+    /// </summary>
+    /// <param name="request">
+    /// The pet details to be registered, including name, birthdate, species, and shelter ID.
+    /// </param>
+    /// <returns>
+    /// A response containing the registered pet's details.
+    /// </returns>
+    /// <exception cref="KeyNotFoundException">
+    /// Thrown when the specified shelter is not found.
+    /// </exception>
+    /// <exception cref="ValidationFailedException">
+    /// Thrown when the model validation fails or the birthdate format is invalid.
+    /// </exception>
     public async Task<RegisterPetResponse> RegisterPetAsync(RegisterPetRequest request)
     {
-        logger.LogInformation("Validatin RegisterPetRequest for registration");
+        logger.LogInformation("Validating RegisterPetRequest for registration");
         modelValidator.ValidateModel(request);
 
         var shelterExists = await dbContext.Shelters.AnyAsync(s => s.Id == request.ShelterId);
         if (!shelterExists)
+        {
             throw new KeyNotFoundException($"No shelter found with ID {request.ShelterId}.");
+        }
+
+        if (
+            !DateTime.TryParseExact(
+                request.Birthdate,
+                "yyyy-MM-dd",
+                null,
+                DateTimeStyles.AssumeUniversal,
+                out DateTime parsedBirthdate
+            )
+        )
+        {
+            var errors = new List<ValidationResult>
+            {
+                new ValidationResult(
+                    "Invalid birthdate format. Please use 'yyyy-MM-dd'.",
+                    new[] { "Birthdate" }
+                ),
+            };
+
+            throw ValidationFailedException.FromValidationResults(errors);
+        }
+        DateTime utcBirthdate =
+            parsedBirthdate.Kind == DateTimeKind.Utc
+                ? parsedBirthdate
+                : parsedBirthdate.ToUniversalTime();
 
         var petEntity = new PetEntity
         {
             Name = request.Name,
-            Birthdate = request.Birthdate,
+            Birthdate = utcBirthdate,
             Gender = request.Gender,
             Species = request.Species,
             Breed = request.Breed,

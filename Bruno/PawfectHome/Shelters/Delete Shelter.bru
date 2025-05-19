@@ -1,0 +1,19 @@
+meta {
+  name: Delete Shelter
+  type: http
+  seq: 5
+}
+
+delete {
+  url: http://localhost:5245/Shelters/:id
+  body: none
+  auth: inherit
+}
+
+params:path {
+  id: 4
+}
+
+headers {
+  Authorization: Bearer
+}

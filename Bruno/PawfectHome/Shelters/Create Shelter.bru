@@ -7,17 +7,16 @@ meta {
 post {
   url: http://localhost:5245/Shelters/
   body: json
-  auth: bearer
 }
 
-auth:bearer {
-  token: CfDJ8EXDTRQWdYRPoHHRguddFzfAMysSkpLImb9e6iAQ5VaEsQ5sYcl4Myp7S7NpRj-fyj8cFMbAuDZxyKAm5t63BPuXGgSn_1v0xh0WbgLkOuHOZpfeMMlVzVuYfYYWqNMXEF-pBmKrZh-T4fTo4WDl6gBn-ydZFO536KY_NyjU2iGFKYme3pde8RLtNHtLq5ULwuq5Fx9tbI3awZeaE4-lQEYGcY8ZEe8DQLCFc3iCt6j67jNQGGoS3kEqJcpC2N0LpYmTEBhwJdiQRDEed1TUopH52ojJbFbULPVmOmJB0WgvwM39CXNv_1Xk6UbCMRPrKUBKyvdaqy3wVrdTGXm0SpuxJabv64pEGPRpJAxfnOCKno9vD2rt3DyFrqjj-5UdO20Dlbh7k4COQc4vBsOxP8EN7wn-0zF6LiSlZZuGR0bVKDXUP_kks9WJgn_OAOTPjRP-KCoZBrRh3H2pHZER6kleP6MpnFAd_4_M6hENXSg_2lQ7s1qp_5KR1aSyjHffosxi1bQ_nfxia1BDTZc2pWHCxHRrFQvuSDhflXbmYXuG-8Z7GDTmH-VebCIS0mbqGuDFd-tWeuKp2-FdnHMYTNi6YJCAEgnFV_EM_JwuEISZWP141bEf45mU-IB2zELKxXdU2hwYByZ_go7rUSNmt7sk313kSOSSDLvdE2QmKmITGWzPcLwEmGApuHS36-ytHA
+headers {
+  Authorization: Bearer
 }
 
 body:json {
   {
-    "name": "Mikes",
-    "description": null,
-    "email": "mikess@gmail.com"
+    "name": "Peter's Prisoners",
+    "description": "Don't come in",
+    "email": "family@guy.com"
   }
 }

@@ -5,16 +5,24 @@ meta {
 }
 
 put {
-  url: http://localhost:5245/Shelters/id
+  url: http://localhost:5245/Shelters/:id
   body: json
-  auth: inherit
+  auth: none
+}
+
+params:path {
+  id: 7
+}
+
+headers {
+  Authorization: Bearer
 }
 
 body:json {
   {
-    "id": 1,
-    "name": null,
-    "description": null,
-    "email": null
+    "id": 7,
+    "name": "Peter's Prisoners",
+    "description": "Don't come in!",
+    "email": "family@guy.com"
   }
 }
