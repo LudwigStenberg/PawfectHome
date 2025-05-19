@@ -46,7 +46,7 @@ public class PetsController : ControllerBase
 
         return Ok(pets);
     }
-
+    
     [HttpPost]
     [Authorize(Roles = "ShelterOwner")]
     public async Task<IActionResult> CreatePet([FromBody] RegisterPetRequest request)
