@@ -1,5 +1,5 @@
 public interface IAdoptionService
 {
     public Task<RegisterAdoptionResponse> RegisterAdoptionApplicationAsync(RegisterAdoptionRequest request);
-    Task DeleteAdoptionApplicationAsync(int id, string userId);
+    Task RemoveAdoptionApplicationAsync(int id, string userId);
 }

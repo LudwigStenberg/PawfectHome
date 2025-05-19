@@ -81,7 +81,7 @@ public class AdoptionsController : ControllerBase
                 return Unauthorized();
             }
 
-            await DeleteAdoptionApplicationAsync(id, userId);
+            await RemoveAdoptionApplicationAsync(id, userId);
             return NoContent();
         }
         catch (Exception)
