@@ -39,10 +39,17 @@ public class PetsController : ControllerBase
         }
     }
 
+    [HttpGet]
+    public async Task<ActionResult<IEnumerable<GetPetResponse>>> GetAllPets()
+    {
+        var pets = await petService.GetAllPetsAsync();
+
+        return Ok(pets);
+    }
+
     [HttpPost]
     [Authorize(Roles = "ShelterOwner")]
     public async Task<IActionResult> CreatePet([FromBody] RegisterPetRequest request)
-
     {
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
         try
@@ -76,6 +83,7 @@ public class PetsController : ControllerBase
                 ex.Message
             );
 
+            return NotFound(new { Message = "The specified shelter could not be found." });
             return NotFound(new { Message = "The specified shelter could not be found." });
         }
         catch (Exception ex)

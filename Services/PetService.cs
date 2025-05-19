@@ -23,6 +23,44 @@ public class PetService : IPetService
     }
 
     /// <summary>
+    /// Retrieves all pets from database
+    /// </summary>
+    /// <returns> A collection of pets</returns>
+    public async Task<IEnumerable<GetPetResponse>> GetAllPetsAsync()
+    {
+        logger.LogInformation("Retrieveing all pets");
+
+        var pets = await petRepository.FetchAllPetsAsync();
+
+        var responses = pets.Select(pet => new GetPetResponse
+            {
+                Id = pet.Id,
+                Name = pet.Name,
+                Birthdate = pet.Birthdate,
+                Gender = pet.Gender,
+                Species = pet.Species,
+                Breed = pet.Breed,
+                Description = pet.Description,
+                ImageURL = pet.ImageURL,
+                IsNeutured = pet.IsNeutered,
+                HasPedigree = pet.HasPedigree,
+                ShelterId = pet.ShelterId,
+                Shelter =
+                    pet.Shelter != null
+                        ? new ShelterSummary
+                        {
+                            Id = pet.Shelter.Id,
+                            Name = pet.Shelter.Name ?? "Unknown",
+                            Description = pet.Shelter.Description ?? "No description",
+                            Email = pet.Shelter.Email ?? "noemail@example.com",
+                        }
+                        : null,
+            })
+            .ToList();
+        return responses;
+    }
+
+    /// <summary>
     /// Retrieves a pet from the database by its ID, or throws an exception if not found.
     /// </summary>
     /// <param name="id">unique identifier of specific pet to be retrieved.</param>
@@ -92,12 +130,22 @@ public class PetService : IPetService
             throw new KeyNotFoundException($"No shelter found with ID {request.ShelterId}.");
         }
 
-        if (!DateTime.TryParseExact(request.Birthdate, "yyyy-MM-dd", null, DateTimeStyles.AssumeUniversal, out DateTime parsedBirthdate))
+        if (
+            !DateTime.TryParseExact(
+                request.Birthdate,
+                "yyyy-MM-dd",
+                null,
+                DateTimeStyles.AssumeUniversal,
+                out DateTime parsedBirthdate
+            )
+        )
         {
-
             var errors = new List<ValidationResult>
             {
-                new ValidationResult("Invalid birthdate format. Please use 'yyyy-MM-dd'.", new[] { "Birthdate" })
+                new ValidationResult(
+                    "Invalid birthdate format. Please use 'yyyy-MM-dd'.",
+                    new[] { "Birthdate" }
+                ),
             };
 
             throw ValidationFailedException.FromValidationResults(errors);

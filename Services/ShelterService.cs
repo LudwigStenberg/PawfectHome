@@ -54,7 +54,7 @@ public class ShelterService : IShelterService
             Name = request.Name,
             Description = request.Description ?? "No description",
             Email = request.Email,
-            UserId = userId
+            UserId = userId,
         };
 
         logger.LogInformation(
@@ -113,13 +113,14 @@ public class ShelterService : IShelterService
             UserId = shelter.UserId,
 
             // TODO: Replace the PetResponseTemp with actual PetResponse when it is ready.
-            Pets = shelter.Pets.Select(pet => new PetResponseTemp
-            {
-                Id = pet.Id,
-                Name = pet.Name,
-                Species = pet.Species
-
-            }).ToList()
+            Pets = shelter
+                .Pets.Select(pet => new PetResponseTemp
+                {
+                    Id = pet.Id,
+                    Name = pet.Name,
+                    Species = pet.Species,
+                })
+                .ToList(),
         };
     }
 
@@ -133,15 +134,16 @@ public class ShelterService : IShelterService
 
         logger.LogInformation("Retrieved {Count} shelters from the repository", allShelters.Count);
 
-        return allShelters.Select(shelter => new ShelterSummaryResponse()
-        {
-            Id = shelter.Id,
-            Name = shelter.Name,
-            Description = shelter.Description,
-            Email = shelter.Email,
-            PetCount = shelter.PetCount
-
-        }).ToList();
+        return allShelters
+            .Select(shelter => new ShelterSummaryResponse()
+            {
+                Id = shelter.Id,
+                Name = shelter.Name,
+                Description = shelter.Description,
+                Email = shelter.Email,
+                PetCount = shelter.PetCount,
+            })
+            .ToList();
     }
 
     /// <summary>
@@ -204,12 +206,14 @@ public class ShelterService : IShelterService
             Description = existingShelter.Description,
             Email = existingShelter.Email,
             UserId = existingShelter.UserId,
-            Pets = existingShelter.Pets.Select(pet => new PetResponseTemp
-            {
-                Id = pet.Id,
-                Name = pet.Name,
-                Species = pet.Species
-            }).ToList()
+            Pets = existingShelter
+                .Pets.Select(pet => new PetResponseTemp
+                {
+                    Id = pet.Id,
+                    Name = pet.Name,
+                    Species = pet.Species,
+                })
+                .ToList(),
         };
     }
 

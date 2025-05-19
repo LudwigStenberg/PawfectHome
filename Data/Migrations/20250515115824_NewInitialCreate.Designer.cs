@@ -11,8 +11,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace PawfectHome.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20250507114540_IdentityCore")]
-    partial class IdentityCore
+    [Migration("20250515115824_NewInitialCreate")]
+    partial class NewInitialCreate
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -32,8 +32,9 @@ namespace PawfectHome.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
-                    b.Property<int>("AdoptionStatus")
-                        .HasColumnType("integer");
+                    b.Property<string>("AdoptionStatus")
+                        .IsRequired()
+                        .HasColumnType("text");
 
                     b.Property<DateTime>("CreatedDate")
                         .HasColumnType("timestamp with time zone");
@@ -194,8 +195,8 @@ namespace PawfectHome.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
-                    b.Property<int>("Age")
-                        .HasColumnType("integer");
+                    b.Property<DateTime>("Birthdate")
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("Breed")
                         .IsRequired()
@@ -205,8 +206,9 @@ namespace PawfectHome.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<int>("Gender")
-                        .HasColumnType("integer");
+                    b.Property<string>("Gender")
+                        .IsRequired()
+                        .HasColumnType("text");
 
                     b.Property<bool>("HasPedigree")
                         .HasColumnType("boolean");
@@ -214,7 +216,7 @@ namespace PawfectHome.Migrations
                     b.Property<string>("ImageURL")
                         .HasColumnType("text");
 
-                    b.Property<bool>("IsNeutured")
+                    b.Property<bool>("IsNeutered")
                         .HasColumnType("boolean");
 
                     b.Property<string>("Name")
@@ -224,8 +226,9 @@ namespace PawfectHome.Migrations
                     b.Property<int>("ShelterId")
                         .HasColumnType("integer");
 
-                    b.Property<int>("Species")
-                        .HasColumnType("integer");
+                    b.Property<string>("Species")
+                        .IsRequired()
+                        .HasColumnType("text");
 
                     b.HasKey("Id");
 
@@ -254,7 +257,14 @@ namespace PawfectHome.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("text");
+
                     b.HasKey("Id");
+
+                    b.HasIndex("UserId")
+                        .IsUnique();
 
                     b.ToTable("Shelters");
                 });
@@ -312,9 +322,6 @@ namespace PawfectHome.Migrations
                     b.Property<string>("SecurityStamp")
                         .HasColumnType("text");
 
-                    b.Property<int>("ShelterId")
-                        .HasColumnType("integer");
-
                     b.Property<bool>("TwoFactorEnabled")
                         .HasColumnType("boolean");
 
@@ -331,10 +338,7 @@ namespace PawfectHome.Migrations
                         .IsUnique()
                         .HasDatabaseName("UserNameIndex");
 
-                    b.HasIndex("ShelterId")
-                        .IsUnique();
-
-                    b.ToTable("AspNetUsers", (string)null);
+                    b.ToTable("Users", (string)null);
                 });
 
             modelBuilder.Entity("AdoptionApplicationEntity", b =>
@@ -418,15 +422,15 @@ namespace PawfectHome.Migrations
                     b.Navigation("Shelter");
                 });
 
-            modelBuilder.Entity("UserEntity", b =>
+            modelBuilder.Entity("ShelterEntity", b =>
                 {
-                    b.HasOne("ShelterEntity", "Shelter")
-                        .WithOne("User")
-                        .HasForeignKey("UserEntity", "ShelterId")
+                    b.HasOne("UserEntity", "User")
+                        .WithOne("Shelter")
+                        .HasForeignKey("ShelterEntity", "UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("Shelter");
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("PetEntity", b =>
@@ -437,14 +441,14 @@ namespace PawfectHome.Migrations
             modelBuilder.Entity("ShelterEntity", b =>
                 {
                     b.Navigation("Pets");
-
-                    b.Navigation("User")
-                        .IsRequired();
                 });
 
             modelBuilder.Entity("UserEntity", b =>
                 {
                     b.Navigation("AdoptionApplications");
+
+                    b.Navigation("Shelter")
+                        .IsRequired();
                 });
 #pragma warning restore 612, 618
         }

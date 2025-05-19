@@ -29,4 +29,9 @@ public class PetRepository : IPetRepository
         await appDbContext.SaveChangesAsync();
         return petEntity;
     }
+
+    public async Task<IEnumerable<PetEntity>> FetchAllPetsAsync()
+    {
+        return await appDbContext.Pets.Include(p => p.Shelter).ToListAsync();
+    }
 }
