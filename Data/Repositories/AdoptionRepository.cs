@@ -16,6 +16,7 @@ public class AdoptionRepository : IAdoptionRepository
 
     public async Task DeleteAdoptionApplicationAsync(AdoptionApplicationEntity adoptionApplication)
     {
-        throw new NotImplementedException();
+        context.AdoptionApplications.Remove(adoptionApplication);
+        await context.SaveChangesAsync();
     }
 }
