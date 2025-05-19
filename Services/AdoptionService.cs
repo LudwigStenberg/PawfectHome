@@ -94,7 +94,7 @@ public class AdoptionService : IAdoptionService
     {
         logger.LogInformation("Starting deletion of adoption application with ID: {AdoptionApplicationId}. Deletion request made by user ID: {RequestingUserId}", id, userId);
 
-        var adoptionApplication = await FetchAdoptionApplicationByIdAsync(id);
+        var adoptionApplication = await adoptionRepository.FetchAdoptionApplicationByIdAsync(id);
         if (adoptionApplication == null)
         {
             logger.LogWarning("The adoption application with ID {AdoptionApplicationId} could not be found", id);

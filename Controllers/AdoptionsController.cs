@@ -73,22 +73,34 @@ public class AdoptionsController : ControllerBase
     [Authorize]
     public async Task<IActionResult> DeleteAdoptionApplication(int id)
     {
+        string? userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
         try
         {
-            string? userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
             if (string.IsNullOrEmpty(userId))
             {
                 return Unauthorized();
             }
 
-            await RemoveAdoptionApplicationAsync(id, userId);
+            await adoptionService.RemoveAdoptionApplicationAsync(id, userId);
             return NoContent();
         }
-        catch (Exception)
+        catch (KeyNotFoundException)
         {
-
-            throw;
+            return NotFound();
         }
+        catch (UnauthorizedAccessException)
+        {
+            return Unauthorized();
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(
+                ex, "An unexpected error occurred while deleting an adoption application for ID: {AdoptionApplicationId}, UserId: {UserId}. Message: {Message}",
+                    id, userId, ex.Message);
 
+            return StatusCode(500, "An unexpected error occurred while deleting the adoption application.");
+        }
     }
 }
