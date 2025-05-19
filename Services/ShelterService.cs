@@ -87,7 +87,7 @@ public class ShelterService : IShelterService
     /// Asynchronously retrieves information about a shelter based on the shelter ID provided. Also includes a collection of pets associated with that shelter.
     /// </summary>
     /// <param name="id">The ID of the shelter that is used in the retrieval request.</param>
-    /// <returns>A ShelterResponse DTO which includes basic information about the shelter in addition to a list of PetResponses associated with it.</returns>
+    /// <returns>A ShelterResponse DTO which includes basic information about the shelter in addition to a list of PetSummaryResponse associated with it.</returns>
     /// <exception cref="KeyNotFoundException">Thrown when the shelter cannot be found.</exception>
     public async Task<ShelterDetailResponse> GetShelterAsync(int id)
     {
@@ -112,13 +112,15 @@ public class ShelterService : IShelterService
             Email = shelter.Email,
             UserId = shelter.UserId,
 
-            // TODO: Replace the PetResponseTemp with actual PetResponse when it is ready.
             Pets = shelter
-                .Pets.Select(pet => new PetResponseTemp
+                .Pets.Select(pet => new PetSummaryResponse
                 {
                     Id = pet.Id,
                     Name = pet.Name,
+                    Birthdate = pet.Birthdate,
+                    Gender = pet.Gender,
                     Species = pet.Species,
+                    ImageURL = pet.ImageURL
                 })
                 .ToList(),
         };
@@ -206,12 +208,16 @@ public class ShelterService : IShelterService
             Description = existingShelter.Description,
             Email = existingShelter.Email,
             UserId = existingShelter.UserId,
+
             Pets = existingShelter
-                .Pets.Select(pet => new PetResponseTemp
+                .Pets.Select(pet => new PetSummaryResponse
                 {
                     Id = pet.Id,
                     Name = pet.Name,
+                    Birthdate = pet.Birthdate,
+                    Gender = pet.Gender,
                     Species = pet.Species,
+                    ImageURL = pet.ImageURL
                 })
                 .ToList(),
         };
