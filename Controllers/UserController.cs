@@ -17,7 +17,7 @@ public class UsersController : ControllerBase
     {
         try
         {
-            var userResponse = await userService.GetUserAsync;
+            var userResponse = await userService.GetUserAsync(id);
             return Ok(userResponse);
         }
         catch (KeyNotFoundException ex)
