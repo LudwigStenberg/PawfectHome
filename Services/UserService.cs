@@ -11,6 +11,13 @@ public class UserService : IUserService
         this.userRepository = userRepository;
     }
 
+    /// <summary>
+    /// Recieves a request for fetching a specific user.
+    /// </summary>
+    /// <param name="id">Used to identify what user to fetch</param>
+    /// <returns> User with meta data related to the specific user</returns>
+    /// <exception cref="KeyNotFoundException"> If not found throw exception</exception>
+
     public async Task<UserSummaryResponse> GetUserAsync(string id)
     {
         var user = await userRepository.FetchUserAsync(id);
