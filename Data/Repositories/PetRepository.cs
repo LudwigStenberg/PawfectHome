@@ -34,4 +34,10 @@ public class PetRepository : IPetRepository
     {
         return await appDbContext.Pets.Include(p => p.Shelter).ToListAsync();
     }
+
+    public async Task DeletePetAsync(PetEntity petEntity)
+    {
+        appDbContext.Pets.Remove(petEntity);
+        await appDbContext.SaveChangesAsync();
+    }
 }
