@@ -46,7 +46,7 @@ public class PetsController : ControllerBase
 
         return Ok(pets);
     }
-    
+
     [HttpPost]
     [Authorize(Roles = "ShelterOwner")]
     public async Task<IActionResult> CreatePet([FromBody] RegisterPetRequest request)
@@ -95,6 +95,38 @@ public class PetsController : ControllerBase
                 ex.Message
             );
             return StatusCode(500, "An unexpected error occured while registering the pet.");
+        }
+    }
+
+    [HttpDelete("{id}")]
+    [Authorize(Roles = "ShelterOwner")]
+    public async Task<IActionResult> DeletePet(int id)
+    {
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        try
+        {
+            await petService.RemovePetAsync(id);
+            return NoContent();
+        }
+        catch (ArgumentException ex)
+        {
+            logger.LogWarning(
+                ex,
+                "Validation failed when deleting a pet for UserId: {UserId}. Message: {Message}",
+                userId,
+                ex.Message
+            );
+            return BadRequest(new { Message = ex.Message });
+        }
+        catch (KeyNotFoundException ex)
+        {
+            logger.LogWarning(
+                ex,
+                "Pet not found while deleting a pet for UserId: {UserId}. Message: {Message}",
+                userId,
+                ex.Message
+            );
+            return NotFound(new { Message = "The specified pet could not be found" });
         }
     }
 }
