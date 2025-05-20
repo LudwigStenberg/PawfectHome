@@ -1,4 +1,6 @@
 public interface IAdoptionRepository
 {
-    Task<AdoptionApplicationEntity> CreateAdoptionAsync(AdoptionApplicationEntity newAdoptionApplication);
+    public Task<AdoptionApplicationEntity> CreateAdoptionAsync(AdoptionApplicationEntity newAdoptionApplication);
+
+    public Task<AdoptionApplicationEntity> FetchAdoptionApplicationByIdAsync(int id);
 }
