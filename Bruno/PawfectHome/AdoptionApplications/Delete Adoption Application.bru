@@ -4,10 +4,10 @@ meta {
   seq: 2
 }
 
-get {
+delete {
   url: http://localhost:5245/Adoptions/:id
   body: none
-  auth: inherit
+  auth: none
 }
 
 params:path {
@@ -15,5 +15,5 @@ params:path {
 }
 
 headers {
-  Authorization: Bearer 
+  Authorization: Bearer
 }
