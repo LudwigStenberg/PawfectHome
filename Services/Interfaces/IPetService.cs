@@ -4,5 +4,5 @@ public interface IPetService
     Task<RegisterPetResponse> RegisterPetAsync(RegisterPetRequest request);
 
     Task<IEnumerable<GetPetResponse>> GetAllPetsAsync();
-    Task RemovePetAsync(int id);
+    Task RemovePetAsync(int id, string userId);
 }
