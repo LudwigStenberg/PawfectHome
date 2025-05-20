@@ -7,16 +7,16 @@ meta {
 post {
   url: http://localhost:5245/Adoptions
   body: json
-  auth: bearer
+  auth: none
 }
 
-auth:bearer {
-  token: 15530516-8ae6-42ac-9e42-cabe8ba51444
+headers {
+  Authorization: Bearer 
 }
 
 body:json {
   {
-    "UserId": "15530516-8ae6-42ac-9e42-cabe8ba51444",
+    "UserId": "97266825-6078-4ef3-9d39-e82ee950ee2b",
     "PetId": 1
   }
 }
