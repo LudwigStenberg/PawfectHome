@@ -1,3 +1,4 @@
+using System.Security.Claims;
 using Microsoft.EntityFrameworkCore;
 
 public class UserService : IUserService
@@ -12,14 +13,25 @@ public class UserService : IUserService
     }
 
     /// <summary>
-    /// Recieves a request for fetching a specific user.
+    /// Recieves a request for fetching a specific user. Compare with id from logged in user using ClaimsPrinciple.
     /// </summary>
     /// <param name="id">Used to identify what user to fetch</param>
+    /// <param name="currentUser">The user logged in </param>
     /// <returns> User with meta data related to the specific user</returns>
-    /// <exception cref="KeyNotFoundException"> If not found throw exception</exception>
+    /// <exception cref="UnauthorizedAccessException">If current user is not same as the user being fetched throw an unauthoization exception</exception>
+    /// <exception cref="KeyNotFoundException">If not found throw exception</exception> <summary>
 
-    public async Task<UserSummaryResponse> GetUserAsync(string id)
+    public async Task<UserSummaryResponse> GetUserAsync(string id, ClaimsPrincipal currentUser)
     {
+        var currentUserId = currentUser.FindFirstValue(ClaimTypes.NameIdentifier);
+        var sameUser = currentUserId == id;
+
+        if (!sameUser)
+        {
+            logger.LogWarning("Current user does not have permission to access. ");
+            throw new UnauthorizedAccessException("You can only access your own information");
+        }
+
         var user = await userRepository.FetchUserAsync(id);
 
         if (user == null)

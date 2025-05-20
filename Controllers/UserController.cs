@@ -1,4 +1,6 @@
 using System.CodeDom.Compiler;
+using System.Security.Claims;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 [ApiController]
@@ -13,12 +15,17 @@ public class UsersController : ControllerBase
     }
 
     [HttpGet("{id}")]
+    [Authorize]
     public async Task<IActionResult> GetUser(string id)
     {
         try
         {
-            var userResponse = await userService.GetUserAsync(id);
+            var userResponse = await userService.GetUserAsync(id, User);
             return Ok(userResponse);
+        }
+        catch (UnauthorizedAccessException)
+        {
+            return Forbid();
         }
         catch (KeyNotFoundException ex)
         {
