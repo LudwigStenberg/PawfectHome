@@ -82,6 +82,59 @@ public class AdoptionService : IAdoptionService
     }
 
     /// <summary>
+    /// Retrieves an adoption application based on its ID.
+    /// </summary>
+    /// <param name="request">
+    /// The request containing the ID of the adoption application to retrieve.
+    /// </param>
+    /// <returns>
+    /// A response containing information about the found adoption application.
+    /// </returns>
+    /// <exception cref="KeyNotFoundException">
+    /// Thrown when the specified adoption application is not found.
+    /// </exception>
+    /// <exception cref="ValidationFailedException">
+    /// Thrown when the model validation fails.
+    /// </exception>
+    public async Task<GetAdoptionApplicationResponse> GetAdoptionApplicationAsync(GetAdoptionApplicationRequest request)
+    {
+        logger.LogInformation("Validating GetAdoptionApplicationRequest for retrieval of adoption with ID: {Id}", request.Id);
+
+
+        modelValidator.ValidateModel(request);
+
+
+        var adoptionApplication = await adoptionRepository.FetchAdoptionApplicationByIdAsync(request.Id);
+
+
+        if (adoptionApplication == null)
+        {
+            logger.LogWarning("No adoption application found with ID: {Id}", request.Id);
+            throw new KeyNotFoundException($"No adoption application found with ID {request.Id}.");
+        }
+
+
+        var response = new GetAdoptionApplicationResponse
+        {
+            Id = adoptionApplication.Id,
+            CreatedDate = adoptionApplication.CreatedDate,
+            AdoptionStatus = adoptionApplication.AdoptionStatus,
+            UserId = adoptionApplication.UserId,
+            PetId = adoptionApplication.PetId,
+            PetName = adoptionApplication.Pet?.Name,
+        };
+
+        logger.LogInformation(
+            "Adoption application with ID: {Id} successfully retrieved for user ID: {UserId} and pet ID: {PetId}",
+            adoptionApplication.Id,
+            adoptionApplication.UserId,
+            adoptionApplication.PetId
+        );
+
+        return response;
+    }
+
+    /// <summary>
     ///  Removes an adoption application based on the ID passed as an argument. Retrieves the adoption application entity to make sure 
     ///  that it belongs to the user ID which is also passed as an argument.
     /// </summary>

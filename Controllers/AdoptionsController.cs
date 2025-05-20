@@ -15,11 +15,6 @@ public class AdoptionsController : ControllerBase
         this.logger = logger;
     }
 
-    /// <summary>
-    /// Create a new adoption application.
-    /// </summary>
-    /// <param name="request">The adoption application details.</param>
-    /// <returns>The created adoption application.</returns>
     [HttpPost]
     [Authorize]
     public async Task<IActionResult> CreateAdoptionApplication([FromBody] RegisterAdoptionRequest request)
@@ -66,6 +61,79 @@ public class AdoptionsController : ControllerBase
                 ex.Message
             );
             return StatusCode(500, "An unexpected error occurred while registering the adoption application.");
+        }
+    }
+
+    [HttpGet("getById/{id}")]
+    [Authorize]
+    public async Task<IActionResult> GetAdoptionApplication(int id)
+    {
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+        try
+        {
+            var request = new GetAdoptionApplicationRequest
+            {
+                Id = id,
+                UserId = userId
+            };
+            var response = await adoptionService.GetAdoptionApplicationAsync(request);
+
+
+            if (userId != response.UserId && !User.IsInRole("Admin") && !User.IsInRole("Shelter"))
+            {
+                logger.LogWarning(
+                    "User {UserId} attempted to access adoption application {Id} belonging to another user",
+                    userId,
+                    id
+                );
+                return StatusCode(403, "You have no access to this application.");
+            }
+
+            logger.LogInformation(
+                "Adoption application with ID {Id} successfully retrieved",
+                id
+            );
+
+            return Ok(response);
+        }
+        catch (KeyNotFoundException ex)
+        {
+            logger.LogWarning(
+                ex,
+                "Adoption application with ID {Id} was not found. Requested by user: {UserId}. Message: {Message}",
+                id,
+                userId,
+                ex.Message
+            );
+
+            return NotFound(new { Message = ex.Message });
+        }
+        catch (ValidationFailedException ex)
+        {
+            logger.LogWarning(
+                ex,
+                "Validation failed while retrieving adoption application with ID {Id} for user: {UserId}. Errors: {@Errors}",
+                id,
+                userId,
+                ex.Errors
+            );
+
+            return BadRequest(
+                new { Message = "Validation failed. Please check the errors.", Errors = ex.Errors }
+            );
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(
+                ex,
+                "An unexpected error occurred while retrieving adoption application with ID {Id} for user: {UserId}. Message: {Message}",
+                id,
+                userId,
+                ex.Message
+            );
+
+            return StatusCode(500, "An unexpected error occurred while retrieving the adoption application.");
         }
     }
 
