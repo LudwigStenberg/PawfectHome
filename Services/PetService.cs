@@ -195,4 +195,27 @@ public class PetService : IPetService
 
         return response;
     }
+
+    /// <summary>
+    /// Removes a pet from the database.
+    /// </summary>
+    /// <param name="id">The id of the pet to be removed.</param>
+    /// <exception cref="ArgumentException">Thrown when id is a non-positive integer.</exception>
+    /// <exception cref="KeyNotFoundException">Thrown when the specified pet is not found.</exception>
+    public async Task RemovePetAsync(int id)
+    {
+        if (id <= 0)
+        {
+            throw new ArgumentException("Pet ID must be a positive number.", nameof(id));
+        }
+
+        var pet = await petRepository.FetchPetAsync(id);
+
+        if (pet == null)
+        {
+            throw new KeyNotFoundException($"No Pet found with ID {id}.");
+        }
+
+        await petRepository.DeletePetAsync(pet);
+    }
 }
