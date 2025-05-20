@@ -103,30 +103,28 @@ public class PetsController : ControllerBase
     public async Task<IActionResult> DeletePet(int id)
     {
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+        if (string.IsNullOrWhiteSpace(userId))
+        {
+            return Unauthorized();
+        }
+
         try
         {
-            await petService.RemovePetAsync(id);
+            await petService.RemovePetAsync(id, userId);
             return NoContent();
         }
         catch (ArgumentException ex)
         {
-            logger.LogWarning(
-                ex,
-                "Validation failed when deleting a pet for UserId: {UserId}. Message: {Message}",
-                userId,
-                ex.Message
-            );
             return BadRequest(new { Message = ex.Message });
         }
-        catch (KeyNotFoundException ex)
+        catch (UnauthorizedAccessException)
         {
-            logger.LogWarning(
-                ex,
-                "Pet not found while deleting a pet for UserId: {UserId}. Message: {Message}",
-                userId,
-                ex.Message
-            );
-            return NotFound(new { Message = "The specified pet could not be found" });
+            return Forbid();
+        }
+        catch (KeyNotFoundException)
+        {
+            return NotFound();
         }
     }
 }
