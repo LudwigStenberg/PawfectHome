@@ -143,4 +143,44 @@ public class AdoptionsController : ControllerBase
             );
         }
     }
+
+    [HttpDelete("{id}")]
+    [Authorize]
+    public async Task<IActionResult> DeleteAdoptionApplication(int id)
+    {
+        string? userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+        if (string.IsNullOrEmpty(userId))
+        {
+            return Unauthorized();
+        }
+
+        try
+        {
+            await adoptionService.RemoveAdoptionApplicationAsync(id, userId);
+            return NoContent();
+        }
+        catch (KeyNotFoundException)
+        {
+            return NotFound();
+        }
+        catch (UnauthorizedAccessException)
+        {
+            return Unauthorized();
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(
+                ex,
+                "An unexpected error occurred while deleting adoption application with ID {AdoptionApplicationId} by user {UserId}",
+                id,
+                userId
+            );
+
+            return StatusCode(
+                500,
+                "An unexpected error occurred while deleting the adoption application."
+            );
+        }
+    }
 }

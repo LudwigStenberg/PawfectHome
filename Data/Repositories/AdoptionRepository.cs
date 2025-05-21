@@ -26,4 +26,10 @@ public class AdoptionRepository : IAdoptionRepository
             .ThenInclude(p => p.Shelter)
             .FirstOrDefaultAsync(a => a.Id == id);
     }
+
+    public async Task DeleteAdoptionApplicationAsync(AdoptionApplicationEntity adoptionApplication)
+    {
+        context.AdoptionApplications.Remove(adoptionApplication);
+        await context.SaveChangesAsync();
+    }
 }
