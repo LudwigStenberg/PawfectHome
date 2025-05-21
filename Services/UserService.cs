@@ -21,10 +21,9 @@ public class UserService : IUserService
     /// <exception cref="UnauthorizedAccessException">If current user is not same as the user being fetched throw an unauthoization exception</exception>
     /// <exception cref="KeyNotFoundException">If not found throw exception</exception> <summary>
 
-    public async Task<UserSummaryResponse> GetUserAsync(string id, ClaimsPrincipal currentUser)
+    public async Task<UserSummaryResponse> GetUserAsync(string id, string userId)
     {
-        var currentUserId = currentUser.FindFirstValue(ClaimTypes.NameIdentifier);
-        var sameUser = currentUserId == id;
+        var sameUser = userId == id;
 
         if (!sameUser)
         {
@@ -55,10 +54,9 @@ public class UserService : IUserService
     /// <param name="currentUser">The user logged in  </param>
     /// <returns></returns>
 
-    public async Task RemoveUserAsync(string id, ClaimsPrincipal currentUser)
+    public async Task RemoveUserAsync(string id, string userId)
     {
-        var currentUserId = currentUser.FindFirstValue(ClaimTypes.NameIdentifier);
-        var sameUser = currentUserId == id;
+        var sameUser = userId == id;
 
         if (!sameUser)
         {

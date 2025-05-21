@@ -20,7 +20,12 @@ public class UsersController : ControllerBase
     {
         try
         {
-            var userResponse = await userService.GetUserAsync(id, User);
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(userId))
+            {
+                return Unauthorized();
+            }
+            var userResponse = await userService.GetUserAsync(id, userId);
             return Ok(userResponse);
         }
         catch (UnauthorizedAccessException)
@@ -42,7 +47,12 @@ public class UsersController : ControllerBase
     {
         try
         {
-            await userService.RemoveUserAsync(id, User);
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(userId))
+            {
+                return Unauthorized();
+            }
+            await userService.RemoveUserAsync(id, userId);
 
             return NoContent();
         }
