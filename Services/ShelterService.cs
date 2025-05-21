@@ -92,7 +92,7 @@ public class ShelterService : IShelterService
     /// </summary>
     /// <param name="id">The ID of the shelter that is used in the retrieval request.</param>
     /// <returns>A ShelterResponse DTO which includes basic information about the shelter in addition to a list of PetSummaryResponse associated with it.</returns>
-    /// <exception cref="KeyNotFoundException">Thrown when the shelter cannot be found.</exception>
+    /// <exception cref="ShelterNotFoundException">Thrown when the shelter cannot be found.</exception>
     public async Task<ShelterDetailResponse> GetShelterAsync(int id)
     {
         logger.LogInformation(
@@ -105,7 +105,7 @@ public class ShelterService : IShelterService
         if (shelter == null)
         {
             logger.LogWarning("Shelter with ID: {ShelterId} could not be found.", id);
-            throw new KeyNotFoundException($"Shelter with ID {id} could not be found.");
+            throw new ShelterNotFoundException(id);
         }
 
         return new ShelterDetailResponse()
@@ -173,7 +173,7 @@ public class ShelterService : IShelterService
         if (existingShelter == null)
         {
             logger.LogWarning("The shelter with ID: {ShelterId} could not be found", id);
-            throw new KeyNotFoundException($"Shelter with ID {id} could not be found.");
+            throw new ShelterNotFoundException(id);
         }
 
         if (existingShelter.UserId != userId)

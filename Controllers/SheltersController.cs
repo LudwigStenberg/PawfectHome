@@ -70,7 +70,7 @@ public class SheltersController : ControllerBase
         }
         catch (ShelterNotFoundException ex)
         {
-            return NotFound(ex.Message);
+            return NotFound(new { Message = ex.Message });
         }
         catch (Exception ex)
         {
@@ -114,9 +114,9 @@ public class SheltersController : ControllerBase
             var response = await shelterService.UpdateShelterAsync(id, userId, request);
             return Ok(response);
         }
-        catch (KeyNotFoundException)
+        catch (ShelterNotFoundException ex)
         {
-            return NotFound();
+            return NotFound(new { Message = ex.Message });
         }
         catch (UnauthorizedAccessException)
         {
