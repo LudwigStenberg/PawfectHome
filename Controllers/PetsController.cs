@@ -35,7 +35,7 @@ public class PetsController : ControllerBase
         }
         catch (Exception)
         {
-            return StatusCode(500, "Your pet is dead...bitch");
+            return StatusCode(500, "Unexpected error occured while fetching pet");
         }
     }
 
@@ -46,7 +46,7 @@ public class PetsController : ControllerBase
 
         return Ok(pets);
     }
-    
+
     [HttpPost]
     [Authorize(Roles = "ShelterOwner")]
     public async Task<IActionResult> CreatePet([FromBody] RegisterPetRequest request)
@@ -83,7 +83,6 @@ public class PetsController : ControllerBase
                 ex.Message
             );
 
-            return NotFound(new { Message = "The specified shelter could not be found." });
             return NotFound(new { Message = "The specified shelter could not be found." });
         }
         catch (Exception ex)

@@ -9,7 +9,10 @@ public class AdoptionsController : ControllerBase
     private readonly ILogger<AdoptionsController> logger;
     private readonly IAdoptionService adoptionService;
 
-    public AdoptionsController(IAdoptionService adoptionService, ILogger<AdoptionsController> logger)
+    public AdoptionsController(
+        IAdoptionService adoptionService,
+        ILogger<AdoptionsController> logger
+    )
     {
         this.adoptionService = adoptionService;
         this.logger = logger;
@@ -17,7 +20,9 @@ public class AdoptionsController : ControllerBase
 
     [HttpPost]
     [Authorize]
-    public async Task<IActionResult> CreateAdoptionApplication([FromBody] RegisterAdoptionRequest request)
+    public async Task<IActionResult> CreateAdoptionApplication(
+        [FromBody] RegisterAdoptionRequest request
+    )
     {
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
         try
@@ -28,7 +33,11 @@ public class AdoptionsController : ControllerBase
                 result.Id,
                 userId
             );
-            return CreatedAtAction(nameof(CreateAdoptionApplication), new { id = result.Id }, result);
+            return CreatedAtAction(
+                nameof(CreateAdoptionApplication),
+                new { id = result.Id },
+                result
+            );
         }
         catch (ValidationFailedException ex)
         {
@@ -60,7 +69,10 @@ public class AdoptionsController : ControllerBase
                 userId,
                 ex.Message
             );
-            return StatusCode(500, "An unexpected error occurred while registering the adoption application.");
+            return StatusCode(
+                500,
+                "An unexpected error occurred while registering the adoption application."
+            );
         }
     }
 
@@ -72,13 +84,8 @@ public class AdoptionsController : ControllerBase
 
         try
         {
-            var request = new GetAdoptionApplicationRequest
-            {
-                Id = id,
-                UserId = userId
-            };
+            var request = new GetAdoptionApplicationRequest { Id = id, UserId = userId };
             var response = await adoptionService.GetAdoptionApplicationAsync(request);
-
 
             if (userId != response.UserId && !User.IsInRole("Admin") && !User.IsInRole("Shelter"))
             {
@@ -90,10 +97,7 @@ public class AdoptionsController : ControllerBase
                 return StatusCode(403, "You have no access to this application.");
             }
 
-            logger.LogInformation(
-                "Adoption application with ID {Id} successfully retrieved",
-                id
-            );
+            logger.LogInformation("Adoption application with ID {Id} successfully retrieved", id);
 
             return Ok(response);
         }
@@ -133,7 +137,10 @@ public class AdoptionsController : ControllerBase
                 ex.Message
             );
 
-            return StatusCode(500, "An unexpected error occurred while retrieving the adoption application.");
+            return StatusCode(
+                500,
+                "An unexpected error occurred while retrieving the adoption application."
+            );
         }
     }
 
@@ -164,9 +171,16 @@ public class AdoptionsController : ControllerBase
         catch (Exception ex)
         {
             logger.LogError(
-                ex, "An unexpected error occurred while deleting adoption application with ID {AdoptionApplicationId} by user {UserId}", id, userId);
+                ex,
+                "An unexpected error occurred while deleting adoption application with ID {AdoptionApplicationId} by user {UserId}",
+                id,
+                userId
+            );
 
-            return StatusCode(500, "An unexpected error occurred while deleting the adoption application.");
+            return StatusCode(
+                500,
+                "An unexpected error occurred while deleting the adoption application."
+            );
         }
     }
 }
