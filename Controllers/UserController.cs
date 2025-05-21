@@ -36,4 +36,23 @@ public class UsersController : ControllerBase
             return StatusCode(500, "An error occured while fetching user  ");
         }
     }
+
+    [HttpDelete("{id}")]
+    public async Task<IActionResult> DeleteUser(string id)
+    {
+        try
+        {
+            await userService.RemoveUserAsync(id, User);
+
+            return NoContent();
+        }
+        catch (KeyNotFoundException ex)
+        {
+            return NotFound(ex.Message);
+        }
+        catch (Exception)
+        {
+            return StatusCode(500);
+        }
+    }
 }
