@@ -4,12 +4,14 @@ public class AdoptionRepository : IAdoptionRepository
 {
     private readonly AppDbContext context;
 
-
     public AdoptionRepository(AppDbContext context)
     {
         this.context = context;
     }
-    public async Task<AdoptionApplicationEntity> CreateAdoptionAsync(AdoptionApplicationEntity newAdoptionApplication)
+
+    public async Task<AdoptionApplicationEntity> CreateAdoptionAsync(
+        AdoptionApplicationEntity newAdoptionApplication
+    )
     {
         context.AdoptionApplications.Add(newAdoptionApplication);
         await context.SaveChangesAsync();
@@ -18,11 +20,11 @@ public class AdoptionRepository : IAdoptionRepository
 
     public async Task<AdoptionApplicationEntity> FetchAdoptionApplicationByIdAsync(int id)
     {
-        return await context.AdoptionApplications
-    .Include(a => a.User)
-    .Include(a => a.Pet)
-        .ThenInclude(p => p.Shelter)
-    .FirstOrDefaultAsync(a => a.Id == id);
+        return await context
+            .AdoptionApplications.Include(a => a.User)
+            .Include(a => a.Pet)
+            .ThenInclude(p => p.Shelter)
+            .FirstOrDefaultAsync(a => a.Id == id);
     }
 
     public async Task DeleteAdoptionApplicationAsync(AdoptionApplicationEntity adoptionApplication)

@@ -21,10 +21,9 @@ public class UserService : IUserService
     /// <exception cref="UnauthorizedAccessException">If current user is not same as the user being fetched throw an unauthoization exception</exception>
     /// <exception cref="KeyNotFoundException">If not found throw exception</exception> <summary>
 
-    public async Task<UserSummaryResponse> GetUserAsync(string id, ClaimsPrincipal currentUser)
+    public async Task<UserSummaryResponse> GetUserAsync(string id, string userId)
     {
-        var currentUserId = currentUser.FindFirstValue(ClaimTypes.NameIdentifier);
-        var sameUser = currentUserId == id;
+        var sameUser = userId == id;
 
         if (!sameUser)
         {
@@ -47,4 +46,31 @@ public class UserService : IUserService
         };
         return response;
     }
+
+    /// <summary>
+    /// Recieves a request for fetching a specific user corresponding with sent id, if same as current user, delete user from db.
+    /// </summary>
+    /// <param name="id">Used to identify what user to fetch</param>
+    /// <param name="currentUser">The user logged in  </param>
+    /// <returns></returns>
+
+    public async Task RemoveUserAsync(string id, string userId)
+    {
+        var sameUser = userId == id;
+
+        if (!sameUser)
+        {
+            logger.LogWarning("Current user does not have permission to access. ");
+            throw new UnauthorizedAccessException("You can only access your own information");
+        }
+        var user = await userRepository.FetchUserAsync(id);
+
+        if (user == null)
+        {
+            logger.LogWarning("User with id {userId} was not found", id);
+            throw new KeyNotFoundException("User not found");
+        }
+        await userRepository.DeleteUserAsync(id);
+    }
 }
+//TODO Maybe move out claims to controller and instead send current userid to service instead of all metadata related to user.
