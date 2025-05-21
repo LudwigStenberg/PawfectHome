@@ -34,11 +34,11 @@ public class ShelterService : IShelterService
     ///   - AuthChanged: A boolean indicating whether the user's authentication state was changed by assigning the ShelterOwner role
     /// </returns>
     /// <exception cref="ArgumentException">Thrown when userId is null or empty, or when the request object is null.</exception>
-    /// <exception cref="ValidationException">Thrown when a user who already has a shelter attempts to register another one. Each user can only have one shelter at a time.</exception>
-    public async Task<(
-        RegisterShelterDetailResponse Shelter,
-        bool AuthChanged
-    )> RegisterShelterAsync(string userId, RegisterShelterRequest request)
+    /// <exception cref="MultipleSheltersNotAllowedException">Thrown when a user who already has a shelter attempts to register another one. Each user can only have one shelter at a time.</exception>
+    public async Task<(RegisterShelterDetailResponse Shelter, bool AuthChanged)> RegisterShelterAsync(
+        string userId,
+        RegisterShelterRequest request
+    )
     {
         logger.LogInformation("Starting shelter registration for user {UserId}.", userId);
 
@@ -48,9 +48,7 @@ public class ShelterService : IShelterService
         if (existingShelter)
         {
             logger.LogWarning("User {UserId} attempted to register a second shelter.", userId);
-            throw new ValidationException(
-                "User already has a shelter. Each user can only have one shelter registered at a time."
-            );
+            throw new MultipleSheltersNotAllowedException(userId);
         }
 
         var newShelter = new ShelterEntity
@@ -92,7 +90,7 @@ public class ShelterService : IShelterService
     /// </summary>
     /// <param name="id">The ID of the shelter that is used in the retrieval request.</param>
     /// <returns>A ShelterResponse DTO which includes basic information about the shelter in addition to a list of PetSummaryResponse associated with it.</returns>
-    /// <exception cref="KeyNotFoundException">Thrown when the shelter cannot be found.</exception>
+    /// <exception cref="ShelterNotFoundException">Thrown when the shelter cannot be found.</exception>
     public async Task<ShelterDetailResponse> GetShelterAsync(int id)
     {
         logger.LogInformation(
@@ -105,7 +103,7 @@ public class ShelterService : IShelterService
         if (shelter == null)
         {
             logger.LogWarning("Shelter with ID: {ShelterId} could not be found.", id);
-            throw new KeyNotFoundException($"Shelter with ID {id} could not be found.");
+            throw new ShelterNotFoundException(id);
         }
 
         return new ShelterDetailResponse()
@@ -161,13 +159,9 @@ public class ShelterService : IShelterService
     /// <param name="userId">The ID of the user requesting the update.</param>
     /// <param name="request">The ShelterUpdateRequest DTO which contains the new value or values.</param>
     /// <returns>A ShelterDetailResponse DTO containing Id, Name, Description, Email, UserId and a list of Pets.</returns>
-    /// <exception cref="KeyNotFoundException">Thrown when FetchShelterById method fails and the shelter cannot be found.</exception>
-    /// <exception cref="UnauthorizedAccessException">Thrown when the retrieved shelter's UserId does not match the userId method parameter.</exception>
-    public async Task<ShelterDetailResponse> UpdateShelterAsync(
-        int id,
-        string userId,
-        ShelterUpdateRequest request
-    )
+    /// <exception cref="ShelterNotFoundException">Thrown when FetchShelterById method fails and the shelter cannot be found.</exception>
+    /// <exception cref="ShelterOwnershipException">Thrown when the retrieved shelter's UserId does not match the userId method parameter.</exception>
+    public async Task<ShelterDetailResponse> UpdateShelterAsync(int id, string userId, ShelterUpdateRequest request)
     {
         logger.LogInformation("Starting update for shelter with ID: {ShelterId}. Update request made by user ID: {RequestingUserId}", id, userId);
 
@@ -177,20 +171,14 @@ public class ShelterService : IShelterService
         if (existingShelter == null)
         {
             logger.LogWarning("The shelter with ID: {ShelterId} could not be found", id);
-            throw new KeyNotFoundException($"Shelter with ID {id} could not be found.");
+            throw new ShelterNotFoundException(id);
         }
 
         if (existingShelter.UserId != userId)
         {
-            logger.LogWarning(
-                "Authorization failure: User {RequestingUserId} attempted to update shelter {ShelterId} owned by user {OwnerUserId}.",
-                userId,
-                existingShelter.Id,
-                existingShelter.UserId
-            );
-            throw new UnauthorizedAccessException(
-                "You do not have permission to update this shelter."
-            );
+            logger.LogWarning("Authorization failure: User {RequestingUserId} attempted to update shelter {ShelterId} owned by user {OwnerUserId}.",
+                userId, existingShelter.Id, existingShelter.UserId);
+            throw new ShelterOwnershipException(id, userId);
         }
 
         if (request.Name != null)
@@ -253,8 +241,8 @@ public class ShelterService : IShelterService
     /// <param name="id">The ID of the shelter resource to be deleted.</param>
     /// <param name="userId">The ID of the user requesting the deletion.</param>
     /// <returns>Returns a Task representing the asynchronous operation. No data is returned upon completion.</returns>
-    /// <exception cref="KeyNotFoundException">Thrown when the retrieved shelter is null. The shelter could not be found.</exception>
-    /// <exception cref="UnauthorizedAccessException">Thrown when the User ID associated with the shelter does not match the user ID that was passed in.</exception>
+    /// <exception cref="ShelterNotFoundException">Thrown when the retrieved shelter is null. The shelter could not be found.</exception>
+    /// <exception cref="ShelterOwnershipException">Thrown when the User ID associated with the shelter does not match the user ID that was passed in.</exception>
     /// <remarks>
     /// This method will trigger cascade deletion of all pets associated with the shelter due to database configuration.
     /// However, adoption applications related to those pets will remain in the database to preserve historical data.
@@ -272,20 +260,13 @@ public class ShelterService : IShelterService
         if (shelter == null)
         {
             logger.LogWarning("The shelter with ID: {ShelterId} could not be found", id);
-            throw new KeyNotFoundException($"The shelter with ID: {id} could not be found.");
+            throw new ShelterNotFoundException(id);
         }
 
         if (shelter.UserId != userId)
         {
-            logger.LogWarning(
-                "Authorization failure: User {RequestingUserId} attempted to delete shelter {ShelterId} owned by user {UserId}",
-                userId,
-                id,
-                shelter.UserId
-            );
-            throw new UnauthorizedAccessException(
-                "You do not have permission to delete this shelter."
-            );
+            logger.LogWarning("Authorization failure: User {RequestingUserId} attempted to delete shelter {ShelterId} owned by user {UserId}", userId, id, shelter.UserId);
+            throw new ShelterOwnershipException(id, userId);
         }
 
         logger.LogDebug(

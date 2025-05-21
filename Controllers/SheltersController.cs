@@ -50,9 +50,9 @@ public class SheltersController : ControllerBase
             );
             return StatusCode(500, "An error occurred while saving to the database");
         }
-        catch (ValidationException)
+        catch (MultipleSheltersNotAllowedException)
         {
-            return BadRequest();
+            return Conflict();
         }
         catch (Exception ex)
         {
@@ -73,7 +73,7 @@ public class SheltersController : ControllerBase
             var response = await shelterService.GetShelterAsync(id);
             return Ok(response);
         }
-        catch (KeyNotFoundException)
+        catch (ShelterNotFoundException)
         {
             return NotFound();
         }
@@ -126,13 +126,13 @@ public class SheltersController : ControllerBase
             var response = await shelterService.UpdateShelterAsync(id, userId, request);
             return Ok(response);
         }
-        catch (KeyNotFoundException)
+        catch (ShelterNotFoundException)
         {
             return NotFound();
         }
-        catch (UnauthorizedAccessException)
+        catch (ShelterOwnershipException)
         {
-            return Unauthorized();
+            return Forbid();
         }
         catch (Exception ex)
         {
@@ -161,13 +161,13 @@ public class SheltersController : ControllerBase
             await shelterService.RemoveShelterAsync(id, userId);
             return NoContent();
         }
-        catch (KeyNotFoundException)
+        catch (ShelterNotFoundException)
         {
             return NotFound();
         }
-        catch (UnauthorizedAccessException)
+        catch (ShelterOwnershipException)
         {
-            return Unauthorized();
+            return Forbid();
         }
         catch (Exception ex)
         {
