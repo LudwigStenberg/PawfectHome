@@ -122,15 +122,23 @@ public class PetService : IPetService
     /// <exception cref="ValidationFailedException">
     /// Thrown when the model validation fails or the birthdate format is invalid.
     /// </exception>
-    public async Task<RegisterPetResponse> RegisterPetAsync(RegisterPetRequest request)
+    public async Task<RegisterPetResponse> RegisterPetAsync(
+        RegisterPetRequest request,
+        string userId
+    )
     {
         logger.LogInformation("Validating RegisterPetRequest for registration");
-        modelValidator.ValidateModel(request);
 
-        var shelterExists = await dbContext.Shelters.AnyAsync(s => s.Id == request.ShelterId);
-        if (!shelterExists)
+        try
         {
-            throw new KeyNotFoundException($"No shelter found with ID {request.ShelterId}.");
+            modelValidator.ValidateModel(request);
+        }
+        catch (ValidationFailedException ex)
+        {
+            logger.LogWarning(
+                $"Pet registration failed when validating - {ex.Errors} RequestedBy: {userId}."
+            );
+            throw;
         }
 
         if (
@@ -150,9 +158,14 @@ public class PetService : IPetService
                     new[] { "Birthdate" }
                 ),
             };
-
+            logger.LogWarning(
+                $"Pet registration failed when validating - {errors} RequestedBy: {userId}."
+            );
             throw ValidationFailedException.FromValidationResults(errors);
         }
+
+        var shelter = await shelterService.GetShelterAsync(request.ShelterId);
+
         DateTime utcBirthdate =
             parsedBirthdate.Kind == DateTimeKind.Utc
                 ? parsedBirthdate
@@ -191,8 +204,9 @@ public class PetService : IPetService
         };
 
         logger.LogInformation(
-            "Pet successfully registered: {Name} for ShelterId: {ShelterId}.",
-            result.Name,
+            "Pet successfully registered. PetId: {PetId}, UserId: {UserId}, ShelterId: {ShelterId}",
+            result.Id,
+            userId,
             result.ShelterId
         );
 
