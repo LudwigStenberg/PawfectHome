@@ -34,7 +34,7 @@ public class ShelterService : IShelterService
     ///   - AuthChanged: A boolean indicating whether the user's authentication state was changed by assigning the ShelterOwner role
     /// </returns>
     /// <exception cref="ArgumentException">Thrown when userId is null or empty, or when the request object is null.</exception>
-    /// <exception cref="ValidationException">Thrown when a user who already has a shelter attempts to register another one. Each user can only have one shelter at a time.</exception>
+    /// <exception cref="MultipleSheltersNotAllowedException">Thrown when a user who already has a shelter attempts to register another one. Each user can only have one shelter at a time.</exception>
     public async Task<(RegisterShelterDetailResponse Shelter, bool AuthChanged)> RegisterShelterAsync(
         string userId,
         RegisterShelterRequest request
@@ -48,9 +48,7 @@ public class ShelterService : IShelterService
         if (existingShelter)
         {
             logger.LogWarning("User {UserId} attempted to register a second shelter.", userId);
-            throw new ValidationException(
-                "User already has a shelter. Each user can only have one shelter registered at a time."
-            );
+            throw new MultipleSheltersNotAllowedException(userId);
         }
 
         var newShelter = new ShelterEntity
