@@ -68,7 +68,7 @@ public class SheltersController : ControllerBase
             var response = await shelterService.GetShelterAsync(id);
             return Ok(response);
         }
-        catch (ShelterNotFoundException ex)
+        catch (ShelterNotFoundException)
         {
             return NotFound();
         }
