@@ -160,7 +160,7 @@ public class ShelterService : IShelterService
     /// <param name="request">The ShelterUpdateRequest DTO which contains the new value or values.</param>
     /// <returns>A ShelterDetailResponse DTO containing Id, Name, Description, Email, UserId and a list of Pets.</returns>
     /// <exception cref="ShelterNotFoundException">Thrown when FetchShelterById method fails and the shelter cannot be found.</exception>
-    /// <exception cref="UnauthorizedAccessException">Thrown when the retrieved shelter's UserId does not match the userId method parameter.</exception>
+    /// <exception cref="ShelterOwnershipException">Thrown when the retrieved shelter's UserId does not match the userId method parameter.</exception>
     public async Task<ShelterDetailResponse> UpdateShelterAsync(int id, string userId, ShelterUpdateRequest request)
     {
         logger.LogInformation("Starting update for shelter with ID: {ShelterId}. Update request made by user ID: {RequestingUserId}", id, userId);
@@ -237,7 +237,7 @@ public class ShelterService : IShelterService
     /// <param name="userId">The ID of the user requesting the deletion.</param>
     /// <returns>Returns a Task representing the asynchronous operation. No data is returned upon completion.</returns>
     /// <exception cref="ShelterNotFoundException">Thrown when the retrieved shelter is null. The shelter could not be found.</exception>
-    /// <exception cref="UnauthorizedAccessException">Thrown when the User ID associated with the shelter does not match the user ID that was passed in.</exception>
+    /// <exception cref="ShelterOwnershipException">Thrown when the User ID associated with the shelter does not match the user ID that was passed in.</exception>
     /// <remarks>
     /// This method will trigger cascade deletion of all pets associated with the shelter due to database configuration.
     /// However, adoption applications related to those pets will remain in the database to preserve historical data.
@@ -257,7 +257,7 @@ public class ShelterService : IShelterService
         if (shelter.UserId != userId)
         {
             logger.LogWarning("Authorization failure: User {RequestingUserId} attempted to delete shelter {ShelterId} owned by user {UserId}", userId, id, shelter.UserId);
-            throw new UnauthorizedAccessException("You do not have permission to delete this shelter.");
+            throw new ShelterOwnershipException(id, userId);
         }
 
         logger.LogDebug("Deleting shelter {ShelterId} with {PetCount} associated pets.", id, shelter.Pets.Count);
