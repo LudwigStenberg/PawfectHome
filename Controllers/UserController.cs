@@ -46,6 +46,10 @@ public class UsersController : ControllerBase
 
             return NoContent();
         }
+        catch (UnauthorizedAccessException)
+        {
+            return Forbid();
+        }
         catch (KeyNotFoundException ex)
         {
             return NotFound(ex.Message);
