@@ -3,7 +3,7 @@ public class ShelterNotFoundException : DomainExceptionBase
     public int ShelterId { get; }
 
     public ShelterNotFoundException(int shelterId)
-        : base("Shelter", $"Shelter {shelterId} could not be found.")
+        : base("Shelter", $"Shelter with ID: '{shelterId}' could not be found.")
     {
         ShelterId = shelterId;
     }
