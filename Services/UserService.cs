@@ -47,4 +47,31 @@ public class UserService : IUserService
         };
         return response;
     }
+
+    /// <summary>
+    /// Recieves a request for fetching a specific user corresponding with sent id, if same as current user, delete user from db.
+    /// </summary>
+    /// <param name="id">Used to identify what user to fetch</param>
+    /// <param name="currentUser">The user logged in  </param>
+    /// <returns></returns>
+
+    public async Task RemoveUserAsync(string id, ClaimsPrincipal currentUser)
+    {
+        var currentUserId = currentUser.FindFirstValue(ClaimTypes.NameIdentifier);
+        var sameUser = currentUserId == id;
+
+        if (!sameUser)
+        {
+            logger.LogWarning("Current user does not have permission to access. ");
+            throw new UnauthorizedAccessException("You can only access your own information");
+        }
+        var user = await userRepository.FetchUserAsync(id);
+
+        if (user == null)
+        {
+            logger.LogWarning("User with id {userId} was not found", id);
+            throw new KeyNotFoundException("User not found");
+        }
+        await userRepository.DeleteUserAsync(id);
+    }
 }
