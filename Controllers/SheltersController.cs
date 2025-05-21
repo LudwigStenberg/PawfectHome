@@ -118,9 +118,9 @@ public class SheltersController : ControllerBase
         {
             return NotFound();
         }
-        catch (UnauthorizedAccessException)
+        catch (ShelterOwnershipException)
         {
-            return Unauthorized();
+            return Forbid();
         }
         catch (Exception ex)
         {
@@ -149,9 +149,9 @@ public class SheltersController : ControllerBase
         {
             return NotFound();
         }
-        catch (UnauthorizedAccessException)
+        catch (ShelterOwnershipException)
         {
-            return Unauthorized();
+            return Forbid();
         }
         catch (Exception ex)
         {

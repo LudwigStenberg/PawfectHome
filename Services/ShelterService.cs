@@ -178,7 +178,7 @@ public class ShelterService : IShelterService
         {
             logger.LogWarning("Authorization failure: User {RequestingUserId} attempted to update shelter {ShelterId} owned by user {OwnerUserId}.",
                 userId, existingShelter.Id, existingShelter.UserId);
-            throw new UnauthorizedAccessException("You do not have permission to update this shelter.");
+            throw new ShelterOwnershipException(id, userId);
         }
 
         if (request.Name != null)
