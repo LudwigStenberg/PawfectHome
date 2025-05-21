@@ -166,6 +166,18 @@ public class PetService : IPetService
 
         var shelter = await shelterService.GetShelterAsync(request.ShelterId);
 
+        if (userId != shelter.UserId)
+        {
+            logger.LogWarning(
+                "Pet registration failed - Unauthorized access. RequestedBy: {UserId}, "
+                    + "OwnerUserId: {OwnerUserId}. ShelterId: {ShelterId}",
+                userId,
+                shelter.UserId,
+                shelter.Id
+            );
+            throw new UnauthorizedAccessException("You are not authorized to register this pet.");
+        }
+
         DateTime utcBirthdate =
             parsedBirthdate.Kind == DateTimeKind.Utc
                 ? parsedBirthdate
