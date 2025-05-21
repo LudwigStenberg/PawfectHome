@@ -84,7 +84,6 @@ public class PetsController : ControllerBase
             );
 
             return NotFound(new { Message = "The specified shelter could not be found." });
-            return NotFound(new { Message = "The specified shelter could not be found." });
         }
         catch (Exception ex)
         {
