@@ -15,11 +15,7 @@ public class PetsController : ControllerBase
         this.logger = logger;
     }
 
-    /// <summary>
-    /// Get pet by id.
-    /// </summary>
-    /// <param name="id"> Unique identifier of the pet id.</param>
-    /// <returns>The pet if found otherwise </returns>
+
     [HttpGet("{id}")]
     public async Task<IActionResult> GetPet(int id)
     {
