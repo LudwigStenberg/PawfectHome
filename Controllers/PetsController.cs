@@ -48,48 +48,68 @@ public class PetsController : ControllerBase
     public async Task<IActionResult> CreatePet([FromBody] RegisterPetRequest request)
     {
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+        if (string.IsNullOrWhiteSpace(userId))
+        {
+            return Unauthorized();
+        }
+
         try
         {
-            var result = await petService.RegisterPetAsync(request);
-            logger.LogInformation(
-                "Pet with ID {Id} successfully created for UserId: {UserId}",
-                result.Id,
-                userId
-            );
+            var result = await petService.RegisterPetAsync(request, userId);
             return CreatedAtAction(nameof(GetPet), new { id = result.Id }, result);
         }
         catch (ValidationFailedException ex)
         {
-            logger.LogWarning(
-                ex,
-                "Validation failed while creating a pet for UserId: {UserId}. Errors: {@Errors}",
-                userId,
-                ex.Errors
-            );
             return BadRequest(
                 new { Message = "Validation failed. Please check the errors.", Errors = ex.Errors }
             );
         }
-        catch (KeyNotFoundException ex)
+        catch (UnauthorizedAccessException)
         {
-            logger.LogWarning(
-                ex,
-                "Shelter not found while creating a pet for UserId: {UserId}. Message: {Message}",
-                userId,
-                ex.Message
-            );
-
-            return NotFound(new { Message = "The specified shelter could not be found." });
+            return Forbid();
         }
-        catch (Exception ex)
+        catch (KeyNotFoundException)
         {
-            logger.LogError(
-                ex,
-                "An unexpected error occure while creating a pet for UserId: {UserId}. Message: {Message}",
-                userId,
-                ex.Message
-            );
+            return NotFound();
+        }
+        catch (Exception)
+        {
             return StatusCode(500, "An unexpected error occured while registering the pet.");
+        }
+    }
+
+    [HttpDelete("{id}")]
+    [Authorize(Roles = "ShelterOwner")]
+    public async Task<IActionResult> DeletePet(int id)
+    {
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+        if (string.IsNullOrWhiteSpace(userId))
+        {
+            return Unauthorized();
+        }
+
+        try
+        {
+            await petService.RemovePetAsync(id, userId);
+            return NoContent();
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest(new { Message = ex.Message });
+        }
+        catch (UnauthorizedAccessException)
+        {
+            return Forbid();
+        }
+        catch (KeyNotFoundException)
+        {
+            return NotFound();
+        }
+        catch (Exception)
+        {
+            return StatusCode(500, "An unexpected error occured while deleting the pet.");
         }
     }
 }
