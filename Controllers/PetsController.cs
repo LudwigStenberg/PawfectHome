@@ -111,5 +111,9 @@ public class PetsController : ControllerBase
         {
             return NotFound();
         }
+        catch (Exception)
+        {
+            return StatusCode(500, "An unexpected error occured while deleting the pet.");
+        }
     }
 }
