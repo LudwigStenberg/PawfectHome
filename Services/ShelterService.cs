@@ -62,14 +62,7 @@ public class ShelterService : IShelterService
         var createdShelter = await shelterRepository.CreateShelterAsync(newShelter);
         bool authChanged = await AssignShelterOwnerRoleAsync(userId);
 
-        var shelter = new RegisterShelterResponse
-        {
-            Id = createdShelter.Id,
-            Name = createdShelter.Name,
-            Description = createdShelter.Description,
-            Email = createdShelter.Email,
-            UserId = createdShelter.UserId,
-        };
+        var shelter = ShelterMapper.ToRegisterResponse(createdShelter);
 
         logger.LogInformation(
             "Successfully created shelter {ShelterId} for user {UserId}.",
