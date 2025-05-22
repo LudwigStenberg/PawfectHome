@@ -35,10 +35,10 @@ public class ShelterService : IShelterService
     /// </returns>
     /// <exception cref="ArgumentException">Thrown when userId is null or empty, or when the request object is null.</exception>
     /// <exception cref="MultipleSheltersNotAllowedException">Thrown when a user who already has a shelter attempts to register another one. Each user can only have one shelter at a time.</exception>
-    public async Task<(RegisterShelterDetailResponse Shelter, bool AuthChanged)> RegisterShelterAsync(
-        string userId,
-        RegisterShelterRequest request
-    )
+    public async Task<(
+        RegisterShelterDetailResponse Shelter,
+        bool AuthChanged
+    )> RegisterShelterAsync(string userId, RegisterShelterRequest request)
     {
         logger.LogInformation("Starting shelter registration for user {UserId}.", userId);
 
@@ -161,9 +161,17 @@ public class ShelterService : IShelterService
     /// <returns>A ShelterDetailResponse DTO containing Id, Name, Description, Email, UserId and a list of Pets.</returns>
     /// <exception cref="ShelterNotFoundException">Thrown when FetchShelterById method fails and the shelter cannot be found.</exception>
     /// <exception cref="ShelterOwnershipException">Thrown when the retrieved shelter's UserId does not match the userId method parameter.</exception>
-    public async Task<ShelterDetailResponse> UpdateShelterAsync(int id, string userId, ShelterUpdateRequest request)
+    public async Task<ShelterDetailResponse> UpdateShelterAsync(
+        int id,
+        string userId,
+        ShelterUpdateRequest request
+    )
     {
-        logger.LogInformation("Starting update for shelter with ID: {ShelterId}. Update request made by user ID: {RequestingUserId}", id, userId);
+        logger.LogInformation(
+            "Starting update for shelter with ID: {ShelterId}. Update request made by user ID: {RequestingUserId}",
+            id,
+            userId
+        );
 
         ValidateShelterUpdateRequest(userId, request);
 
@@ -176,8 +184,12 @@ public class ShelterService : IShelterService
 
         if (existingShelter.UserId != userId)
         {
-            logger.LogWarning("Authorization failure: User {RequestingUserId} attempted to update shelter {ShelterId} owned by user {OwnerUserId}.",
-                userId, existingShelter.Id, existingShelter.UserId);
+            logger.LogWarning(
+                "Authorization failure: User {RequestingUserId} attempted to update shelter {ShelterId} owned by user {OwnerUserId}.",
+                userId,
+                existingShelter.Id,
+                existingShelter.UserId
+            );
             throw new ShelterOwnershipException(id, userId);
         }
 
@@ -265,7 +277,12 @@ public class ShelterService : IShelterService
 
         if (shelter.UserId != userId)
         {
-            logger.LogWarning("Authorization failure: User {RequestingUserId} attempted to delete shelter {ShelterId} owned by user {UserId}", userId, id, shelter.UserId);
+            logger.LogWarning(
+                "Authorization failure: User {RequestingUserId} attempted to delete shelter {ShelterId} owned by user {UserId}",
+                userId,
+                id,
+                shelter.UserId
+            );
             throw new ShelterOwnershipException(id, userId);
         }
 

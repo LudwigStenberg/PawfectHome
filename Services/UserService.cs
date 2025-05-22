@@ -73,4 +73,3 @@ public class UserService : IUserService
         await userRepository.DeleteUserAsync(id);
     }
 }
-//TODO Maybe move out claims to controller and instead send current userid to service instead of all metadata related to user.
