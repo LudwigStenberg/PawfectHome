@@ -13,7 +13,6 @@ public class RegisterPetRequest
 
     [Required(ErrorMessage = "Birthdate must be provided")]
     public string Birthdate { get; set; }
-
     public Gender Gender { get; set; } = Gender.Unknown;
     public Species Species { get; set; } = Species.Undefined;
     public string Breed { get; set; } = "Undefined";
