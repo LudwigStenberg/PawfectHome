@@ -10,4 +10,16 @@ public static class ShelterMapper
             UserId = userId
         };
     }
+
+    public static RegisterShelterResponse ToRegisterResponse(ShelterEntity shelter)
+    {
+        return new RegisterShelterResponse
+        {
+            Id = shelter.Id,
+            Name = shelter.Name,
+            Description = shelter.Description,
+            Email = shelter.Email,
+            UserId = shelter.UserId
+        };
+    }
 }

@@ -35,7 +35,7 @@ public class ShelterService : IShelterService
     /// </returns>
     /// <exception cref="ArgumentException">Thrown when userId is null or empty, or when the request object is null.</exception>
     /// <exception cref="MultipleSheltersNotAllowedException">Thrown when a user who already has a shelter attempts to register another one. Each user can only have one shelter at a time.</exception>
-    public async Task<(RegisterShelterDetailResponse Shelter, bool AuthChanged)> RegisterShelterAsync(
+    public async Task<(RegisterShelterResponse Shelter, bool AuthChanged)> RegisterShelterAsync(
         string userId,
         RegisterShelterRequest request
     )
@@ -51,13 +51,7 @@ public class ShelterService : IShelterService
             throw new MultipleSheltersNotAllowedException(userId);
         }
 
-        var newShelter = new ShelterEntity
-        {
-            Name = request.Name,
-            Description = request.Description ?? "No description",
-            Email = request.Email,
-            UserId = userId,
-        };
+        var newShelter = ShelterMapper.ToEntity(request, userId);
 
         logger.LogInformation(
             "Creating new shelter for user {UserId} with name {ShelterName}.",
@@ -68,7 +62,7 @@ public class ShelterService : IShelterService
         var createdShelter = await shelterRepository.CreateShelterAsync(newShelter);
         bool authChanged = await AssignShelterOwnerRoleAsync(userId);
 
-        var shelter = new RegisterShelterDetailResponse
+        var shelter = new RegisterShelterResponse
         {
             Id = createdShelter.Id,
             Name = createdShelter.Name,
