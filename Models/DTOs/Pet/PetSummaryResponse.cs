@@ -1,4 +1,3 @@
-
 public class PetSummaryResponse
 {
     public int Id { get; set; }

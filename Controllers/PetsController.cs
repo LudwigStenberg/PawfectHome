@@ -35,7 +35,7 @@ public class PetsController : ControllerBase
         }
         catch (Exception)
         {
-            return StatusCode(500, "Your pet is dead...bitch");
+            return StatusCode(500, "Unexpected error occured while fetching pet");
         }
     }
 
