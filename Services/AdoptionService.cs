@@ -142,7 +142,7 @@ public class AdoptionService : IAdoptionService
     }
 
     /// <summary>
-    ///  Removes an adoption application based on the ID passed as an argument. Retrieves the adoption application entity to make sure 
+    ///  Removes an adoption application based on the ID passed as an argument. Retrieves the adoption application entity to make sure
     ///  that it belongs to the user ID which is also passed as an argument.
     /// </summary>
     /// <param name="id">The ID of the adoption application to be removed.</param>
@@ -152,23 +152,68 @@ public class AdoptionService : IAdoptionService
     /// <exception cref="UnauthorizedAccessException">Thrown when the retrieved adoption application's User ID does not match the User ID provided by the caller.</exception>
     public async Task RemoveAdoptionApplicationAsync(int id, string userId)
     {
-        logger.LogInformation("Starting deletion of adoption application with ID: {AdoptionApplicationId}. Deletion request made by user ID: {RequestingUserId}", id, userId);
+        logger.LogInformation(
+            "Starting deletion of adoption application with ID: {AdoptionApplicationId}. Deletion request made by user ID: {RequestingUserId}",
+            id,
+            userId
+        );
 
         var adoptionApplication = await adoptionRepository.FetchAdoptionApplicationByIdAsync(id);
         if (adoptionApplication == null)
         {
-            logger.LogWarning("The adoption application with ID {AdoptionApplicationId} could not be found", id);
-            throw new KeyNotFoundException($"The adoption application with ID: {id} could not be found.");
+            logger.LogWarning(
+                "The adoption application with ID {AdoptionApplicationId} could not be found",
+                id
+            );
+            throw new KeyNotFoundException(
+                $"The adoption application with ID: {id} could not be found."
+            );
         }
 
         if (adoptionApplication.UserId != userId)
         {
-            logger.LogWarning("Authorization failure: User {RequestingUserId} attempted to delete adoption application {AdoptionApplicationId} owned by user {UserId}", userId, id, adoptionApplication.UserId);
-            throw new UnauthorizedAccessException($"You do not have permission to delete this adoption application.");
+            logger.LogWarning(
+                "Authorization failure: User {RequestingUserId} attempted to delete adoption application {AdoptionApplicationId} owned by user {UserId}",
+                userId,
+                id,
+                adoptionApplication.UserId
+            );
+            throw new UnauthorizedAccessException(
+                $"You do not have permission to delete this adoption application."
+            );
         }
 
         await adoptionRepository.DeleteAdoptionApplicationAsync(adoptionApplication);
 
-        logger.LogDebug("Successfully deleted adoption application with ID: {AdoptionApplicationId} for user with ID: {UserId}", id, userId);
+        logger.LogDebug(
+            "Successfully deleted adoption application with ID: {AdoptionApplicationId} for user with ID: {UserId}",
+            id,
+            userId
+        );
+    }
+
+    /// <summary>
+    /// Updates the adoption status of an adoption application.
+    /// </summary>
+    /// <param name="id">The unique identifier of the adoption application to update.</param>
+    /// <param name="request">The request containing the new adoption status.</param>
+    /// <param name="userId">The ID of the user making the update request.</param>
+    /// <returns>The updated adoption application entity.</returns>
+    /// <exception cref="ArgumentException">Thrown when the request is null.</exception>
+    public async Task<AdoptionApplicationEntity> UpdateAdoptionStatusAsync(
+        int id,
+        UpdateAdoptionStatusRequest request,
+        string userId
+    )
+    {
+        if (request != null)
+        {
+            return await adoptionRepository.UpdateAdoptionStatusAsync(
+                id,
+                request.AdoptionStatus,
+                userId
+            );
+        }
+        throw new ArgumentException();
     }
 }

@@ -183,4 +183,27 @@ public class AdoptionsController : ControllerBase
             );
         }
     }
+
+    [HttpPut("{id}")]
+    [Authorize(Roles = "ShelterOwner")]
+    public async Task<IActionResult> UpdateAdoptionStatus(
+        int id,
+        [FromBody] UpdateAdoptionStatusRequest request
+    )
+    {
+        string? userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (string.IsNullOrEmpty(userId))
+        {
+            return Unauthorized();
+        }
+        try
+        {
+            var result = await adoptionService.UpdateAdoptionStatusAsync(id, request, userId);
+            return Ok(result);
+        }
+        catch
+        {
+            return StatusCode(500);
+        }
+    }
 }
