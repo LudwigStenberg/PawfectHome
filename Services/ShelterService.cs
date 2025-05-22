@@ -356,7 +356,7 @@ public class ShelterService : IShelterService
     /// <param name="request">The request DTO that needs to be validated based on format of the Email provided, null and white space, Name.Length and Description.Length.</param>
     /// <exception cref="ArgumentException">Thrown when the userId is null or empty or when the request object is null.</exception>
     /// <exception cref="ValidationException">Thrown when any validation rule fails for Email format, Name (must not be empty and must be 3-50 characters), or Description (maximum 1000 characters if provided).</exception>
-    /// <exception cref="ValidationFailedException">Thrown when the validation for the request, based on data annotations, fails.</exception>
+    /// <exception cref="ValidationFailedException">Thrown from within ValidateModel method when the validation for the request fails.</exception>
     private void ValidateRegisterShelterRequest(string userId, RegisterShelterRequest request)
     {
         logger.LogDebug("Validating shelter registration request for user {UserId}", userId);
@@ -365,12 +365,6 @@ public class ShelterService : IShelterService
         {
             logger.LogWarning("Shelter registration rejected: User ID is null or empty");
             throw new ArgumentException("User ID cannot be null or empty.", nameof(userId));
-        }
-
-        if (request == null)
-        {
-            logger.LogWarning("Shelter registration rejected: Request object is null");
-            throw new ArgumentException("Request cannot be null.", nameof(request));
         }
 
         modelValidator.ValidateModel(request);
@@ -384,7 +378,7 @@ public class ShelterService : IShelterService
     /// <param name="request">The request DTO that needs to be validated based on format of the Email provided, null and white space, Name.Length and Description.Length.</param>
     /// <exception cref="ArgumentException">Thrown when the userId is null or empty or when the request object is null.</exception>
     /// <exception cref="ValidationException">Thrown when all of the nullable property fields of the request DTO are null, at least one property must be specified in order to update.</exception>
-    /// <exception cref="ValidationFailedException">Thrown when the validation for the request, based on data annotations, fails.</exception>
+    /// <exception cref="ValidationFailedException">Thrown from within ValidateModel method when the validation for the request fails.</exception>
 
     private void ValidateShelterUpdateRequest(string userId, ShelterUpdateRequest request)
     {
@@ -392,12 +386,6 @@ public class ShelterService : IShelterService
         {
             logger.LogWarning("Shelter registration rejected: User ID is null or empty.");
             throw new ArgumentException("User ID cannot be null or empty.", nameof(userId));
-        }
-
-        if (request == null)
-        {
-            logger.LogWarning("Shelter update rejected: Request object is null.");
-            throw new ArgumentException("Request cannot be null.", nameof(request));
         }
 
         if (request.Name == null && request.Description == null && request.Email == null)
