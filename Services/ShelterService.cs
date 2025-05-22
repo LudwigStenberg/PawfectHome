@@ -35,7 +35,7 @@ public class ShelterService : IShelterService
     /// </returns>
     /// <exception cref="ArgumentException">Thrown when userId is null or empty, or when the request object is null.</exception>
     /// <exception cref="MultipleSheltersNotAllowedException">Thrown when a user who already has a shelter attempts to register another one. Each user can only have one shelter at a time.</exception>
-    public async Task<(RegisterShelterDetailResponse Shelter, bool AuthChanged)> RegisterShelterAsync(
+    public async Task<(RegisterShelterResponse Shelter, bool AuthChanged)> RegisterShelterAsync(
         string userId,
         RegisterShelterRequest request
     )
@@ -51,13 +51,7 @@ public class ShelterService : IShelterService
             throw new MultipleSheltersNotAllowedException(userId);
         }
 
-        var newShelter = new ShelterEntity
-        {
-            Name = request.Name,
-            Description = request.Description ?? "No description",
-            Email = request.Email,
-            UserId = userId,
-        };
+        var newShelter = ShelterMapper.ToEntity(request, userId);
 
         logger.LogInformation(
             "Creating new shelter for user {UserId} with name {ShelterName}.",
@@ -68,20 +62,13 @@ public class ShelterService : IShelterService
         var createdShelter = await shelterRepository.CreateShelterAsync(newShelter);
         bool authChanged = await AssignShelterOwnerRoleAsync(userId);
 
-        var shelter = new RegisterShelterDetailResponse
-        {
-            Id = createdShelter.Id,
-            Name = createdShelter.Name,
-            Description = createdShelter.Description,
-            Email = createdShelter.Email,
-            UserId = createdShelter.UserId,
-        };
+        var shelter = ShelterMapper.ToRegisterResponse(createdShelter);
 
         logger.LogInformation(
             "Successfully created shelter {ShelterId} for user {UserId}.",
             createdShelter.Id,
-            userId
-        );
+            userId);
+
         return (Shelter: shelter, AuthChanged: authChanged);
     }
 
@@ -95,8 +82,7 @@ public class ShelterService : IShelterService
     {
         logger.LogInformation(
             "Starting retrieval of shelter information for shelter with ID: {ShelterId}.",
-            id
-        );
+            id);
 
         var shelter = await shelterRepository.FetchShelterByIdAsync(id);
 
@@ -106,26 +92,8 @@ public class ShelterService : IShelterService
             throw new ShelterNotFoundException(id);
         }
 
-        return new ShelterDetailResponse()
-        {
-            Id = shelter.Id,
-            Name = shelter.Name,
-            Description = shelter.Description,
-            Email = shelter.Email,
-            UserId = shelter.UserId,
-
-            Pets = shelter
-                .Pets.Select(pet => new PetSummaryResponse
-                {
-                    Id = pet.Id,
-                    Name = pet.Name,
-                    Birthdate = pet.Birthdate,
-                    Gender = pet.Gender,
-                    Species = pet.Species,
-                    ImageURL = pet.ImageURL,
-                })
-                .ToList(),
-        };
+        var response = ShelterMapper.ToDetailResponse(shelter);
+        return response;
     }
 
     /// <summary>
@@ -138,16 +106,8 @@ public class ShelterService : IShelterService
 
         logger.LogInformation("Retrieved {Count} shelters from the repository", allShelters.Count);
 
-        return allShelters
-            .Select(shelter => new ShelterSummaryResponse()
-            {
-                Id = shelter.Id,
-                Name = shelter.Name,
-                Description = shelter.Description,
-                Email = shelter.Email,
-                PetCount = shelter.PetCount,
-            })
-            .ToList();
+        var response = allShelters.Select(ShelterMapper.ToShelterSummaryResponse).ToList();
+        return response;
     }
 
     /// <summary>
@@ -211,26 +171,8 @@ public class ShelterService : IShelterService
             existingShelter.Id
         );
 
-        return new ShelterDetailResponse
-        {
-            Id = existingShelter.Id,
-            Name = existingShelter.Name,
-            Description = existingShelter.Description,
-            Email = existingShelter.Email,
-            UserId = existingShelter.UserId,
-
-            Pets = existingShelter
-                .Pets.Select(pet => new PetSummaryResponse
-                {
-                    Id = pet.Id,
-                    Name = pet.Name,
-                    Birthdate = pet.Birthdate,
-                    Gender = pet.Gender,
-                    Species = pet.Species,
-                    ImageURL = pet.ImageURL,
-                })
-                .ToList(),
-        };
+        var response = ShelterMapper.ToDetailResponse(existingShelter);
+        return response;
     }
 
     /// <summary>
