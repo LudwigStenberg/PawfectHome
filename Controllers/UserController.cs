@@ -20,7 +20,12 @@ public class UsersController : ControllerBase
     {
         try
         {
-            var userResponse = await userService.GetUserAsync(id, User);
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(userId))
+            {
+                return Unauthorized();
+            }
+            var userResponse = await userService.GetUserAsync(id, userId);
             return Ok(userResponse);
         }
         catch (UnauthorizedAccessException)
@@ -34,6 +39,34 @@ public class UsersController : ControllerBase
         catch (Exception)
         {
             return StatusCode(500, "An error occured while fetching user  ");
+        }
+    }
+
+    [HttpDelete("{id}")]
+    public async Task<IActionResult> DeleteUser(string id)
+    {
+        try
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(userId))
+            {
+                return Unauthorized();
+            }
+            await userService.RemoveUserAsync(id, userId);
+
+            return NoContent();
+        }
+        catch (UnauthorizedAccessException)
+        {
+            return Forbid();
+        }
+        catch (KeyNotFoundException ex)
+        {
+            return NotFound(ex.Message);
+        }
+        catch (Exception)
+        {
+            return StatusCode(500);
         }
     }
 }

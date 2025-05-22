@@ -37,7 +37,9 @@ public class AdoptionService : IAdoptionService
     /// <exception cref="ValidationFailedException">
     /// Thrown when the model validation fails.
     /// </exception>
-    public async Task<RegisterAdoptionResponse> RegisterAdoptionApplicationAsync(RegisterAdoptionRequest request)
+    public async Task<RegisterAdoptionResponse> RegisterAdoptionApplicationAsync(
+        RegisterAdoptionRequest request
+    )
     {
         logger.LogInformation("Validating RegisterAdoptionRequest for registration");
         modelValidator.ValidateModel(request);
@@ -58,10 +60,12 @@ public class AdoptionService : IAdoptionService
         {
             UserId = request.UserId,
             PetId = request.PetId,
-            AdoptionStatus = AdoptionStatus.Pending
+            AdoptionStatus = AdoptionStatus.Pending,
         };
 
-        var createdAdoptionApplication = await adoptionRepository.CreateAdoptionAsync(adoptionApplicationEntity);
+        var createdAdoptionApplication = await adoptionRepository.CreateAdoptionAsync(
+            adoptionApplicationEntity
+        );
 
         var response = new RegisterAdoptionResponse
         {
@@ -69,7 +73,7 @@ public class AdoptionService : IAdoptionService
             CreatedDate = createdAdoptionApplication.CreatedDate,
             AdoptionStatus = createdAdoptionApplication.AdoptionStatus,
             UserId = createdAdoptionApplication.UserId,
-            PetId = createdAdoptionApplication.PetId
+            PetId = createdAdoptionApplication.PetId,
         };
 
         logger.LogInformation(
@@ -96,23 +100,26 @@ public class AdoptionService : IAdoptionService
     /// <exception cref="ValidationFailedException">
     /// Thrown when the model validation fails.
     /// </exception>
-    public async Task<GetAdoptionApplicationResponse> GetAdoptionApplicationAsync(GetAdoptionApplicationRequest request)
+    public async Task<GetAdoptionApplicationResponse> GetAdoptionApplicationAsync(
+        GetAdoptionApplicationRequest request
+    )
     {
-        logger.LogInformation("Validating GetAdoptionApplicationRequest for retrieval of adoption with ID: {Id}", request.Id);
-
+        logger.LogInformation(
+            "Validating GetAdoptionApplicationRequest for retrieval of adoption with ID: {Id}",
+            request.Id
+        );
 
         modelValidator.ValidateModel(request);
 
-
-        var adoptionApplication = await adoptionRepository.FetchAdoptionApplicationByIdAsync(request.Id);
-
+        var adoptionApplication = await adoptionRepository.FetchAdoptionApplicationByIdAsync(
+            request.Id
+        );
 
         if (adoptionApplication == null)
         {
             logger.LogWarning("No adoption application found with ID: {Id}", request.Id);
             throw new KeyNotFoundException($"No adoption application found with ID {request.Id}.");
         }
-
 
         var response = new GetAdoptionApplicationResponse
         {

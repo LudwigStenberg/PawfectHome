@@ -35,7 +35,7 @@ public class PetsController : ControllerBase
         }
         catch (Exception)
         {
-            return StatusCode(500, "Your pet is dead...bitch");
+            return StatusCode(500, "Unexpected error occured while fetching pet");
         }
     }
 
@@ -110,6 +110,10 @@ public class PetsController : ControllerBase
         catch (KeyNotFoundException)
         {
             return NotFound();
+        }
+        catch (Exception)
+        {
+            return StatusCode(500, "An unexpected error occured while deleting the pet.");
         }
     }
 }

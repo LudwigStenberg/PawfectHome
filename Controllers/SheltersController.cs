@@ -39,23 +39,28 @@ public class SheltersController : ControllerBase
             var response = new ApiResponse<RegisterShelterDetailResponse>(shelter);
             response.Meta.AuthenticationChanged = authChanged;
 
-            return CreatedAtAction(
-                nameof(GetShelter),
-                new { id = shelter.Id },
-                response);
+            return CreatedAtAction(nameof(GetShelter), new { id = shelter.Id }, response);
         }
         catch (DbUpdateException ex)
         {
-            logger.LogError(ex, "Database error occurred while creating shelter for user {UserId}.", userId);
+            logger.LogError(
+                ex,
+                "Database error occurred while creating shelter for user {UserId}.",
+                userId
+            );
             return StatusCode(500, "An error occurred while saving to the database");
         }
-        catch (ValidationException)
+        catch (MultipleSheltersNotAllowedException)
         {
-            return BadRequest();
+            return Conflict();
         }
         catch (Exception ex)
         {
-            logger.LogError(ex, "An unexpected error occurred while creating shelter for user {UserId}", userId);
+            logger.LogError(
+                ex,
+                "An unexpected error occurred while creating shelter for user {UserId}",
+                userId
+            );
             return StatusCode(500, "An unexpected error occurred");
         }
     }
@@ -68,13 +73,17 @@ public class SheltersController : ControllerBase
             var response = await shelterService.GetShelterAsync(id);
             return Ok(response);
         }
-        catch (KeyNotFoundException)
+        catch (ShelterNotFoundException)
         {
             return NotFound();
         }
         catch (Exception ex)
         {
-            logger.LogError(ex, "An unexpected error occurred while retrieving shelter with ID: {ShelterId}", id);
+            logger.LogError(
+                ex,
+                "An unexpected error occurred while retrieving shelter with ID: {ShelterId}",
+                id
+            );
             return StatusCode(500, "An error occurred while processing your request.");
         }
     }
@@ -89,7 +98,10 @@ public class SheltersController : ControllerBase
         }
         catch (Exception ex)
         {
-            logger.LogError(ex, "An unexpected error occurred while attempting to retrieve all shelters");
+            logger.LogError(
+                ex,
+                "An unexpected error occurred while attempting to retrieve all shelters"
+            );
             return StatusCode(500, "An error occurred while processing your request.");
         }
     }
@@ -114,17 +126,22 @@ public class SheltersController : ControllerBase
             var response = await shelterService.UpdateShelterAsync(id, userId, request);
             return Ok(response);
         }
-        catch (KeyNotFoundException)
+        catch (ShelterNotFoundException)
         {
             return NotFound();
         }
-        catch (UnauthorizedAccessException)
+        catch (ShelterOwnershipException)
         {
-            return Unauthorized();
+            return Forbid();
         }
         catch (Exception ex)
         {
-            logger.LogError(ex, "An unexpected error occurred while updating shelter with ID: {ShelterId} by user {UserId}", id, userId);
+            logger.LogError(
+                ex,
+                "An unexpected error occurred while updating shelter with ID: {ShelterId} by user {UserId}",
+                id,
+                userId
+            );
             return StatusCode(500, "An unexpected error occurred while processing your request.");
         }
     }
@@ -133,7 +150,6 @@ public class SheltersController : ControllerBase
     [Authorize(Roles = "ShelterOwner")]
     public async Task<IActionResult> DeleteShelter(int id)
     {
-
         string? userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
         if (string.IsNullOrEmpty(userId))
         {
@@ -145,17 +161,22 @@ public class SheltersController : ControllerBase
             await shelterService.RemoveShelterAsync(id, userId);
             return NoContent();
         }
-        catch (KeyNotFoundException)
+        catch (ShelterNotFoundException)
         {
             return NotFound();
         }
-        catch (UnauthorizedAccessException)
+        catch (ShelterOwnershipException)
         {
-            return Unauthorized();
+            return Forbid();
         }
         catch (Exception ex)
         {
-            logger.LogError(ex, "An unexpected error occurred while deleting shelter with ID {ShelterId} by user {UserId}", id, userId);
+            logger.LogError(
+                ex,
+                "An unexpected error occurred while deleting shelter with ID {ShelterId} by user {UserId}",
+                id,
+                userId
+            );
             return StatusCode(500, "An unexpected error occurred while processing your request.");
         }
     }
