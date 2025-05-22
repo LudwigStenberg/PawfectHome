@@ -67,8 +67,8 @@ public class ShelterService : IShelterService
         logger.LogInformation(
             "Successfully created shelter {ShelterId} for user {UserId}.",
             createdShelter.Id,
-            userId
-        );
+            userId);
+
         return (Shelter: shelter, AuthChanged: authChanged);
     }
 
@@ -82,8 +82,7 @@ public class ShelterService : IShelterService
     {
         logger.LogInformation(
             "Starting retrieval of shelter information for shelter with ID: {ShelterId}.",
-            id
-        );
+            id);
 
         var shelter = await shelterRepository.FetchShelterByIdAsync(id);
 
@@ -172,26 +171,8 @@ public class ShelterService : IShelterService
             existingShelter.Id
         );
 
-        return new ShelterDetailResponse
-        {
-            Id = existingShelter.Id,
-            Name = existingShelter.Name,
-            Description = existingShelter.Description,
-            Email = existingShelter.Email,
-            UserId = existingShelter.UserId,
-
-            Pets = existingShelter
-                .Pets.Select(pet => new PetSummaryResponse
-                {
-                    Id = pet.Id,
-                    Name = pet.Name,
-                    Birthdate = pet.Birthdate,
-                    Gender = pet.Gender,
-                    Species = pet.Species,
-                    ImageURL = pet.ImageURL,
-                })
-                .ToList(),
-        };
+        var response = ShelterMapper.ToDetailResponse(existingShelter);
+        return response;
     }
 
     /// <summary>
