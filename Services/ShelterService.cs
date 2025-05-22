@@ -107,16 +107,8 @@ public class ShelterService : IShelterService
 
         logger.LogInformation("Retrieved {Count} shelters from the repository", allShelters.Count);
 
-        return allShelters
-            .Select(shelter => new ShelterSummaryResponse()
-            {
-                Id = shelter.Id,
-                Name = shelter.Name,
-                Description = shelter.Description,
-                Email = shelter.Email,
-                PetCount = shelter.PetCount,
-            })
-            .ToList();
+        var response = allShelters.Select(ShelterMapper.ToShelterSummaryResponse).ToList();
+        return response;
     }
 
     /// <summary>
