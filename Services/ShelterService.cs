@@ -93,26 +93,8 @@ public class ShelterService : IShelterService
             throw new ShelterNotFoundException(id);
         }
 
-        return new ShelterDetailResponse()
-        {
-            Id = shelter.Id,
-            Name = shelter.Name,
-            Description = shelter.Description,
-            Email = shelter.Email,
-            UserId = shelter.UserId,
-
-            Pets = shelter
-                .Pets.Select(pet => new PetSummaryResponse
-                {
-                    Id = pet.Id,
-                    Name = pet.Name,
-                    Birthdate = pet.Birthdate,
-                    Gender = pet.Gender,
-                    Species = pet.Species,
-                    ImageURL = pet.ImageURL,
-                })
-                .ToList(),
-        };
+        var response = ShelterMapper.ToDetailResponse(shelter);
+        return response;
     }
 
     /// <summary>

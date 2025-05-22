@@ -33,7 +33,19 @@ public static class ShelterMapper
             Email = shelter.Email,
             UserId = shelter.UserId,
 
-            Pets = shelter.Pets.Select(pet => PetMapper.ToPetSummaryResponse(pet).ToList())
+            Pets = shelter.Pets.Select(PetMapper.ToPetSummaryResponse).ToList()
+        };
+    }
+
+    public static ShelterSummaryResponse ToShelterSummaryResponse(ShelterWithPetCountDto shelter)
+    {
+        return new ShelterSummaryResponse
+        {
+            Id = shelter.Id,
+            Name = shelter.Name,
+            Description = shelter.Description,
+            Email = shelter.Email,
+            PetCount = shelter.PetCount
         };
     }
 }
