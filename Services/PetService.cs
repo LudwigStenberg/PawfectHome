@@ -288,4 +288,71 @@ public class PetService : IPetService
             userId
         );
     }
+
+    public async Task<UpdatePetResponse> UpdatePetAsync(
+        int petId,
+        string userId,
+        UpdatePetRequest request
+    )
+    {
+        logger.LogInformation(
+            "Starting pet update operation. PetId: {PetId}, UserId: {UserId}",
+            petId,
+            userId
+        );
+
+        var existingPet = await petRepository.FetchPetAsync(petId);
+
+        if (existingPet == null)
+        {
+            logger.LogWarning(
+                "Pet update failed - Pet not found. PetId: {PetId}. RequestedBy: {UserId}",
+                petId,
+                userId
+            );
+            throw new KeyNotFoundException($"No Pet found with ID {petId}.");
+        }
+
+        var requestProperties = request.GetType().GetProperties();
+        var petProperties = existingPet.GetType().GetProperties();
+
+        foreach (var requestProp in requestProperties)
+        {
+            var value = requestProp.GetValue(request);
+
+            if (value == null)
+            {
+                continue;
+            }
+
+            var matchingPetProp = petProperties.FirstOrDefault(p => p.Name == requestProp.Name);
+            if (matchingPetProp == null || !matchingPetProp.CanWrite)
+            {
+                continue;
+            }
+
+            if (
+                matchingPetProp.PropertyType.IsAssignableFrom(requestProp.PropertyType)
+                || Nullable.GetUnderlyingType(requestProp.PropertyType)
+                    == matchingPetProp.PropertyType
+            )
+            {
+                matchingPetProp.SetValue(existingPet, value);
+            }
+        }
+
+        if (petId <= 0)
+        {
+            logger.LogWarning(
+                "Pet update failed - Invalid PetId: {PetId}. Pet ID must be a positive number. RequestedBy: {UserId}",
+                petId,
+                userId
+            );
+            throw new ArgumentException(
+                $"Pet ID must be a positive number. Value: {petId}",
+                nameof(petId)
+            );
+        }
+        throw new NotImplementedException();
+    }
 }
