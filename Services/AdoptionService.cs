@@ -58,25 +58,13 @@ public class AdoptionService : IAdoptionService
             throw new PetNotFoundException(request.PetId);
         }
 
-        var adoptionApplicationEntity = new AdoptionApplicationEntity
-        {
-            UserId = request.UserId,
-            PetId = request.PetId,
-            AdoptionStatus = AdoptionStatus.Pending,
-        };
+        var adoptionApplicationEntity = AdoptionApplicationMapper.ToEntity(request);
 
         var createdAdoptionApplication = await adoptionRepository.CreateAdoptionAsync(
             adoptionApplicationEntity
         );
 
-        var response = new RegisterAdoptionResponse
-        {
-            Id = createdAdoptionApplication.Id,
-            CreatedDate = createdAdoptionApplication.CreatedDate,
-            AdoptionStatus = createdAdoptionApplication.AdoptionStatus,
-            UserId = createdAdoptionApplication.UserId,
-            PetId = createdAdoptionApplication.PetId,
-        };
+        var response = AdoptionApplicationMapper.ToRegisterResponse(createdAdoptionApplication);
 
         logger.LogInformation(
             "Adoption application successfully registered for User: {UserId} and Pet: {PetId}.",
