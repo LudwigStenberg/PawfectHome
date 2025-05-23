@@ -1,6 +1,5 @@
 using System.ComponentModel.DataAnnotations;
 using Microsoft.AspNetCore.Identity;
-using Scalar.AspNetCore;
 
 public class ShelterService : IShelterService
 {
@@ -106,7 +105,7 @@ public class ShelterService : IShelterService
 
         logger.LogInformation("Retrieved {Count} shelters from the repository", allShelters.Count);
 
-        var response = allShelters.Select(ShelterMapper.ToShelterSummaryResponse).ToList();
+        var response = allShelters.Select(ShelterMapper.ToSummaryResponse).ToList();
         return response;
     }
 
