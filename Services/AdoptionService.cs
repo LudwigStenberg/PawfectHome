@@ -148,7 +148,7 @@ public class AdoptionService : IAdoptionService
     /// <param name="id">The ID of the adoption application to be removed.</param>
     /// <param name="userId">The ID of the user requesting the removal of the adoption application.</param>
     /// <returns>Returns a Task representing the asynchronous operation. No data is returned upon completion.</returns>
-    /// <exception cref="KeyNotFoundException">Thrown when retrieved adoption application is null. The resource could not be found.</exception>
+    /// <exception cref="AdoptionApplicationNotFoundException">Thrown when retrieved adoption application is null. The resource could not be found.</exception>
     /// <exception cref="UnauthorizedAccessException">Thrown when the retrieved adoption application's User ID does not match the User ID provided by the caller.</exception>
     public async Task RemoveAdoptionApplicationAsync(int id, string userId)
     {
@@ -162,12 +162,8 @@ public class AdoptionService : IAdoptionService
         if (adoptionApplication == null)
         {
             logger.LogWarning(
-                "The adoption application with ID {AdoptionApplicationId} could not be found",
-                id
-            );
-            throw new KeyNotFoundException(
-                $"The adoption application with ID: {id} could not be found."
-            );
+                "The adoption application with ID {AdoptionApplicationId} could not be found", id);
+            throw new AdoptionApplicationNotFoundException(id);
         }
 
         if (adoptionApplication.UserId != userId)
