@@ -8,14 +8,19 @@ public class UpdatePetRequest
         ErrorMessage = "The pet name must be between 3 and 50 characters."
     )]
     public string? Name { get; set; }
-    public DateTime? Birthdate { get; set; }
+    public string? Birthdate { get; set; }
+
+    [Range(0, 2)]
     public Gender? Gender { get; set; }
+
+    [Range(0, 2)]
     public Species? Species { get; set; }
     public string? Breed { get; set; }
 
-    [StringLength(maximumLength: 1000)]
+    [StringLength(1000)]
     public string? Description { get; set; }
     public string? ImageURL { get; set; }
     public bool? IsNeutered { get; set; }
     public bool? HasPedigree { get; set; }
 }
+
