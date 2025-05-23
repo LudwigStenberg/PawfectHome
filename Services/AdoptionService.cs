@@ -94,7 +94,7 @@ public class AdoptionService : IAdoptionService
     /// <returns>
     /// A response containing information about the found adoption application.
     /// </returns>
-    /// <exception cref="KeyNotFoundException">
+    /// <exception cref="AdoptionApplicationNotFoundException">
     /// Thrown when the specified adoption application is not found.
     /// </exception>
     /// <exception cref="ValidationFailedException">
@@ -118,7 +118,7 @@ public class AdoptionService : IAdoptionService
         if (adoptionApplication == null)
         {
             logger.LogWarning("No adoption application found with ID: {Id}", request.Id);
-            throw new KeyNotFoundException($"No adoption application found with ID {request.Id}.");
+            throw new AdoptionApplicationNotFoundException(request.Id);
         }
 
         var response = new GetAdoptionApplicationResponse
@@ -149,7 +149,7 @@ public class AdoptionService : IAdoptionService
     /// <param name="userId">The ID of the user requesting the removal of the adoption application.</param>
     /// <returns>Returns a Task representing the asynchronous operation. No data is returned upon completion.</returns>
     /// <exception cref="AdoptionApplicationNotFoundException">Thrown when retrieved adoption application is null. The resource could not be found.</exception>
-    /// <exception cref="UnauthorizedAccessException">Thrown when the retrieved adoption application's User ID does not match the User ID provided by the caller.</exception>
+    /// <exception cref="AdoptionApplicationOwnershipException">Thrown when the retrieved adoption application's User ID does not match the User ID provided by the caller.</exception>
     public async Task RemoveAdoptionApplicationAsync(int id, string userId)
     {
         logger.LogInformation(
