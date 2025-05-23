@@ -51,15 +51,23 @@ public class AdoptionsController : ControllerBase
                 new { Message = "Validation failed. Please check the errors.", Errors = ex.Errors }
             );
         }
-        catch (KeyNotFoundException ex)
+        catch (UserNotFoundException ex)
         {
             logger.LogWarning(
                 ex,
-                "Entity not found while creating an adoption application for UserId: {UserId}. Message: {Message}",
+                "User not found while creating an adoption application for UserId: {UserId}. Message: {Message}",
                 userId,
                 ex.Message
             );
             return NotFound(new { Message = ex.Message });
+        }
+        catch (PetNotFoundException ex)
+        {
+            logger.LogWarning(ex,
+                "Pet not found while creating an adoption application for UserId: {UserId}. Message: {Message}",
+                userId, ex.Message);
+
+            return NotFound();
         }
         catch (Exception ex)
         {

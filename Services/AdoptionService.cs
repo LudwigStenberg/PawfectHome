@@ -32,7 +32,9 @@ public class AdoptionService : IAdoptionService
     /// A response containing the registered adoption application's details.
     /// </returns>
     /// <exception cref="UserNotFoundException">
-    /// Thrown when the specified user or pet is not found.
+    /// Thrown when the specified user is not found.
+    /// <exception cref="PetNotFoundException">
+    /// Thrown when the specified pet is not found
     /// </exception>
     /// <exception cref="ValidationFailedException">
     /// Thrown when the model validation fails.
@@ -53,7 +55,7 @@ public class AdoptionService : IAdoptionService
         var petExists = await dbContext.Pets.AnyAsync(p => p.Id == request.PetId);
         if (!petExists)
         {
-            throw new KeyNotFoundException($"No pet found with ID {request.PetId}.");
+            throw new PetNotFoundException(request.PetId);
         }
 
         var adoptionApplicationEntity = new AdoptionApplicationEntity
