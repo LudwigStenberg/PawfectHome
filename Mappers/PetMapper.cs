@@ -20,7 +20,40 @@ public static class PetMapper
 
     public static RegisterPetResponse ToRegisterResponse(PetEntity pet)
     {
+        return new RegisterPetResponse
+        {
+            Id = pet.Id,
+            Name = pet.Name,
+            Birthdate = pet.Birthdate,
+            Gender = pet.Gender,
+            Species = pet.Species,
+            Breed = pet.Breed,
+            Description = pet.Description,
+            ImageURL = pet.ImageURL,
+            IsNeutered = pet.IsNeutered,
+            HasPedigree = pet.HasPedigree,
+            ShelterId = pet.ShelterId,
+            CreatedAt = DateTime.UtcNow // This needs to be changed if the PetEntity gets a 'CreatedAt' property.
+        };
+    }
 
+    public static GetPetResponse ToGetResponse(PetEntity pet)
+    {
+        return new GetPetResponse
+        {
+            Id = pet.Id,
+            Name = pet.Name,
+            Birthdate = pet.Birthdate,
+            Gender = pet.Gender,
+            Species = pet.Species,
+            Breed = pet.Breed,
+            Description = pet.Description,
+            ImageURL = pet.ImageURL,
+            IsNeutured = pet.IsNeutered,
+            HasPedigree = pet.HasPedigree,
+            ShelterId = pet.ShelterId,
+            Shelter = pet.Shelter != null ? ShelterMapper.ToSummary(pet.Shelter) : null
+        };
     }
 
     public static PetSummaryResponse ToSummaryResponse(PetEntity pet)

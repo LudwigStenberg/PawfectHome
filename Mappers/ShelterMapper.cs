@@ -33,11 +33,11 @@ public static class ShelterMapper
             Email = shelter.Email,
             UserId = shelter.UserId,
 
-            Pets = shelter.Pets.Select(PetMapper.ToPetSummaryResponse).ToList()
+            Pets = shelter.Pets.Select(PetMapper.ToSummaryResponse).ToList()
         };
     }
 
-    public static ShelterSummaryResponse ToShelterSummaryResponse(ShelterWithPetCountDto shelter)
+    public static ShelterSummaryResponse ToSummaryResponse(ShelterWithPetCountDto shelter)
     {
         return new ShelterSummaryResponse
         {
@@ -46,6 +46,17 @@ public static class ShelterMapper
             Description = shelter.Description,
             Email = shelter.Email,
             PetCount = shelter.PetCount
+        };
+    }
+
+    public static ShelterSummary ToSummary(ShelterEntity shelter)
+    {
+        return new ShelterSummary
+        {
+            Id = shelter.Id,
+            Name = shelter.Name ?? "Unknown",
+            Description = shelter.Description ?? "No description",
+            Email = shelter.Email ?? "noemail@example.com"
         };
     }
 }
