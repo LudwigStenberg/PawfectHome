@@ -123,32 +123,6 @@ public class AdoptionService : IAdoptionService
         return response;
     }
 
-
-    /// <summary>
-    /// Updates the adoption status of an adoption application.
-    /// </summary>
-    /// <param name="id">The unique identifier of the adoption application to update.</param>
-    /// <param name="request">The request containing the new adoption status.</param>
-    /// <param name="userId">The ID of the user making the update request.</param>
-    /// <returns>The updated adoption application entity.</returns>
-    /// <exception cref="ArgumentException">Thrown when the request is null.</exception>
-    public async Task<AdoptionApplicationEntity> UpdateAdoptionStatusAsync(
-        int id,
-        UpdateAdoptionStatusRequest request,
-        string userId
-    )
-    {
-        if (request != null)
-        {
-            return await adoptionRepository.UpdateAdoptionStatusAsync(
-                id,
-                request.AdoptionStatus,
-                userId
-            );
-        }
-        throw new ArgumentException();
-    }
-
     /// <summary>
     /// Updates the adoption status of an adoption application.
     /// </summary>
