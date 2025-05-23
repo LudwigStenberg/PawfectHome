@@ -94,7 +94,7 @@ public class AdoptionService : IAdoptionService
     /// <returns>
     /// A response containing information about the found adoption application.
     /// </returns>
-    /// <exception cref="KeyNotFoundException">
+    /// <exception cref="AdoptionApplicationNotFoundException">
     /// Thrown when the specified adoption application is not found.
     /// </exception>
     /// <exception cref="ValidationFailedException">
@@ -118,7 +118,7 @@ public class AdoptionService : IAdoptionService
         if (adoptionApplication == null)
         {
             logger.LogWarning("No adoption application found with ID: {Id}", request.Id);
-            throw new KeyNotFoundException($"No adoption application found with ID {request.Id}.");
+            throw new AdoptionApplicationNotFoundException(request.Id);
         }
 
         var response = new GetAdoptionApplicationResponse
@@ -148,8 +148,8 @@ public class AdoptionService : IAdoptionService
     /// <param name="id">The ID of the adoption application to be removed.</param>
     /// <param name="userId">The ID of the user requesting the removal of the adoption application.</param>
     /// <returns>Returns a Task representing the asynchronous operation. No data is returned upon completion.</returns>
-    /// <exception cref="KeyNotFoundException">Thrown when retrieved adoption application is null. The resource could not be found.</exception>
-    /// <exception cref="UnauthorizedAccessException">Thrown when the retrieved adoption application's User ID does not match the User ID provided by the caller.</exception>
+    /// <exception cref="AdoptionApplicationNotFoundException">Thrown when retrieved adoption application is null. The resource could not be found.</exception>
+    /// <exception cref="AdoptionApplicationOwnershipException">Thrown when the retrieved adoption application's User ID does not match the User ID provided by the caller.</exception>
     public async Task RemoveAdoptionApplicationAsync(int id, string userId)
     {
         logger.LogInformation(
@@ -162,25 +162,16 @@ public class AdoptionService : IAdoptionService
         if (adoptionApplication == null)
         {
             logger.LogWarning(
-                "The adoption application with ID {AdoptionApplicationId} could not be found",
-                id
-            );
-            throw new KeyNotFoundException(
-                $"The adoption application with ID: {id} could not be found."
-            );
+                "The adoption application with ID {AdoptionApplicationId} could not be found", id);
+            throw new AdoptionApplicationNotFoundException(id);
         }
 
         if (adoptionApplication.UserId != userId)
         {
             logger.LogWarning(
-                "Authorization failure: User {RequestingUserId} attempted to delete adoption application {AdoptionApplicationId} owned by user {UserId}",
-                userId,
-                id,
-                adoptionApplication.UserId
-            );
-            throw new UnauthorizedAccessException(
-                $"You do not have permission to delete this adoption application."
-            );
+                "Authorization failure: User {RequestingUserId} attempted to delete adoption application {AdoptionApplicationId} owned by user with ID: '{UserId}'.",
+                userId, id, adoptionApplication.UserId);
+            throw new AdoptionApplicationOwnershipException(id, userId);
         }
 
         await adoptionRepository.DeleteAdoptionApplicationAsync(adoptionApplication);

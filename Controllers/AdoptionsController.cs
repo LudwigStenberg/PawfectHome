@@ -160,13 +160,13 @@ public class AdoptionsController : ControllerBase
             await adoptionService.RemoveAdoptionApplicationAsync(id, userId);
             return NoContent();
         }
-        catch (KeyNotFoundException)
+        catch (AdoptionApplicationNotFoundException)
         {
             return NotFound();
         }
-        catch (UnauthorizedAccessException)
+        catch (AdoptionApplicationOwnershipException)
         {
-            return Unauthorized();
+            return Forbid();
         }
         catch (Exception ex)
         {

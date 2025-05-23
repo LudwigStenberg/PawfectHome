@@ -36,7 +36,7 @@ public class SheltersController : ControllerBase
         {
             var (shelter, authChanged) = await shelterService.RegisterShelterAsync(userId, request);
 
-            var response = new ApiResponse<RegisterShelterDetailResponse>(shelter);
+            var response = new ApiResponse<RegisterShelterResponse>(shelter);
             response.Meta.AuthenticationChanged = authChanged;
 
             return CreatedAtAction(nameof(GetShelter), new { id = shelter.Id }, response);
