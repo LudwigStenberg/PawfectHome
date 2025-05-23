@@ -11,7 +11,7 @@ public class AdoptionApplicationOwnershipException : DomainExceptionBase
         UserId = userId;
     }
 
-    public virtual Dictionary<string, object> GetContextData()
+    public override Dictionary<string, object> GetContextData()
     {
         var context = base.GetContextData();
         context["AdoptionApplicationId"] = AdoptionApplicationId;

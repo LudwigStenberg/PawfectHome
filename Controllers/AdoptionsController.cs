@@ -164,9 +164,9 @@ public class AdoptionsController : ControllerBase
         {
             return NotFound();
         }
-        catch (UnauthorizedAccessException)
+        catch (AdoptionApplicationOwnershipException)
         {
-            return Unauthorized();
+            return Forbid();
         }
         catch (Exception ex)
         {

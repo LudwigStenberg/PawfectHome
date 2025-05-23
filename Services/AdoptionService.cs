@@ -170,13 +170,8 @@ public class AdoptionService : IAdoptionService
         {
             logger.LogWarning(
                 "Authorization failure: User {RequestingUserId} attempted to delete adoption application {AdoptionApplicationId} owned by user with ID: '{UserId}'.",
-                userId,
-                id,
-                adoptionApplication.UserId
-            );
-            throw new UnauthorizedAccessException(
-                $"You do not have permission to delete this adoption application."
-            );
+                userId, id, adoptionApplication.UserId);
+            throw new AdoptionApplicationOwnershipException(id, userId);
         }
 
         await adoptionRepository.DeleteAdoptionApplicationAsync(adoptionApplication);
