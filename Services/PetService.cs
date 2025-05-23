@@ -108,19 +108,19 @@ public class PetService : IPetService
     }
 
     /// <summary>
-    /// Registers a new pet in the database.
+    /// Registers a new pet for the shelter associated with the requesting user.
     /// </summary>
-    /// <param name="request">
-    /// The pet details to be registered, including name, birthdate, species, and shelter ID.
-    /// </param>
-    /// <returns>
-    /// A response containing the registered pet's details.
-    /// </returns>
+    /// <param name="request">Details about the pet to register.</param>
+    /// <param name="userId">The user ID of the shelter representative submitting the request.</param>
+    /// <returns>The registered pet’s details.</returns>
     /// <exception cref="KeyNotFoundException">
-    /// Thrown when the specified shelter is not found.
+    /// Thrown if the specified shelter does not exist.
+    /// </exception>
+    /// <exception cref="UnauthorizedAccessException">
+    /// Thrown if the user is not authorized to register a pet for the specified shelter.
     /// </exception>
     /// <exception cref="ValidationFailedException">
-    /// Thrown when the model validation fails or the birthdate format is invalid.
+    /// Thrown if the request data is invalid or the birthdate format is incorrect.
     /// </exception>
     public async Task<RegisterPetResponse> RegisterPetAsync(
         RegisterPetRequest request,
@@ -142,29 +142,28 @@ public class PetService : IPetService
         }
 
         if (
-            !DateTime.TryParseExact(
+            !TryParseAndValidateBirthdate(
                 request.Birthdate,
-                "yyyy-MM-dd",
-                null,
-                DateTimeStyles.AssumeUniversal,
-                out DateTime parsedBirthdate
+                out DateTime parsedBirthdate,
+                out List<ValidationResult> errors
             )
         )
         {
-            var errors = new List<ValidationResult>
-            {
-                new ValidationResult(
-                    "Invalid birthdate format. Please use 'yyyy-MM-dd'.",
-                    new[] { "Birthdate" }
-                ),
-            };
             logger.LogWarning(
-                $"Pet registration failed when validating - {errors} RequestedBy: {userId}."
+                "Pet registration failed - invalid birthdate: {Birthdate}. {@Errors} RequestedBy: {UserId}.",
+                request.Birthdate,
+                errors,
+                userId
             );
             throw ValidationFailedException.FromValidationResults(errors);
         }
 
         var shelter = await shelterRepository.FetchShelterByIdAsync(request.ShelterId);
+
+        if (shelter == null)
+        {
+            throw new KeyNotFoundException($"No matching shelter found.");
+        }
 
         if (userId != shelter.UserId)
         {
@@ -178,15 +177,10 @@ public class PetService : IPetService
             throw new UnauthorizedAccessException("You are not authorized to register this pet.");
         }
 
-        DateTime utcBirthdate =
-            parsedBirthdate.Kind == DateTimeKind.Utc
-                ? parsedBirthdate
-                : parsedBirthdate.ToUniversalTime();
-
         var petEntity = new PetEntity
         {
             Name = request.Name,
-            Birthdate = utcBirthdate,
+            Birthdate = parsedBirthdate,
             Gender = request.Gender,
             Species = request.Species,
             Breed = request.Breed,
@@ -291,6 +285,17 @@ public class PetService : IPetService
         );
     }
 
+    /// <summary>
+    /// Updates the details of a pet if it belongs to the user's shelter.
+    /// </summary>
+    /// <param name="petId">The ID of the pet to update. Must be a positive number.</param>
+    /// <param name="userId">The ID of the shelter representative making the request.</param>
+    /// <param name="request">The fields to update for the pet.</param>
+    /// <returns>The updated pet’s details.</returns>
+    /// <exception cref="ArgumentException">Thrown if <paramref name="petId"/> is not a positive number.</exception>
+    /// <exception cref="KeyNotFoundException">Thrown if the pet or the user's shelter cannot be found.</exception>
+    /// <exception cref="UnauthorizedAccessException">Thrown if the pet does not belong to the user's shelter.</exception>
+    /// <exception cref="ValidationFailedException">Thrown if any update field is invalid (e.g., name length, birthdate format, invalid enum values).</exception>
     public async Task<UpdatePetResponse> UpdatePetAsync(
         int petId,
         string userId,
@@ -494,13 +499,19 @@ public class PetService : IPetService
     }
 
     #region Helper Methods
+    /// <summary>
+    /// Parses and validates a pet's birthdate string. Ensures format and logical constraints like not being in the future.
+    /// </summary>
+    /// <param name="input">The birthdate as a string in "yyyy-MM-dd" format.</param>
+    /// <param name="birthdate">The parsed and UTC-adjusted birthdate, if valid.</param>
+    /// <param name="errors">A list of validation errors if parsing or validation fails.</param>
+    /// <returns>True if the birthdate is valid; otherwise, false.</returns>
     private static bool TryParseAndValidateBirthdate(
         string input,
         out DateTime birthdate,
         out List<ValidationResult> errors
     )
     {
-        bool isValid = true;
         errors = [];
         if (
             !DateTime.TryParseExact(
@@ -518,7 +529,7 @@ public class PetService : IPetService
                     new[] { "Birthdate" }
                 )
             );
-            isValid = false;
+            return false;
         }
 
         if (birthdate > DateTime.UtcNow)
@@ -529,13 +540,11 @@ public class PetService : IPetService
                     new[] { "Birthdate" }
                 )
             );
-            isValid = false;
+            return false;
         }
-        DateTime utcBirthdate =
-            birthdate.Kind == DateTimeKind.Utc ? birthdate : birthdate.ToUniversalTime();
+        birthdate = birthdate.Kind == DateTimeKind.Utc ? birthdate : birthdate.ToUniversalTime();
 
-        birthdate = utcBirthdate;
-        return isValid;
+        return true;
     }
 
     #endregion
