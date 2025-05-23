@@ -58,25 +58,13 @@ public class AdoptionService : IAdoptionService
             throw new PetNotFoundException(request.PetId);
         }
 
-        var adoptionApplicationEntity = new AdoptionApplicationEntity
-        {
-            UserId = request.UserId,
-            PetId = request.PetId,
-            AdoptionStatus = AdoptionStatus.Pending,
-        };
+        var adoptionApplicationEntity = AdoptionApplicationMapper.ToEntity(request);
 
         var createdAdoptionApplication = await adoptionRepository.CreateAdoptionAsync(
             adoptionApplicationEntity
         );
 
-        var response = new RegisterAdoptionResponse
-        {
-            Id = createdAdoptionApplication.Id,
-            CreatedDate = createdAdoptionApplication.CreatedDate,
-            AdoptionStatus = createdAdoptionApplication.AdoptionStatus,
-            UserId = createdAdoptionApplication.UserId,
-            PetId = createdAdoptionApplication.PetId,
-        };
+        var response = AdoptionApplicationMapper.ToRegisterResponse(createdAdoptionApplication);
 
         logger.LogInformation(
             "Adoption application successfully registered for User: {UserId} and Pet: {PetId}.",
@@ -123,15 +111,7 @@ public class AdoptionService : IAdoptionService
             throw new AdoptionApplicationNotFoundException(request.Id);
         }
 
-        var response = new GetAdoptionApplicationResponse
-        {
-            Id = adoptionApplication.Id,
-            CreatedDate = adoptionApplication.CreatedDate,
-            AdoptionStatus = adoptionApplication.AdoptionStatus,
-            UserId = adoptionApplication.UserId,
-            PetId = adoptionApplication.PetId,
-            PetName = adoptionApplication.Pet?.Name,
-        };
+        var response = AdoptionApplicationMapper.ToGetResponse(adoptionApplication);
 
         logger.LogInformation(
             "Adoption application with ID: {Id} successfully retrieved for user ID: {UserId} and pet ID: {PetId}",
@@ -141,6 +121,32 @@ public class AdoptionService : IAdoptionService
         );
 
         return response;
+    }
+
+
+    /// <summary>
+    /// Updates the adoption status of an adoption application.
+    /// </summary>
+    /// <param name="id">The unique identifier of the adoption application to update.</param>
+    /// <param name="request">The request containing the new adoption status.</param>
+    /// <param name="userId">The ID of the user making the update request.</param>
+    /// <returns>The updated adoption application entity.</returns>
+    /// <exception cref="ArgumentException">Thrown when the request is null.</exception>
+    public async Task<AdoptionApplicationEntity> UpdateAdoptionStatusAsync(
+        int id,
+        UpdateAdoptionStatusRequest request,
+        string userId
+    )
+    {
+        if (request != null)
+        {
+            return await adoptionRepository.UpdateAdoptionStatusAsync(
+                id,
+                request.AdoptionStatus,
+                userId
+            );
+        }
+        throw new ArgumentException();
     }
 
     /// <summary>
