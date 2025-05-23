@@ -101,7 +101,7 @@ public class AdoptionsController : ControllerBase
 
             return Ok(response);
         }
-        catch (KeyNotFoundException ex)
+        catch (AdoptionApplicationNotFoundException ex)
         {
             logger.LogWarning(
                 ex,
