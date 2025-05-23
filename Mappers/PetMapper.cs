@@ -1,24 +1,29 @@
 
 public static class PetMapper
 {
-    public static PetEntity ToEntity(RegisterPetRequest request, DateTime utcBirthdate)
+    public static PetEntity ToEntity(RegisterPetRequest pet, DateTime utcBirthdate)
     {
         return new PetEntity
         {
-            Name = request.Name,
+            Name = pet.Name,
             Birthdate = utcBirthdate,
-            Gender = request.Gender,
-            Species = request.Species,
-            Breed = request.Breed,
-            Description = request.Description,
-            ImageURL = request.ImageURL,
-            IsNeutered = request.IsNeutured,
-            HasPedigree = request.HasPedigree,
-            ShelterId = request.ShelterId,
+            Gender = pet.Gender,
+            Species = pet.Species,
+            Breed = pet.Breed,
+            Description = pet.Description,
+            ImageURL = pet.ImageURL,
+            IsNeutered = pet.IsNeutured,
+            HasPedigree = pet.HasPedigree,
+            ShelterId = pet.ShelterId,
         };
     }
 
-    public static PetSummaryResponse ToPetSummaryResponse(PetEntity pet)
+    public static RegisterPetResponse ToRegisterResponse(PetEntity pet)
+    {
+
+    }
+
+    public static PetSummaryResponse ToSummaryResponse(PetEntity pet)
     {
         return new PetSummaryResponse
         {
