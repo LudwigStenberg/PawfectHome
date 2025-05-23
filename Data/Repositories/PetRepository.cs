@@ -40,4 +40,10 @@ public class PetRepository : IPetRepository
         appDbContext.Pets.Remove(petEntity);
         await appDbContext.SaveChangesAsync();
     }
+
+    public async Task UpdatePetAsync(PetEntity existingPet)
+    {
+        appDbContext.Pets.Update(existingPet);
+        await appDbContext.SaveChangesAsync();
+    }
 }

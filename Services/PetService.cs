@@ -8,11 +8,11 @@ public class PetService : IPetService
     private readonly ILogger<IPetService> logger;
     private readonly IPetRepository petRepository;
     private readonly ModelValidator modelValidator;
-    private readonly IShelterService shelterService;
+    private readonly IShelterRepository shelterRepository;
 
     public PetService(
         IPetRepository petRepository,
-        IShelterService shelterService,
+        IShelterRepository shelterRepository,
         ILogger<IPetService> logger,
         AppDbContext appdbContext,
         ModelValidator modelValidator
@@ -22,7 +22,7 @@ public class PetService : IPetService
         this.petRepository = petRepository;
         this.modelValidator = modelValidator;
         this.logger = logger;
-        this.shelterService = shelterService;
+        this.shelterRepository = shelterRepository;
     }
 
     /// <summary>
@@ -164,7 +164,7 @@ public class PetService : IPetService
             throw ValidationFailedException.FromValidationResults(errors);
         }
 
-        var shelter = await shelterService.GetShelterAsync(request.ShelterId);
+        var shelter = await shelterRepository.FetchShelterByIdAsync(request.ShelterId);
 
         if (userId != shelter.UserId)
         {
@@ -264,17 +264,19 @@ public class PetService : IPetService
             throw new KeyNotFoundException($"No Pet found with ID {id}.");
         }
 
-        var shelter = await shelterService.GetShelterAsync(pet.ShelterId);
+        var shelter = await shelterRepository.FetchShelterByUserIdAsync(userId);
 
-        if (shelter.UserId != userId)
+        if (shelter == null)
+        {
+            throw new KeyNotFoundException($"No matching shelter found.");
+        }
+
+        if (shelter.Id != pet.ShelterId)
         {
             logger.LogWarning(
-                "Pet deletion failed - Unauthorized access. PetId: {PetId}, RequestedBy: {UserId}, "
-                    + "OwnerUserId: {OwnerUserId}. ShelterId: {ShelterId}",
+                "Pet deletion failed - Unauthorized access. PetId: {PetId}, RequestedBy: {UserId}, ",
                 id,
-                userId,
-                shelter.UserId,
-                shelter.Id
+                userId
             );
             throw new UnauthorizedAccessException("You are not authorized to delete this pet.");
         }
@@ -288,4 +290,253 @@ public class PetService : IPetService
             userId
         );
     }
+
+    public async Task<UpdatePetResponse> UpdatePetAsync(
+        int petId,
+        string userId,
+        UpdatePetRequest request
+    )
+    {
+        logger.LogInformation(
+            "Starting pet update operation. PetId: {PetId}, UserId: {UserId}",
+            petId,
+            userId
+        );
+
+        if (petId <= 0)
+        {
+            logger.LogWarning(
+                "Pet update failed - Invalid PetId: {PetId}. Pet ID must be a positive number. RequestedBy: {UserId}",
+                petId,
+                userId
+            );
+            throw new ArgumentException(
+                $"Pet ID must be a positive number. Value: {petId}",
+                nameof(petId)
+            );
+        }
+
+        var existingPet = await petRepository.FetchPetAsync(petId);
+
+        if (existingPet == null)
+        {
+            logger.LogWarning(
+                "Pet update failed - Pet not found. PetId: {PetId}. RequestedBy: {UserId}",
+                petId,
+                userId
+            );
+            throw new KeyNotFoundException($"No Pet found with ID {petId}.");
+        }
+
+        var shelter = await shelterRepository.FetchShelterByUserIdAsync(userId);
+
+        if (shelter == null)
+        {
+            throw new KeyNotFoundException($"No matching shelter found.");
+        }
+
+        if (shelter.Id != existingPet.ShelterId)
+        {
+            logger.LogWarning(
+                "Pet update failed - Unauthorized access. PetId: {PetId}, RequestedBy: {UserId}, ",
+                petId,
+                userId
+            );
+            throw new UnauthorizedAccessException("You are not authorized to update this pet.");
+        }
+
+        if (request.Name != null)
+        {
+            if (request.Name.Length < 3 || request.Name.Length > 50)
+            {
+                var errors = new List<ValidationResult>
+                {
+                    new ValidationResult(
+                        "Invalid name. The pet name must be between 3 and 50 characters.",
+                        new[] { "Name" }
+                    ),
+                };
+                logger.LogWarning(
+                    "Pet update failed - invalid name: {Name}. {@Errors} RequestedBy: {UserId}.",
+                    request.Name,
+                    errors,
+                    userId
+                );
+                throw ValidationFailedException.FromValidationResults(errors);
+            }
+            existingPet.Name = request.Name;
+        }
+
+        if (request.Birthdate != null)
+        {
+            if (
+                !TryParseAndValidateBirthdate(
+                    request.Birthdate,
+                    out DateTime birthdate,
+                    out List<ValidationResult> errors
+                )
+            )
+            {
+                logger.LogWarning(
+                    "Pet update failed - invalid birthdate: {Birthdate}. {@Errors} RequestedBy: {UserId}.",
+                    request.Birthdate,
+                    errors,
+                    userId
+                );
+                throw ValidationFailedException.FromValidationResults(errors);
+            }
+            existingPet.Birthdate = birthdate;
+        }
+
+        if (request.Gender.HasValue)
+        {
+            if (!Enum.IsDefined(typeof(Gender), request.Gender))
+            {
+                var errors = new List<ValidationResult>
+                {
+                    new ValidationResult(
+                        "Invalid gender. The pet gender must be a valid option",
+                        new[] { "Name" }
+                    ),
+                };
+                logger.LogWarning(
+                    "Pet update failed - invalid gender: {gender}. {@Errors} RequestedBy: {UserId}.",
+                    request.Gender,
+                    errors,
+                    userId
+                );
+                throw ValidationFailedException.FromValidationResults(errors);
+            }
+            existingPet.Gender = request.Gender.Value;
+        }
+        if (request.Species.HasValue)
+        {
+            if (!Enum.IsDefined(typeof(Species), request.Species))
+            {
+                var errors = new List<ValidationResult>
+                {
+                    new ValidationResult(
+                        "Invalid species. The pet species must be a valid option",
+                        new[] { "Name" }
+                    ),
+                };
+                logger.LogWarning(
+                    "Pet update failed - invalid species: {Species}. {@Errors} RequestedBy: {UserId}.",
+                    request.Species,
+                    errors,
+                    userId
+                );
+                throw ValidationFailedException.FromValidationResults(errors);
+            }
+            existingPet.Species = request.Species.Value;
+        }
+
+        if (request.Breed != null)
+            existingPet.Breed = request.Breed;
+
+        if (request.Description != null)
+        {
+            if (request.Description.Length > 1000)
+            {
+                var errors = new List<ValidationResult>
+                {
+                    new ValidationResult(
+                        "Invalid description. The pet description cannot be more than 1000 characters.",
+                        new[] { "Description" }
+                    ),
+                };
+                logger.LogWarning(
+                    "Pet update failed - invalid description: {Description}. {@Errors} RequestedBy: {UserId}.",
+                    request.Description,
+                    errors,
+                    userId
+                );
+                throw ValidationFailedException.FromValidationResults(errors);
+            }
+            existingPet.Description = request.Description;
+        }
+
+        if (request.ImageURL != null)
+            existingPet.ImageURL = request.ImageURL;
+
+        if (request.IsNeutered.HasValue)
+            existingPet.IsNeutered = request.IsNeutered.Value;
+
+        if (request.HasPedigree.HasValue)
+            existingPet.HasPedigree = request.HasPedigree.Value;
+
+        await petRepository.UpdatePetAsync(existingPet);
+
+        var response = new UpdatePetResponse
+        {
+            Id = existingPet.Id,
+            Name = existingPet.Name,
+            Birthdate = existingPet.Birthdate,
+            Gender = existingPet.Gender,
+            Species = existingPet.Species,
+            Breed = existingPet.Breed,
+            Description = existingPet.Description,
+            ImageURL = existingPet.ImageURL,
+            IsNeutered = existingPet.IsNeutered,
+            HasPedigree = existingPet.HasPedigree,
+            ShelterId = existingPet.ShelterId,
+            UpdatedAt = DateTime.UtcNow,
+        };
+
+        logger.LogInformation(
+            "Pet successfully updated. PetId: {PetId}, UserId: {UserId}, ShelterId: {ShelterId}",
+            existingPet.Id,
+            userId,
+            existingPet.ShelterId
+        );
+
+        return response;
+    }
+
+    #region Helper Methods
+    private static bool TryParseAndValidateBirthdate(
+        string input,
+        out DateTime birthdate,
+        out List<ValidationResult> errors
+    )
+    {
+        bool isValid = true;
+        errors = [];
+        if (
+            !DateTime.TryParseExact(
+                input,
+                "yyyy-MM-dd",
+                null,
+                DateTimeStyles.AssumeUniversal,
+                out birthdate
+            )
+        )
+        {
+            errors.Add(
+                new ValidationResult(
+                    "Invalid birthdate format. Please use 'yyyy-MM-dd'.",
+                    new[] { "Birthdate" }
+                )
+            );
+            isValid = false;
+        }
+
+        if (birthdate > DateTime.UtcNow)
+        {
+            errors.Add(
+                new ValidationResult(
+                    "Invalid birthdate - Birthdate cannot be in the future.",
+                    new[] { "Birthdate" }
+                )
+            );
+            isValid = false;
+        }
+        DateTime utcBirthdate =
+            birthdate.Kind == DateTimeKind.Utc ? birthdate : birthdate.ToUniversalTime();
+
+        birthdate = utcBirthdate;
+        return isValid;
+    }
+
+    #endregion
 }

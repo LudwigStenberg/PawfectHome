@@ -73,8 +73,13 @@ public class PetsController : ControllerBase
         {
             return NotFound();
         }
-        catch (Exception)
+        catch (Exception ex)
         {
+            logger.LogError(
+                ex,
+                "Unexpected error while registering pet. RequestedBy: {UserId}",
+                userId
+            );
             return StatusCode(500, "An unexpected error occured while registering the pet.");
         }
     }
@@ -107,9 +112,61 @@ public class PetsController : ControllerBase
         {
             return NotFound();
         }
-        catch (Exception)
+        catch (Exception ex)
         {
+            logger.LogError(
+                ex,
+                "Unexpected error while deleting pet. PetId: {PetId}. RequestedBy: {UserId}",
+                id,
+                userId
+            );
             return StatusCode(500, "An unexpected error occured while deleting the pet.");
+        }
+    }
+
+    [HttpPut("{id}")]
+    [Authorize(Roles = "ShelterOwner")]
+    public async Task<IActionResult> UpdatePet(int id, [FromBody] UpdatePetRequest request)
+    {
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+        if (string.IsNullOrWhiteSpace(userId))
+        {
+            return Unauthorized();
+        }
+
+        try
+        {
+            var response = await petService.UpdatePetAsync(id, userId, request);
+            return Ok(response);
+        }
+        catch (ValidationFailedException ex)
+        {
+            return BadRequest(
+                new { Message = "Validation failed. Please check the errors.", Errors = ex.Errors }
+            );
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest(new { Message = ex.Message });
+        }
+        catch (UnauthorizedAccessException)
+        {
+            return Forbid();
+        }
+        catch (KeyNotFoundException)
+        {
+            return NotFound();
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(
+                ex,
+                "Unexpected error while updating pet. PetId: {PetId}, RequestedBy: {UserId}",
+                id,
+                userId
+            );
+            return StatusCode(500, "An unexpected error occured while updating the pet.");
         }
     }
 }
