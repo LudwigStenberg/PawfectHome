@@ -77,8 +77,13 @@ public class PetsController : ControllerBase
         {
             return NotFound();
         }
-        catch (Exception)
+        catch (Exception ex)
         {
+            logger.LogError(
+                ex,
+                "Unexpected error while registering pet. RequestedBy: {UserId}",
+                userId
+            );
             return StatusCode(500, "An unexpected error occured while registering the pet.");
         }
     }
@@ -111,8 +116,14 @@ public class PetsController : ControllerBase
         {
             return NotFound();
         }
-        catch (Exception)
+        catch (Exception ex)
         {
+            logger.LogError(
+                ex,
+                "Unexpected error while deleting pet. PetId: {PetId}. RequestedBy: {UserId}",
+                id,
+                userId
+            );
             return StatusCode(500, "An unexpected error occured while deleting the pet.");
         }
     }
@@ -130,8 +141,14 @@ public class PetsController : ControllerBase
 
         try
         {
-            var response = petService.UpdatePetAsync(id, userId, request);
+            var response = await petService.UpdatePetAsync(id, userId, request);
             return Ok(response);
+        }
+        catch (ValidationFailedException ex)
+        {
+            return BadRequest(
+                new { Message = "Validation failed. Please check the errors.", Errors = ex.Errors }
+            );
         }
         catch (ArgumentException ex)
         {
@@ -145,11 +162,15 @@ public class PetsController : ControllerBase
         {
             return NotFound();
         }
-        catch (Exception)
+        catch (Exception ex)
         {
+            logger.LogError(
+                ex,
+                "Unexpected error while updating pet. PetId: {PetId}, RequestedBy: {UserId}",
+                id,
+                userId
+            );
             return StatusCode(500, "An unexpected error occured while updating the pet.");
         }
-
     }
-
 }
