@@ -51,14 +51,22 @@ public class AdoptionsController : ControllerBase
                 new { Message = "Validation failed. Please check the errors.", Errors = ex.Errors }
             );
         }
-        catch (KeyNotFoundException ex)
+        catch (UserNotFoundException ex)
         {
             logger.LogWarning(
                 ex,
-                "Entity not found while creating an adoption application for UserId: {UserId}. Message: {Message}",
+                "User not found while creating an adoption application for UserId: {UserId}. Message: {Message}",
                 userId,
                 ex.Message
             );
+            return NotFound(new { Message = ex.Message });
+        }
+        catch (PetNotFoundException ex)
+        {
+            logger.LogWarning(ex,
+                "Pet not found while creating an adoption application for UserId: {UserId}. Message: {Message}",
+                userId, ex.Message);
+
             return NotFound(new { Message = ex.Message });
         }
         catch (Exception ex)
@@ -144,6 +152,29 @@ public class AdoptionsController : ControllerBase
         }
     }
 
+    [HttpPut("{id}")]
+    [Authorize(Roles = "ShelterOwner")]
+    public async Task<IActionResult> UpdateAdoptionStatus(
+        int id,
+        [FromBody] UpdateAdoptionStatusRequest request
+    )
+    {
+        string? userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (string.IsNullOrEmpty(userId))
+        {
+            return Unauthorized();
+        }
+        try
+        {
+            var result = await adoptionService.UpdateAdoptionStatusAsync(id, request, userId);
+            return Ok(result);
+        }
+        catch
+        {
+            return StatusCode(500);
+        }
+    }
+
     [HttpDelete("{id}")]
     [Authorize]
     public async Task<IActionResult> DeleteAdoptionApplication(int id)
@@ -181,29 +212,6 @@ public class AdoptionsController : ControllerBase
                 500,
                 "An unexpected error occurred while deleting the adoption application."
             );
-        }
-    }
-
-    [HttpPut("{id}")]
-    [Authorize(Roles = "ShelterOwner")]
-    public async Task<IActionResult> UpdateAdoptionStatus(
-        int id,
-        [FromBody] UpdateAdoptionStatusRequest request
-    )
-    {
-        string? userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-        if (string.IsNullOrEmpty(userId))
-        {
-            return Unauthorized();
-        }
-        try
-        {
-            var result = await adoptionService.UpdateAdoptionStatusAsync(id, request, userId);
-            return Ok(result);
-        }
-        catch
-        {
-            return StatusCode(500);
         }
     }
 }
