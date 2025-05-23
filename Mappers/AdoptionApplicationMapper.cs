@@ -9,4 +9,16 @@ public static class AdoptionApplicationMapper
             PetId = request.PetId
         };
     }
+
+    public static RegisterAdoptionResponse ToRegisterResponse(AdoptionApplicationEntity adoptionApplication)
+    {
+        return new RegisterAdoptionResponse
+        {
+            Id = adoptionApplication.Id,
+            CreatedDate = adoptionApplication.CreatedDate,
+            AdoptionStatus = adoptionApplication.AdoptionStatus,
+            UserId = adoptionApplication.UserId,
+            PetId = adoptionApplication.PetId
+        };
+    }
 }
