@@ -21,4 +21,17 @@ public static class AdoptionApplicationMapper
             PetId = adoptionApplication.PetId
         };
     }
+
+    public static GetAdoptionApplicationResponse ToGetResponse(AdoptionApplicationEntity adoptionApplication)
+    {
+        return new GetAdoptionApplicationResponse
+        {
+            Id = adoptionApplication.Id,
+            CreatedDate = adoptionApplication.CreatedDate,
+            AdoptionStatus = adoptionApplication.AdoptionStatus,
+            UserId = adoptionApplication.UserId,
+            PetId = adoptionApplication.PetId,
+            PetName = adoptionApplication.Pet?.Name ?? "Unknown Pet"
+        };
+    }
 }
