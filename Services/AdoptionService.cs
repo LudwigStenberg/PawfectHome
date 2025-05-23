@@ -169,7 +169,7 @@ public class AdoptionService : IAdoptionService
         if (adoptionApplication.UserId != userId)
         {
             logger.LogWarning(
-                "Authorization failure: User {RequestingUserId} attempted to delete adoption application {AdoptionApplicationId} owned by user {UserId}",
+                "Authorization failure: User {RequestingUserId} attempted to delete adoption application {AdoptionApplicationId} owned by user with ID: '{UserId}'.",
                 userId,
                 id,
                 adoptionApplication.UserId
