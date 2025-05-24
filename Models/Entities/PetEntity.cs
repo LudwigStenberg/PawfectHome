@@ -2,6 +2,7 @@ public class PetEntity
 {
     public int Id { get; set; }
     public required string Name { get; set; }
+    public DateTime Birthdate { get; set; } 
     public Gender Gender { get; set; } = Gender.Unknown;
     public Species Species { get; set; } = Species.Undefined;
     public string Breed { get; set; } = "Undefined";
@@ -10,7 +11,7 @@ public class PetEntity
     public bool IsNeutered { get; set; } = false;
     public bool HasPedigree { get; set; } = false;
     public required int ShelterId { get; set; }
-    public DateTime Birthdate { get; set; } // Add this missing property
+
     // Navigation Props
     public ShelterEntity Shelter { get; set; } // Many-to-One
     public ICollection<AdoptionApplicationEntity> AdoptionApplications { get; set; } =
