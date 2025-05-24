@@ -1,5 +1,4 @@
 using System.ComponentModel.DataAnnotations;
-using System.Globalization;
 using Microsoft.EntityFrameworkCore;
 
 public class AdoptionService : IAdoptionService
@@ -25,32 +24,29 @@ public class AdoptionService : IAdoptionService
     /// <summary>
     /// Registers a new adoption application in the database.
     /// </summary>
-    /// <param name="request">
-    /// The adoption application details to be registered, including user ID and pet ID.
-    /// </param>
-    /// <returns>
-    /// A response containing the registered adoption application's details.
-    /// </returns>
-    /// <exception cref="UserNotFoundException">
-    /// Thrown when the specified user is not found.
-    /// <exception cref="PetNotFoundException">
-    /// Thrown when the specified pet is not found
-    /// </exception>
-    /// <exception cref="ValidationFailedException">
-    /// Thrown when the model validation fails.
-    /// </exception>
+    /// <param name="request">The adoption application details to be registered</param>
+    /// <param name="userId">The ID of the user creating the adoption application</param>
+    /// <returns>A response containing the registered adoption application's details</returns>
+    /// <exception cref="KeyNotFoundException">Thrown when the specified user or pet is not found</exception>
+    /// <exception cref="ValidationFailedException">Thrown when the model validation fails</exception>
+
     public async Task<RegisterAdoptionResponse> RegisterAdoptionApplicationAsync(
-        RegisterAdoptionRequest request
+        RegisterAdoptionRequest request,
+        string userId
     )
     {
         logger.LogInformation("Validating RegisterAdoptionRequest for registration");
         modelValidator.ValidateModel(request);
 
-        var userExists = await dbContext.Users.AnyAsync(u => u.Id == request.UserId);
+
+        var userExists = await dbContext.Users.AnyAsync(u => u.Id == userId);
         if (!userExists)
         {
-            throw new UserNotFoundException(request.UserId);
+
+            throw new KeyNotFoundException($"No user found with ID {userId}.");
+
         }
+
 
         var petExists = await dbContext.Pets.AnyAsync(p => p.Id == request.PetId);
         if (!petExists)
@@ -58,7 +54,13 @@ public class AdoptionService : IAdoptionService
             throw new PetNotFoundException(request.PetId);
         }
 
-        var adoptionApplicationEntity = AdoptionApplicationMapper.ToEntity(request);
+        var adoptionApplicationEntity = new AdoptionApplicationEntity
+        {
+            UserId = userId,
+            PetId = request.PetId,
+            AdoptionStatus = AdoptionStatus.Pending,
+        };
+
 
         var createdAdoptionApplication = await adoptionRepository.CreateAdoptionAsync(
             adoptionApplicationEntity
@@ -78,46 +80,47 @@ public class AdoptionService : IAdoptionService
     /// <summary>
     /// Retrieves an adoption application based on its ID.
     /// </summary>
-    /// <param name="request">
-    /// The request containing the ID of the adoption application to retrieve.
-    /// </param>
-    /// <returns>
-    /// A response containing information about the found adoption application.
-    /// </returns>
-    /// <exception cref="AdoptionApplicationNotFoundException">
-    /// Thrown when the specified adoption application is not found.
-    /// </exception>
-    /// <exception cref="ValidationFailedException">
-    /// Thrown when the model validation fails.
-    /// </exception>
-    public async Task<GetAdoptionApplicationResponse> GetAdoptionApplicationAsync(
-        GetAdoptionApplicationRequest request
-    )
+    /// <param name="id">The ID of the adoption application to retrieve</param>
+    /// <param name="userId">The ID of the user requesting the adoption application</param>
+    /// <returns>A response containing information about the found adoption application</returns>
+    /// <exception cref="KeyNotFoundException">Thrown when the specified adoption application is not found</exception>
+    /// <exception cref="UnauthorizedAccessException">Thrown when the user doesn't own the adoption application</exception>
+    public async Task<GetAdoptionApplicationResponse> GetAdoptionApplicationAsync(int id, string userId)
     {
         logger.LogInformation(
-            "Validating GetAdoptionApplicationRequest for retrieval of adoption with ID: {Id}",
-            request.Id
+            "Retrieving adoption application with ID: {Id} for user: {UserId}",
+            id,
+            userId
         );
 
-        modelValidator.ValidateModel(request);
-
-        var adoptionApplication = await adoptionRepository.FetchAdoptionApplicationByIdAsync(
-            request.Id
-        );
+        var adoptionApplication = await adoptionRepository.FetchAdoptionApplicationByIdAsync(id);
 
         if (adoptionApplication == null)
         {
-            logger.LogWarning("No adoption application found with ID: {Id}", request.Id);
-            throw new AdoptionApplicationNotFoundException(request.Id);
+
+            logger.LogWarning("No adoption application found with ID: {Id}", id);
+            throw new KeyNotFoundException($"No adoption application found with ID {id}.");
+        }
+
+
+        if (adoptionApplication.UserId != userId)
+        {
+            logger.LogWarning(
+                "User {UserId} attempted to access adoption application {Id} belonging to user {OwnerId}",
+                userId,
+                id,
+                adoptionApplication.UserId
+            );
+            throw new UnauthorizedAccessException("You can only access your own adoption applications.");
+
         }
 
         var response = AdoptionApplicationMapper.ToGetResponse(adoptionApplication);
 
         logger.LogInformation(
-            "Adoption application with ID: {Id} successfully retrieved for user ID: {UserId} and pet ID: {PetId}",
-            adoptionApplication.Id,
-            adoptionApplication.UserId,
-            adoptionApplication.PetId
+            "Adoption application with ID: {Id} successfully retrieved for user: {UserId}",
+            id,
+            userId
         );
 
         return response;
