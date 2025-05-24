@@ -18,6 +18,7 @@ public class AdoptionsController : ControllerBase
         this.logger = logger;
     }
 
+
     [HttpPost]
     [Authorize]
     public async Task<IActionResult> CreateAdoptionApplication(
@@ -27,14 +28,14 @@ public class AdoptionsController : ControllerBase
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
         try
         {
-            var result = await adoptionService.RegisterAdoptionApplicationAsync(request);
+            var result = await adoptionService.RegisterAdoptionApplicationAsync(request, userId);
             logger.LogInformation(
                 "Adoption application with ID {Id} successfully created for UserId: {UserId}",
                 result.Id,
                 userId
             );
             return CreatedAtAction(
-                nameof(CreateAdoptionApplication),
+                nameof(GetAdoptionApplication),
                 new { id = result.Id },
                 result
             );
@@ -43,7 +44,7 @@ public class AdoptionsController : ControllerBase
         {
             logger.LogWarning(
                 ex,
-                "Validation failed while creating an adoption application for UserId: {UserId}. Errors: {@Errors}",
+                "Validation failed while creating adoption application for UserId: {UserId}. Errors: {@Errors}",
                 userId,
                 ex.Errors
             );
@@ -55,7 +56,7 @@ public class AdoptionsController : ControllerBase
         {
             logger.LogWarning(
                 ex,
-                "Entity not found while creating an adoption application for UserId: {UserId}. Message: {Message}",
+                "Entity not found while creating adoption application for UserId: {UserId}. Message: {Message}",
                 userId,
                 ex.Message
             );
@@ -65,64 +66,38 @@ public class AdoptionsController : ControllerBase
         {
             logger.LogError(
                 ex,
-                "An unexpected error occurred while creating an adoption application for UserId: {UserId}. Message: {Message}",
-                userId,
-                ex.Message
+                "An unexpected error occurred while creating adoption application for UserId: {UserId}",
+                userId
             );
-            return StatusCode(
-                500,
-                "An unexpected error occurred while registering the adoption application."
-            );
+            return StatusCode(500, "An unexpected error occurred while creating the adoption application.");
         }
     }
 
-    [HttpGet("getById/{id}")]
+    [HttpGet("{id}")]
     [Authorize]
     public async Task<IActionResult> GetAdoptionApplication(int id)
     {
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (string.IsNullOrEmpty(userId))
+        {
+            return Unauthorized();
+        }
 
         try
         {
-            var request = new GetAdoptionApplicationRequest { Id = id, UserId = userId };
-            var response = await adoptionService.GetAdoptionApplicationAsync(request);
-
-            if (userId != response.UserId && !User.IsInRole("Admin") && !User.IsInRole("Shelter"))
-            {
-                logger.LogWarning(
-                    "User {UserId} attempted to access adoption application {Id} belonging to another user",
-                    userId,
-                    id
-                );
-                return StatusCode(403, "You have no access to this application.");
-            }
-
-            logger.LogInformation("Adoption application with ID {Id} successfully retrieved", id);
-
+            var response = await adoptionService.GetAdoptionApplicationAsync(id, userId);
             return Ok(response);
         }
         catch (KeyNotFoundException ex)
         {
-            logger.LogWarning(
-                ex,
-                "Adoption application with ID {Id} was not found. Requested by user: {UserId}. Message: {Message}",
-                id,
-                userId,
-                ex.Message
-            );
-
-            return NotFound(new { Message = ex.Message });
+            return NotFound(ex.Message);
+        }
+        catch (UnauthorizedAccessException)
+        {
+            return Unauthorized();
         }
         catch (ValidationFailedException ex)
         {
-            logger.LogWarning(
-                ex,
-                "Validation failed while retrieving adoption application with ID {Id} for user: {UserId}. Errors: {@Errors}",
-                id,
-                userId,
-                ex.Errors
-            );
-
             return BadRequest(
                 new { Message = "Validation failed. Please check the errors.", Errors = ex.Errors }
             );
@@ -131,16 +106,11 @@ public class AdoptionsController : ControllerBase
         {
             logger.LogError(
                 ex,
-                "An unexpected error occurred while retrieving adoption application with ID {Id} for user: {UserId}. Message: {Message}",
+                "An unexpected error occurred while retrieving adoption application with ID {Id} for user {UserId}",
                 id,
-                userId,
-                ex.Message
+                userId
             );
-
-            return StatusCode(
-                500,
-                "An unexpected error occurred while retrieving the adoption application."
-            );
+            return StatusCode(500, "An unexpected error occurred while retrieving the adoption application.");
         }
     }
 

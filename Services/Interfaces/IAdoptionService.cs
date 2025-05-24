@@ -1,10 +1,7 @@
 public interface IAdoptionService
 {
-    public Task<RegisterAdoptionResponse> RegisterAdoptionApplicationAsync(
-        RegisterAdoptionRequest request
-    );
-
-    public Task<GetAdoptionApplicationResponse> GetAdoptionApplicationAsync(GetAdoptionApplicationRequest request);
+    Task<RegisterAdoptionResponse> RegisterAdoptionApplicationAsync(RegisterAdoptionRequest request, string userId);
+    Task<GetAdoptionApplicationResponse> GetAdoptionApplicationAsync(int id, string userId);
     Task RemoveAdoptionApplicationAsync(int id, string userId);
 
 }
