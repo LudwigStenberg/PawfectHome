@@ -1,10 +1,9 @@
 public interface IAdoptionRepository
 {
-    public Task<AdoptionApplicationEntity> CreateAdoptionAsync(
-        AdoptionApplicationEntity newAdoptionApplication
-    );
-    public Task<AdoptionApplicationEntity> FetchAdoptionApplicationByIdAsync(int id);
+    Task<AdoptionApplicationEntity> CreateAdoptionAsync(AdoptionApplicationEntity newAdoptionApplication);
+    Task<AdoptionApplicationEntity> FetchAdoptionApplicationByIdAsync(int id);
     Task DeleteAdoptionApplicationAsync(AdoptionApplicationEntity adoptionApplication);
+    Task<IEnumerable<AdoptionApplicationEntity>> FetchAllAdoptionsAsync(string userId);
     public Task<AdoptionApplicationEntity> UpdateAdoptionStatusAsync(
         int id,
         AdoptionStatus updatedstatus,
