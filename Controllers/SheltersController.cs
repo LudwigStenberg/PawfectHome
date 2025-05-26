@@ -41,6 +41,10 @@ public class SheltersController : ControllerBase
 
             return CreatedAtAction(nameof(GetShelter), new { id = shelter.Id }, response);
         }
+        catch (UserIdRequiredException)
+        {
+            return BadRequest();
+        }
         catch (ValidationFailedException ex)
         {
             logger.LogDebug("Validation failed for shelter creation: {@Errors}", ex.Errors);
