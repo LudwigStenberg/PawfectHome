@@ -4,30 +4,30 @@ using Microsoft.EntityFrameworkCore;
 
 public class UserRepository : IUserRepository
 {
-    private readonly AppDbContext appDbContext;
+    private readonly AppDbContext context;
     private readonly UserManager<UserEntity> userManager;
 
-    public UserRepository(AppDbContext dbContext, UserManager<UserEntity> userManager)
+    public UserRepository(AppDbContext context, UserManager<UserEntity> userManager)
     {
-        appDbContext = dbContext;
+        this.context = context;
         this.userManager = userManager;
     }
 
-    public async Task<UserEntity> FetchUserAsync(string id)
+    public async Task<UserEntity?> FetchUserAsync(string id)
     {
-        return await appDbContext.Users.FirstOrDefaultAsync(u => u.Id == id);
+        return await context.Users.FirstOrDefaultAsync(u => u.Id == id);
     }
 
     public async Task DeleteUserAsync(string id)
     {
-        var user = await appDbContext.Users.FindAsync(id);
+        var user = await context.Users.FindAsync(id);
 
         if (user == null)
         {
             throw new KeyNotFoundException($"User with ID {id} not found.");
         }
 
-        appDbContext.Users.Remove(user);
-        await appDbContext.SaveChangesAsync();
+        context.Users.Remove(user);
+        await context.SaveChangesAsync();
     }
 }

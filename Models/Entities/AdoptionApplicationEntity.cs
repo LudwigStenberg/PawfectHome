@@ -1,4 +1,3 @@
-
 public class AdoptionApplicationEntity
 {
     public int Id { get; set; }
@@ -6,9 +5,10 @@ public class AdoptionApplicationEntity
     public AdoptionStatus AdoptionStatus { get; set; } = AdoptionStatus.Pending;
     public required string UserId { get; set; }
     public int PetId { get; set; }
+
     // Navigation Props
-    public UserEntity User { get; set; } // Many-to-One
-    public PetEntity Pet { get; set; } //  Many-to-One
+    public UserEntity? User { get; set; } // Many-to-One
+    public PetEntity? Pet { get; set; } //  Many-to-One
 }
 
 public enum AdoptionStatus

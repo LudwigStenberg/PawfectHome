@@ -15,34 +15,6 @@ public class PetsController : ControllerBase
         this.logger = logger;
     }
 
-
-    [HttpGet("{id}")]
-    public async Task<IActionResult> GetPet(int id)
-    {
-        try
-        {
-            var pet = await petService.GetPetAsync(id);
-
-            return Ok(pet);
-        }
-        catch (KeyNotFoundException ex)
-        {
-            return NotFound(ex.Message);
-        }
-        catch (Exception)
-        {
-            return StatusCode(500, "Unexpected error occured while fetching pet");
-        }
-    }
-
-    [HttpGet]
-    public async Task<ActionResult<IEnumerable<GetPetResponse>>> GetAllPets()
-    {
-        var pets = await petService.GetAllPetsAsync();
-
-        return Ok(pets);
-    }
-
     [HttpPost]
     [Authorize(Roles = "ShelterOwner")]
     public async Task<IActionResult> CreatePet([FromBody] RegisterPetRequest request)
@@ -84,44 +56,31 @@ public class PetsController : ControllerBase
         }
     }
 
-    [HttpDelete("{id}")]
-    [Authorize(Roles = "ShelterOwner")]
-    public async Task<IActionResult> DeletePet(int id)
+    [HttpGet("{id}")]
+    public async Task<IActionResult> GetPet(int id)
     {
-        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-
-        if (string.IsNullOrWhiteSpace(userId))
-        {
-            return Unauthorized();
-        }
-
         try
         {
-            await petService.RemovePetAsync(id, userId);
-            return NoContent();
-        }
-        catch (ArgumentException ex)
-        {
-            return BadRequest(new { Message = ex.Message });
-        }
-        catch (UnauthorizedAccessException)
-        {
-            return Forbid();
+            var pet = await petService.GetPetAsync(id);
+
+            return Ok(pet);
         }
         catch (KeyNotFoundException)
         {
             return NotFound();
         }
-        catch (Exception ex)
+        catch (Exception)
         {
-            logger.LogError(
-                ex,
-                "Unexpected error while deleting pet. PetId: {PetId}. RequestedBy: {UserId}",
-                id,
-                userId
-            );
-            return StatusCode(500, "An unexpected error occured while deleting the pet.");
+            return StatusCode(500, "Unexpected error occured while fetching pet");
         }
+    }
+
+    [HttpGet]
+    public async Task<ActionResult<IEnumerable<GetPetResponse>>> GetAllPets()
+    {
+        var pets = await petService.GetAllPetsAsync();
+
+        return Ok(pets);
     }
 
     [HttpPut("{id}")]
@@ -167,6 +126,46 @@ public class PetsController : ControllerBase
                 userId
             );
             return StatusCode(500, "An unexpected error occured while updating the pet.");
+        }
+    }
+
+    [HttpDelete("{id}")]
+    [Authorize(Roles = "ShelterOwner")]
+    public async Task<IActionResult> DeletePet(int id)
+    {
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+        if (string.IsNullOrWhiteSpace(userId))
+        {
+            return Unauthorized();
+        }
+
+        try
+        {
+            await petService.RemovePetAsync(id, userId);
+            return NoContent();
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest(new { Message = ex.Message });
+        }
+        catch (UnauthorizedAccessException)
+        {
+            return Forbid();
+        }
+        catch (KeyNotFoundException)
+        {
+            return NotFound();
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(
+                ex,
+                "Unexpected error while deleting pet. PetId: {PetId}. RequestedBy: {UserId}",
+                id,
+                userId
+            );
+            return StatusCode(500, "An unexpected error occured while deleting the pet.");
         }
     }
 }

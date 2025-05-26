@@ -25,6 +25,12 @@ public class AdoptionsController : ControllerBase
     )
     {
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+        if (string.IsNullOrEmpty(userId))
+        {
+            return Unauthorized();
+        }
+
         try
         {
             var result = await adoptionService.RegisterAdoptionApplicationAsync(request, userId);
@@ -33,11 +39,7 @@ public class AdoptionsController : ControllerBase
                 result.Id,
                 userId
             );
-            return CreatedAtAction(
-                nameof(GetAdoptionApplication),
-                new { id = result.Id },
-                result
-            );
+            return CreatedAtAction(nameof(GetAdoptionApplication), new { id = result.Id }, result);
         }
         catch (ValidationFailedException ex)
         {
@@ -59,15 +61,18 @@ public class AdoptionsController : ControllerBase
                 userId,
                 ex.Message
             );
-            return NotFound(new { Message = ex.Message });
+            return NotFound();
         }
         catch (PetNotFoundException ex)
         {
-            logger.LogWarning(ex,
+            logger.LogWarning(
+                ex,
                 "Pet not found while creating an adoption application for UserId: {UserId}. Message: {Message}",
-                userId, ex.Message);
+                userId,
+                ex.Message
+            );
 
-            return NotFound(new { Message = ex.Message });
+            return NotFound();
         }
         catch (Exception ex)
         {
@@ -76,7 +81,10 @@ public class AdoptionsController : ControllerBase
                 "An unexpected error occurred while creating adoption application for UserId: {UserId}",
                 userId
             );
-            return StatusCode(500, "An unexpected error occurred while creating the adoption application.");
+            return StatusCode(
+                500,
+                "An unexpected error occurred while creating the adoption application."
+            );
         }
     }
 
@@ -95,9 +103,9 @@ public class AdoptionsController : ControllerBase
             var response = await adoptionService.GetAdoptionApplicationAsync(id, userId);
             return Ok(response);
         }
-        catch (AdoptionApplicationNotFoundException ex)
+        catch (AdoptionApplicationNotFoundException)
         {
-            return NotFound(ex.Message);
+            return NotFound();
         }
         catch (UnauthorizedAccessException)
         {
@@ -117,16 +125,25 @@ public class AdoptionsController : ControllerBase
                 id,
                 userId
             );
-            return StatusCode(500, "An unexpected error occurred while retrieving the adoption application.");
+            return StatusCode(
+                500,
+                "An unexpected error occurred while retrieving the adoption application."
+            );
         }
     }
 
     [HttpGet]
     [Authorize]
-    public async Task<ActionResult<IEnumerable<GetAdoptionApplicationResponse>>> GetAdoptionApplications()
+    public async Task<
+        ActionResult<IEnumerable<GetAdoptionApplicationResponse>>
+    > GetAdoptionApplications()
     {
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
+        if (string.IsNullOrEmpty(userId))
+        {
+            return Unauthorized();
+        }
         try
         {
             var applications = await adoptionService.GetAllAdoptionApplicationsAsync(userId);
@@ -144,8 +161,10 @@ public class AdoptionsController : ControllerBase
                 "An unexpected error occurred while retrieving adoption applications for user {UserId}",
                 userId
             );
-            return StatusCode(500, "An unexpected error occurred while retrieving adoption applications.");
-
+            return StatusCode(
+                500,
+                "An unexpected error occurred while retrieving adoption applications."
+            );
         }
     }
 
@@ -161,7 +180,6 @@ public class AdoptionsController : ControllerBase
         {
             return Unauthorized();
         }
-
 
         try
         {

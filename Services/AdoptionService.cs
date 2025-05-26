@@ -38,15 +38,11 @@ public class AdoptionService : IAdoptionService
         logger.LogInformation("Validating RegisterAdoptionRequest for registration");
         modelValidator.ValidateModel(request);
 
-
         var userExists = await dbContext.Users.AnyAsync(u => u.Id == userId);
         if (!userExists)
         {
-
             throw new KeyNotFoundException($"No user found with ID {userId}.");
-
         }
-
 
         var petExists = await dbContext.Pets.AnyAsync(p => p.Id == request.PetId);
         if (!petExists)
@@ -61,8 +57,7 @@ public class AdoptionService : IAdoptionService
             AdoptionStatus = AdoptionStatus.Pending,
         };
 
-
-        var createdAdoptionApplication = await adoptionRepository.CreateAdoptionAsync(
+        var createdAdoptionApplication = await adoptionRepository.CreateAdoptionApplicationAsync(
             adoptionApplicationEntity
         );
 
@@ -85,7 +80,10 @@ public class AdoptionService : IAdoptionService
     /// <returns>A response containing information about the found adoption application</returns>
     /// <exception cref="KeyNotFoundException">Thrown when the specified adoption application is not found</exception>
     /// <exception cref="UnauthorizedAccessException">Thrown when the user doesn't own the adoption application</exception>
-    public async Task<GetAdoptionApplicationResponse> GetAdoptionApplicationAsync(int id, string userId)
+    public async Task<GetAdoptionApplicationResponse> GetAdoptionApplicationAsync(
+        int id,
+        string userId
+    )
     {
         logger.LogInformation(
             "Retrieving adoption application with ID: {Id} for user: {UserId}",
@@ -97,11 +95,9 @@ public class AdoptionService : IAdoptionService
 
         if (adoptionApplication == null)
         {
-
             logger.LogWarning("No adoption application found with ID: {Id}", id);
             throw new KeyNotFoundException($"No adoption application found with ID {id}.");
         }
-
 
         if (adoptionApplication.UserId != userId)
         {
@@ -111,8 +107,9 @@ public class AdoptionService : IAdoptionService
                 id,
                 adoptionApplication.UserId
             );
-            throw new UnauthorizedAccessException("You can only access your own adoption applications.");
-
+            throw new UnauthorizedAccessException(
+                "You can only access your own adoption applications."
+            );
         }
 
         var response = AdoptionApplicationMapper.ToGetResponse(adoptionApplication);
@@ -131,23 +128,25 @@ public class AdoptionService : IAdoptionService
     /// </summary>
     /// <param name="userId">The ID of the user whose adoption applications should be retrieved</param>
     /// <returns>A collection of adoption applications belonging to the specified user</returns>
-    public async Task<IEnumerable<GetAdoptionApplicationResponse>> GetAllAdoptionApplicationsAsync(string userId)
+    public async Task<IEnumerable<GetAdoptionApplicationResponse>> GetAllAdoptionApplicationsAsync(
+        string userId
+    )
     {
         logger.LogInformation("Retrieving all adoption applications for user: {UserId}", userId);
 
-
         var adoptionApplications = await adoptionRepository.FetchAllAdoptionsAsync(userId);
 
-
-        var responses = adoptionApplications.Select(application => new GetAdoptionApplicationResponse
-        {
-            Id = application.Id,
-            CreatedDate = application.CreatedDate,
-            AdoptionStatus = application.AdoptionStatus,
-            UserId = application.UserId,
-            PetId = application.PetId,
-            PetName = application.Pet?.Name
-        }).ToList();
+        var responses = adoptionApplications
+            .Select(application => new GetAdoptionApplicationResponse
+            {
+                Id = application.Id,
+                CreatedDate = application.CreatedDate,
+                AdoptionStatus = application.AdoptionStatus,
+                UserId = application.UserId,
+                PetId = application.PetId,
+                PetName = application.Pet?.Name ?? "Unknown Pet",
+            })
+            .ToList();
 
         logger.LogInformation(
             "Successfully retrieved {Count} adoption applications for user: {UserId}",
@@ -204,7 +203,9 @@ public class AdoptionService : IAdoptionService
         if (adoptionApplication == null)
         {
             logger.LogWarning(
-                "The adoption application with ID {AdoptionApplicationId} could not be found", id);
+                "The adoption application with ID {AdoptionApplicationId} could not be found",
+                id
+            );
             throw new AdoptionApplicationNotFoundException(id);
         }
 
@@ -212,7 +213,10 @@ public class AdoptionService : IAdoptionService
         {
             logger.LogWarning(
                 "Authorization failure: User {RequestingUserId} attempted to delete adoption application {AdoptionApplicationId} owned by user with ID: '{UserId}'.",
-                userId, id, adoptionApplication.UserId);
+                userId,
+                id,
+                adoptionApplication.UserId
+            );
             throw new AdoptionApplicationOwnershipException(id, userId);
         }
 

@@ -10,8 +10,6 @@ public class AppDbContext : IdentityDbContext<UserEntity>
     public DbSet<PetEntity> Pets { get; set; }
     public DbSet<ShelterEntity> Shelters { get; set; }
 
-    // public DbSet<UserEntity> Users { get; set; }
-
     protected override void OnModelCreating(ModelBuilder builder)
     {
         base.OnModelCreating(builder);
