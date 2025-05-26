@@ -394,8 +394,7 @@ public class ShelterService : IShelterService
     /// <param name="request">The request DTO that needs to be validated based on format of the Email provided, null and white space, Name.Length and Description.Length.</param>
     /// <exception cref="UserIdRequiredException">Thrown when the userId is null or empty.</exception>
     /// <exception cref="ValidationException">Thrown when all of the nullable property fields of the request DTO are null, at least one property must be specified in order to update.</exception>
-    /// <exception cref="ValidationFailedException">Thrown from within ValidateModel method when the validation for the request fails.</exception>
-
+    /// <exception cref="ValidationFailedException">Thrown when all of the nullable property fields of the request DTO are null or when the validation within ValidateModel fails.</exception>
     private void ValidateShelterUpdateRequest(string userId, ShelterUpdateRequest request)
     {
         if (string.IsNullOrEmpty(userId))
@@ -407,7 +406,7 @@ public class ShelterService : IShelterService
         if (request.Name == null && request.Description == null && request.Email == null)
         {
             logger.LogWarning("Shelter update rejected: No properties specified for update.");
-            throw new ValidationException("At least one property must be specified for update.");
+            throw CreateValidationFailure("At least one property must be specified for update.");
         }
 
         modelValidator.ValidateModel(request);
