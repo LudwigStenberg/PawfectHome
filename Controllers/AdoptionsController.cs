@@ -18,7 +18,6 @@ public class AdoptionsController : ControllerBase
         this.logger = logger;
     }
 
-
     [HttpPost]
     [Authorize]
     public async Task<IActionResult> CreateAdoptionApplication(
@@ -52,14 +51,22 @@ public class AdoptionsController : ControllerBase
                 new { Message = "Validation failed. Please check the errors.", Errors = ex.Errors }
             );
         }
-        catch (KeyNotFoundException ex)
+        catch (UserNotFoundException ex)
         {
             logger.LogWarning(
                 ex,
-                "Entity not found while creating adoption application for UserId: {UserId}. Message: {Message}",
+                "User not found while creating an adoption application for UserId: {UserId}. Message: {Message}",
                 userId,
                 ex.Message
             );
+            return NotFound(new { Message = ex.Message });
+        }
+        catch (PetNotFoundException ex)
+        {
+            logger.LogWarning(ex,
+                "Pet not found while creating an adoption application for UserId: {UserId}. Message: {Message}",
+                userId, ex.Message);
+
             return NotFound(new { Message = ex.Message });
         }
         catch (Exception ex)
@@ -88,7 +95,7 @@ public class AdoptionsController : ControllerBase
             var response = await adoptionService.GetAdoptionApplicationAsync(id, userId);
             return Ok(response);
         }
-        catch (KeyNotFoundException ex)
+        catch (AdoptionApplicationNotFoundException ex)
         {
             return NotFound(ex.Message);
         }
@@ -120,11 +127,6 @@ public class AdoptionsController : ControllerBase
     {
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
-        if (string.IsNullOrEmpty(userId))
-        {
-            return Unauthorized();
-        }
-
         try
         {
             var applications = await adoptionService.GetAllAdoptionApplicationsAsync(userId);
@@ -143,6 +145,32 @@ public class AdoptionsController : ControllerBase
                 userId
             );
             return StatusCode(500, "An unexpected error occurred while retrieving adoption applications.");
+
+        }
+    }
+
+    [HttpPut("{id}")]
+    [Authorize(Roles = "ShelterOwner")]
+    public async Task<IActionResult> UpdateAdoptionStatus(
+        int id,
+        [FromBody] UpdateAdoptionStatusRequest request
+    )
+    {
+        string? userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (string.IsNullOrEmpty(userId))
+        {
+            return Unauthorized();
+        }
+
+
+        try
+        {
+            var result = await adoptionService.UpdateAdoptionStatusAsync(id, request, userId);
+            return Ok(result);
+        }
+        catch
+        {
+            return StatusCode(500);
         }
     }
 
@@ -162,13 +190,13 @@ public class AdoptionsController : ControllerBase
             await adoptionService.RemoveAdoptionApplicationAsync(id, userId);
             return NoContent();
         }
-        catch (KeyNotFoundException)
+        catch (AdoptionApplicationNotFoundException)
         {
             return NotFound();
         }
-        catch (UnauthorizedAccessException)
+        catch (AdoptionApplicationOwnershipException)
         {
-            return Unauthorized();
+            return Forbid();
         }
         catch (Exception ex)
         {

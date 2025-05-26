@@ -1,6 +1,6 @@
 public interface IShelterService
 {
-    Task<(RegisterShelterDetailResponse Shelter, bool AuthChanged)> RegisterShelterAsync(
+    Task<(RegisterShelterResponse Shelter, bool AuthChanged)> RegisterShelterAsync(
         string userId,
         RegisterShelterRequest request
     );

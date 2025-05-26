@@ -1,3 +1,4 @@
+using System.Data;
 using Microsoft.EntityFrameworkCore;
 
 public class AdoptionRepository : IAdoptionRepository
@@ -43,5 +44,24 @@ public class AdoptionRepository : IAdoptionRepository
     {
         context.AdoptionApplications.Remove(adoptionApplication);
         await context.SaveChangesAsync();
+    }
+
+    public async Task<AdoptionApplicationEntity> UpdateAdoptionStatusAsync(
+        int id,
+        AdoptionStatus updatedStatus,
+        string userId
+    )
+    {
+        var application = await context
+            .AdoptionApplications.Where(a => a.Id == id && a.Pet.Shelter.UserId == userId)
+            .FirstOrDefaultAsync();
+
+        if (application == null)
+        {
+            return null;
+        }
+        application.AdoptionStatus = updatedStatus;
+        await context.SaveChangesAsync();
+        return application;
     }
 }

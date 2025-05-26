@@ -4,4 +4,9 @@ public interface IAdoptionService
     Task<GetAdoptionApplicationResponse> GetAdoptionApplicationAsync(int id, string userId);
     Task<IEnumerable<GetAdoptionApplicationResponse>> GetAllAdoptionApplicationsAsync(string userId);
     Task RemoveAdoptionApplicationAsync(int id, string userId);
+    Task<AdoptionApplicationEntity> UpdateAdoptionStatusAsync(
+        int id,
+        UpdateAdoptionStatusRequest updateAdoptionStatus,
+        string userId
+    );
 }

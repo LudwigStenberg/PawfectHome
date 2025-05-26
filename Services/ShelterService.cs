@@ -1,6 +1,5 @@
 using System.ComponentModel.DataAnnotations;
 using Microsoft.AspNetCore.Identity;
-using Scalar.AspNetCore;
 
 public class ShelterService : IShelterService
 {
@@ -34,11 +33,11 @@ public class ShelterService : IShelterService
     ///   - AuthChanged: A boolean indicating whether the user's authentication state was changed by assigning the ShelterOwner role
     /// </returns>
     /// <exception cref="ArgumentException">Thrown when userId is null or empty, or when the request object is null.</exception>
-    /// <exception cref="ValidationException">Thrown when a user who already has a shelter attempts to register another one. Each user can only have one shelter at a time.</exception>
-    public async Task<(
-        RegisterShelterDetailResponse Shelter,
-        bool AuthChanged
-    )> RegisterShelterAsync(string userId, RegisterShelterRequest request)
+    /// <exception cref="MultipleSheltersNotAllowedException">Thrown when a user who already has a shelter attempts to register another one. Each user can only have one shelter at a time.</exception>
+    public async Task<(RegisterShelterResponse Shelter, bool AuthChanged)> RegisterShelterAsync(
+        string userId,
+        RegisterShelterRequest request
+    )
     {
         logger.LogInformation("Starting shelter registration for user {UserId}.", userId);
 
@@ -48,18 +47,10 @@ public class ShelterService : IShelterService
         if (existingShelter)
         {
             logger.LogWarning("User {UserId} attempted to register a second shelter.", userId);
-            throw new ValidationException(
-                "User already has a shelter. Each user can only have one shelter registered at a time."
-            );
+            throw new MultipleSheltersNotAllowedException(userId);
         }
 
-        var newShelter = new ShelterEntity
-        {
-            Name = request.Name,
-            Description = request.Description ?? "No description",
-            Email = request.Email,
-            UserId = userId,
-        };
+        var newShelter = ShelterMapper.ToEntity(request, userId);
 
         logger.LogInformation(
             "Creating new shelter for user {UserId} with name {ShelterName}.",
@@ -70,20 +61,13 @@ public class ShelterService : IShelterService
         var createdShelter = await shelterRepository.CreateShelterAsync(newShelter);
         bool authChanged = await AssignShelterOwnerRoleAsync(userId);
 
-        var shelter = new RegisterShelterDetailResponse
-        {
-            Id = createdShelter.Id,
-            Name = createdShelter.Name,
-            Description = createdShelter.Description,
-            Email = createdShelter.Email,
-            UserId = createdShelter.UserId,
-        };
+        var shelter = ShelterMapper.ToRegisterResponse(createdShelter);
 
         logger.LogInformation(
             "Successfully created shelter {ShelterId} for user {UserId}.",
             createdShelter.Id,
-            userId
-        );
+            userId);
+
         return (Shelter: shelter, AuthChanged: authChanged);
     }
 
@@ -92,42 +76,23 @@ public class ShelterService : IShelterService
     /// </summary>
     /// <param name="id">The ID of the shelter that is used in the retrieval request.</param>
     /// <returns>A ShelterResponse DTO which includes basic information about the shelter in addition to a list of PetSummaryResponse associated with it.</returns>
-    /// <exception cref="KeyNotFoundException">Thrown when the shelter cannot be found.</exception>
+    /// <exception cref="ShelterNotFoundException">Thrown when the shelter cannot be found.</exception>
     public async Task<ShelterDetailResponse> GetShelterAsync(int id)
     {
         logger.LogInformation(
             "Starting retrieval of shelter information for shelter with ID: {ShelterId}.",
-            id
-        );
+            id);
 
         var shelter = await shelterRepository.FetchShelterByIdAsync(id);
 
         if (shelter == null)
         {
             logger.LogWarning("Shelter with ID: {ShelterId} could not be found.", id);
-            throw new KeyNotFoundException($"Shelter with ID {id} could not be found.");
+            throw new ShelterNotFoundException(id);
         }
 
-        return new ShelterDetailResponse()
-        {
-            Id = shelter.Id,
-            Name = shelter.Name,
-            Description = shelter.Description,
-            Email = shelter.Email,
-            UserId = shelter.UserId,
-
-            Pets = shelter
-                .Pets.Select(pet => new PetSummaryResponse
-                {
-                    Id = pet.Id,
-                    Name = pet.Name,
-                    Birthdate = pet.Birthdate,
-                    Gender = pet.Gender,
-                    Species = pet.Species,
-                    ImageURL = pet.ImageURL,
-                })
-                .ToList(),
-        };
+        var response = ShelterMapper.ToDetailResponse(shelter);
+        return response;
     }
 
     /// <summary>
@@ -140,16 +105,8 @@ public class ShelterService : IShelterService
 
         logger.LogInformation("Retrieved {Count} shelters from the repository", allShelters.Count);
 
-        return allShelters
-            .Select(shelter => new ShelterSummaryResponse()
-            {
-                Id = shelter.Id,
-                Name = shelter.Name,
-                Description = shelter.Description,
-                Email = shelter.Email,
-                PetCount = shelter.PetCount,
-            })
-            .ToList();
+        var response = allShelters.Select(ShelterMapper.ToSummaryResponse).ToList();
+        return response;
     }
 
     /// <summary>
@@ -161,15 +118,19 @@ public class ShelterService : IShelterService
     /// <param name="userId">The ID of the user requesting the update.</param>
     /// <param name="request">The ShelterUpdateRequest DTO which contains the new value or values.</param>
     /// <returns>A ShelterDetailResponse DTO containing Id, Name, Description, Email, UserId and a list of Pets.</returns>
-    /// <exception cref="KeyNotFoundException">Thrown when FetchShelterById method fails and the shelter cannot be found.</exception>
-    /// <exception cref="UnauthorizedAccessException">Thrown when the retrieved shelter's UserId does not match the userId method parameter.</exception>
+    /// <exception cref="ShelterNotFoundException">Thrown when FetchShelterById method fails and the shelter cannot be found.</exception>
+    /// <exception cref="ShelterOwnershipException">Thrown when the retrieved shelter's UserId does not match the userId method parameter.</exception>
     public async Task<ShelterDetailResponse> UpdateShelterAsync(
         int id,
         string userId,
         ShelterUpdateRequest request
     )
     {
-        logger.LogInformation("Starting update for shelter with ID: {ShelterId}. Update request made by user ID: {RequestingUserId}", id, userId);
+        logger.LogInformation(
+            "Starting update for shelter with ID: {ShelterId}. Update request made by user ID: {RequestingUserId}",
+            id,
+            userId
+        );
 
         ValidateShelterUpdateRequest(userId, request);
 
@@ -177,7 +138,7 @@ public class ShelterService : IShelterService
         if (existingShelter == null)
         {
             logger.LogWarning("The shelter with ID: {ShelterId} could not be found", id);
-            throw new KeyNotFoundException($"Shelter with ID {id} could not be found.");
+            throw new ShelterNotFoundException(id);
         }
 
         if (existingShelter.UserId != userId)
@@ -188,9 +149,7 @@ public class ShelterService : IShelterService
                 existingShelter.Id,
                 existingShelter.UserId
             );
-            throw new UnauthorizedAccessException(
-                "You do not have permission to update this shelter."
-            );
+            throw new ShelterOwnershipException(id, userId);
         }
 
         if (request.Name != null)
@@ -223,26 +182,8 @@ public class ShelterService : IShelterService
             existingShelter.Id
         );
 
-        return new ShelterDetailResponse
-        {
-            Id = existingShelter.Id,
-            Name = existingShelter.Name,
-            Description = existingShelter.Description,
-            Email = existingShelter.Email,
-            UserId = existingShelter.UserId,
-
-            Pets = existingShelter
-                .Pets.Select(pet => new PetSummaryResponse
-                {
-                    Id = pet.Id,
-                    Name = pet.Name,
-                    Birthdate = pet.Birthdate,
-                    Gender = pet.Gender,
-                    Species = pet.Species,
-                    ImageURL = pet.ImageURL,
-                })
-                .ToList(),
-        };
+        var response = ShelterMapper.ToDetailResponse(existingShelter);
+        return response;
     }
 
     /// <summary>
@@ -253,8 +194,8 @@ public class ShelterService : IShelterService
     /// <param name="id">The ID of the shelter resource to be deleted.</param>
     /// <param name="userId">The ID of the user requesting the deletion.</param>
     /// <returns>Returns a Task representing the asynchronous operation. No data is returned upon completion.</returns>
-    /// <exception cref="KeyNotFoundException">Thrown when the retrieved shelter is null. The shelter could not be found.</exception>
-    /// <exception cref="UnauthorizedAccessException">Thrown when the User ID associated with the shelter does not match the user ID that was passed in.</exception>
+    /// <exception cref="ShelterNotFoundException">Thrown when the retrieved shelter is null. The shelter could not be found.</exception>
+    /// <exception cref="ShelterOwnershipException">Thrown when the User ID associated with the shelter does not match the user ID that was passed in.</exception>
     /// <remarks>
     /// This method will trigger cascade deletion of all pets associated with the shelter due to database configuration.
     /// However, adoption applications related to those pets will remain in the database to preserve historical data.
@@ -272,7 +213,7 @@ public class ShelterService : IShelterService
         if (shelter == null)
         {
             logger.LogWarning("The shelter with ID: {ShelterId} could not be found", id);
-            throw new KeyNotFoundException($"The shelter with ID: {id} could not be found.");
+            throw new ShelterNotFoundException(id);
         }
 
         if (shelter.UserId != userId)
@@ -283,9 +224,7 @@ public class ShelterService : IShelterService
                 id,
                 shelter.UserId
             );
-            throw new UnauthorizedAccessException(
-                "You do not have permission to delete this shelter."
-            );
+            throw new ShelterOwnershipException(id, userId);
         }
 
         logger.LogDebug(
@@ -433,7 +372,7 @@ public class ShelterService : IShelterService
     /// <param name="request">The request DTO that needs to be validated based on format of the Email provided, null and white space, Name.Length and Description.Length.</param>
     /// <exception cref="ArgumentException">Thrown when the userId is null or empty or when the request object is null.</exception>
     /// <exception cref="ValidationException">Thrown when any validation rule fails for Email format, Name (must not be empty and must be 3-50 characters), or Description (maximum 1000 characters if provided).</exception>
-    /// <exception cref="ValidationFailedException">Thrown when the validation for the request, based on data annotations, fails.</exception>
+    /// <exception cref="ValidationFailedException">Thrown from within ValidateModel method when the validation for the request fails.</exception>
     private void ValidateRegisterShelterRequest(string userId, RegisterShelterRequest request)
     {
         logger.LogDebug("Validating shelter registration request for user {UserId}", userId);
@@ -442,12 +381,6 @@ public class ShelterService : IShelterService
         {
             logger.LogWarning("Shelter registration rejected: User ID is null or empty");
             throw new ArgumentException("User ID cannot be null or empty.", nameof(userId));
-        }
-
-        if (request == null)
-        {
-            logger.LogWarning("Shelter registration rejected: Request object is null");
-            throw new ArgumentException("Request cannot be null.", nameof(request));
         }
 
         modelValidator.ValidateModel(request);
@@ -461,7 +394,7 @@ public class ShelterService : IShelterService
     /// <param name="request">The request DTO that needs to be validated based on format of the Email provided, null and white space, Name.Length and Description.Length.</param>
     /// <exception cref="ArgumentException">Thrown when the userId is null or empty or when the request object is null.</exception>
     /// <exception cref="ValidationException">Thrown when all of the nullable property fields of the request DTO are null, at least one property must be specified in order to update.</exception>
-    /// <exception cref="ValidationFailedException">Thrown when the validation for the request, based on data annotations, fails.</exception>
+    /// <exception cref="ValidationFailedException">Thrown from within ValidateModel method when the validation for the request fails.</exception>
 
     private void ValidateShelterUpdateRequest(string userId, ShelterUpdateRequest request)
     {
@@ -469,12 +402,6 @@ public class ShelterService : IShelterService
         {
             logger.LogWarning("Shelter registration rejected: User ID is null or empty.");
             throw new ArgumentException("User ID cannot be null or empty.", nameof(userId));
-        }
-
-        if (request == null)
-        {
-            logger.LogWarning("Shelter update rejected: Request object is null.");
-            throw new ArgumentException("Request cannot be null.", nameof(request));
         }
 
         if (request.Name == null && request.Description == null && request.Email == null)
