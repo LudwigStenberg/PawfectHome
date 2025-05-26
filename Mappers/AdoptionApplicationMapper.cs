@@ -1,12 +1,12 @@
 
 public static class AdoptionApplicationMapper
 {
-    public static AdoptionApplicationEntity ToEntity(RegisterAdoptionRequest request)
+    public static AdoptionApplicationEntity ToEntity(RegisterAdoptionRequest request, string userId)
     {
         return new AdoptionApplicationEntity
         {
-            UserId = request.UserId,
-            PetId = request.PetId
+            PetId = request.PetId,
+            UserId = userId,
         };
     }
 

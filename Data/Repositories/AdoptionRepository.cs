@@ -10,7 +10,7 @@ public class AdoptionRepository : IAdoptionRepository
         this.context = context;
     }
 
-    public async Task<AdoptionApplicationEntity> CreateAdoptionAsync(
+    public async Task<AdoptionApplicationEntity> CreateAdoptionApplicationAsync(
         AdoptionApplicationEntity newAdoptionApplication
     )
     {
@@ -19,20 +19,19 @@ public class AdoptionRepository : IAdoptionRepository
         return newAdoptionApplication;
     }
 
-    public async Task<AdoptionApplicationEntity> FetchAdoptionApplicationByIdAsync(int id)
+    public async Task<AdoptionApplicationEntity?> FetchAdoptionApplicationByIdAsync(int id)
     {
         return await context
             .AdoptionApplications.Include(a => a.User)
             .Include(a => a.Pet)
-            .ThenInclude(p => p.Shelter)
+            .ThenInclude(p => p!.Shelter)
             .FirstOrDefaultAsync(a => a.Id == id);
     }
 
     public async Task<IEnumerable<AdoptionApplicationEntity>> FetchAllAdoptionsAsync(string userId)
     {
         return await context
-            .AdoptionApplications
-            .Include(a => a.User)
+            .AdoptionApplications.Include(a => a.User)
             .Include(a => a.Pet)
             .ThenInclude(p => p.Shelter)
             .Where(a => a.UserId == userId)
@@ -40,13 +39,7 @@ public class AdoptionRepository : IAdoptionRepository
             .ToListAsync();
     }
 
-    public async Task DeleteAdoptionApplicationAsync(AdoptionApplicationEntity adoptionApplication)
-    {
-        context.AdoptionApplications.Remove(adoptionApplication);
-        await context.SaveChangesAsync();
-    }
-
-    public async Task<AdoptionApplicationEntity> UpdateAdoptionStatusAsync(
+    public async Task<AdoptionApplicationEntity?> UpdateAdoptionStatusAsync(
         int id,
         AdoptionStatus updatedStatus,
         string userId
@@ -63,5 +56,11 @@ public class AdoptionRepository : IAdoptionRepository
         application.AdoptionStatus = updatedStatus;
         await context.SaveChangesAsync();
         return application;
+    }
+
+    public async Task DeleteAdoptionApplicationAsync(AdoptionApplicationEntity adoptionApplication)
+    {
+        context.AdoptionApplications.Remove(adoptionApplication);
+        await context.SaveChangesAsync();
     }
 }

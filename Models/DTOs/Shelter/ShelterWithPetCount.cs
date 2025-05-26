@@ -1,9 +1,8 @@
-
 /// <summary>
 /// Internal DTO used for data transfer between repository and service layers.
 /// Contains shelter data enriched with pet count information.
 /// </summary>
-public class ShelterWithPetCountDto
+public class ShelterWithPetCount
 {
     public int Id { get; set; }
     public required string Name { get; set; }

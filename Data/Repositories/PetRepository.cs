@@ -2,48 +2,39 @@ using Microsoft.EntityFrameworkCore;
 
 public class PetRepository : IPetRepository
 {
-    private readonly AppDbContext appDbContext;
+    private readonly AppDbContext context;
 
-    public PetRepository(AppDbContext dbContext)
+    public PetRepository(AppDbContext context)
     {
-        appDbContext = dbContext;
-    }
-
-    public Task<PetEntity> CreatePetAsync()
-    {
-        throw new NotImplementedException();
-    }
-
-    public async Task<PetEntity> FetchPetAsync(int id)
-    {
-        var pet = await appDbContext
-            .Pets.Include(p => p.Shelter)
-            .FirstOrDefaultAsync(p => p.Id == id);
-
-        return pet;
+        this.context = context;
     }
 
     public async Task<PetEntity> CreatePetAsync(PetEntity petEntity)
     {
-        await appDbContext.Pets.AddAsync(petEntity);
-        await appDbContext.SaveChangesAsync();
+        await context.Pets.AddAsync(petEntity);
+        await context.SaveChangesAsync();
         return petEntity;
+    }
+
+    public async Task<PetEntity?> FetchPetAsync(int id)
+    {
+        return await context.Pets.Include(p => p.Shelter).FirstOrDefaultAsync(p => p.Id == id);
     }
 
     public async Task<IEnumerable<PetEntity>> FetchAllPetsAsync()
     {
-        return await appDbContext.Pets.Include(p => p.Shelter).ToListAsync();
-    }
-
-    public async Task DeletePetAsync(PetEntity petEntity)
-    {
-        appDbContext.Pets.Remove(petEntity);
-        await appDbContext.SaveChangesAsync();
+        return await context.Pets.Include(p => p.Shelter).ToListAsync();
     }
 
     public async Task UpdatePetAsync(PetEntity existingPet)
     {
-        appDbContext.Pets.Update(existingPet);
-        await appDbContext.SaveChangesAsync();
+        context.Pets.Update(existingPet);
+        await context.SaveChangesAsync();
+    }
+
+    public async Task DeletePetAsync(PetEntity petEntity)
+    {
+        context.Pets.Remove(petEntity);
+        await context.SaveChangesAsync();
     }
 }

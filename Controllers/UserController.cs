@@ -18,13 +18,14 @@ public class UsersController : ControllerBase
     [Authorize]
     public async Task<IActionResult> GetUser(string id)
     {
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (string.IsNullOrEmpty(userId))
+        {
+            return Unauthorized();
+        }
+
         try
         {
-            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            if (string.IsNullOrEmpty(userId))
-            {
-                return Unauthorized();
-            }
             var userResponse = await userService.GetUserAsync(id, userId);
             return Ok(userResponse);
         }
@@ -32,26 +33,28 @@ public class UsersController : ControllerBase
         {
             return Forbid();
         }
-        catch (KeyNotFoundException ex)
+        catch (KeyNotFoundException)
         {
-            return NotFound(ex.Message);
+            return NotFound();
         }
         catch (Exception)
         {
-            return StatusCode(500, "An error occured while fetching user  ");
+            return StatusCode(500, "An error occured while fetching user");
         }
     }
 
     [HttpDelete("{id}")]
+    [Authorize]
     public async Task<IActionResult> DeleteUser(string id)
     {
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+        if (string.IsNullOrEmpty(userId))
+        {
+            return Unauthorized();
+        }
         try
         {
-            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            if (string.IsNullOrEmpty(userId))
-            {
-                return Unauthorized();
-            }
             await userService.RemoveUserAsync(id, userId);
 
             return NoContent();
@@ -60,9 +63,9 @@ public class UsersController : ControllerBase
         {
             return Forbid();
         }
-        catch (KeyNotFoundException ex)
+        catch (KeyNotFoundException)
         {
-            return NotFound(ex.Message);
+            return NotFound();
         }
         catch (Exception)
         {
