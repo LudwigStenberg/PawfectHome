@@ -18,7 +18,6 @@ public class AdoptionsController : ControllerBase
         this.logger = logger;
     }
 
-
     [HttpPost]
     [Authorize]
     public async Task<IActionResult> CreateAdoptionApplication(
@@ -34,11 +33,7 @@ public class AdoptionsController : ControllerBase
                 result.Id,
                 userId
             );
-            return CreatedAtAction(
-                nameof(GetAdoptionApplication),
-                new { id = result.Id },
-                result
-            );
+            return CreatedAtAction(nameof(GetAdoptionApplication), new { id = result.Id }, result);
         }
         catch (ValidationFailedException ex)
         {
@@ -64,9 +59,12 @@ public class AdoptionsController : ControllerBase
         }
         catch (PetNotFoundException ex)
         {
-            logger.LogWarning(ex,
+            logger.LogWarning(
+                ex,
                 "Pet not found while creating an adoption application for UserId: {UserId}. Message: {Message}",
-                userId, ex.Message);
+                userId,
+                ex.Message
+            );
 
             return NotFound(new { Message = ex.Message });
         }
@@ -77,7 +75,10 @@ public class AdoptionsController : ControllerBase
                 "An unexpected error occurred while creating adoption application for UserId: {UserId}",
                 userId
             );
-            return StatusCode(500, "An unexpected error occurred while creating the adoption application.");
+            return StatusCode(
+                500,
+                "An unexpected error occurred while creating the adoption application."
+            );
         }
     }
 
@@ -118,7 +119,10 @@ public class AdoptionsController : ControllerBase
                 id,
                 userId
             );
-            return StatusCode(500, "An unexpected error occurred while retrieving the adoption application.");
+            return StatusCode(
+                500,
+                "An unexpected error occurred while retrieving the adoption application."
+            );
         }
     }
 
@@ -144,7 +148,7 @@ public class AdoptionsController : ControllerBase
             return StatusCode(500);
         }
     }
-
+    //TODO Add check if adoption exist before trying to fetch. 
     [HttpDelete("{id}")]
     [Authorize]
     public async Task<IActionResult> DeleteAdoptionApplication(int id)
