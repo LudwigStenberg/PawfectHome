@@ -28,6 +28,18 @@ public class AdoptionRepository : IAdoptionRepository
             .FirstOrDefaultAsync(a => a.Id == id);
     }
 
+    public async Task<IEnumerable<AdoptionApplicationEntity>> FetchAllAdoptionsAsync(string userId)
+    {
+        return await context
+            .AdoptionApplications
+            .Include(a => a.User)
+            .Include(a => a.Pet)
+            .ThenInclude(p => p.Shelter)
+            .Where(a => a.UserId == userId)
+            .OrderByDescending(a => a.CreatedDate)
+            .ToListAsync();
+    }
+
     public async Task DeleteAdoptionApplicationAsync(AdoptionApplicationEntity adoptionApplication)
     {
         context.AdoptionApplications.Remove(adoptionApplication);

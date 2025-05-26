@@ -126,6 +126,34 @@ public class AdoptionsController : ControllerBase
         }
     }
 
+    [HttpGet]
+    [Authorize]
+    public async Task<ActionResult<IEnumerable<GetAdoptionApplicationResponse>>> GetAdoptionApplications()
+    {
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+        try
+        {
+            var applications = await adoptionService.GetAllAdoptionApplicationsAsync(userId);
+            logger.LogInformation(
+                "Successfully retrieved {Count} adoption applications for user {UserId}",
+                applications.Count(),
+                userId
+            );
+            return Ok(applications);
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(
+                ex,
+                "An unexpected error occurred while retrieving adoption applications for user {UserId}",
+                userId
+            );
+            return StatusCode(500, "An unexpected error occurred while retrieving adoption applications.");
+
+        }
+    }
+
     [HttpPut("{id}")]
     [Authorize(Roles = "ShelterOwner")]
     public async Task<IActionResult> UpdateAdoptionStatus(
@@ -138,6 +166,8 @@ public class AdoptionsController : ControllerBase
         {
             return Unauthorized();
         }
+
+
         try
         {
             var result = await adoptionService.UpdateAdoptionStatusAsync(id, request, userId);

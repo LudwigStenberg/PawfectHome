@@ -124,6 +124,38 @@ public class AdoptionService : IAdoptionService
     }
 
     /// <summary>
+    /// Retrieves all adoption applications belonging to a specific user.
+    /// </summary>
+    /// <param name="userId">The ID of the user whose adoption applications should be retrieved</param>
+    /// <returns>A collection of adoption applications belonging to the specified user</returns>
+    public async Task<IEnumerable<GetAdoptionApplicationResponse>> GetAllAdoptionApplicationsAsync(string userId)
+    {
+        logger.LogInformation("Retrieving all adoption applications for user: {UserId}", userId);
+
+
+        var adoptionApplications = await adoptionRepository.FetchAllAdoptionsAsync(userId);
+
+
+        var responses = adoptionApplications.Select(application => new GetAdoptionApplicationResponse
+        {
+            Id = application.Id,
+            CreatedDate = application.CreatedDate,
+            AdoptionStatus = application.AdoptionStatus,
+            UserId = application.UserId,
+            PetId = application.PetId,
+            PetName = application.Pet?.Name
+        }).ToList();
+
+        logger.LogInformation(
+            "Successfully retrieved {Count} adoption applications for user: {UserId}",
+            responses.Count,
+            userId
+        );
+
+        return responses;
+    }
+
+    /// <summary>
     /// Updates the adoption status of an adoption application.
     /// </summary>
     /// <param name="id">The unique identifier of the adoption application to update.</param>
