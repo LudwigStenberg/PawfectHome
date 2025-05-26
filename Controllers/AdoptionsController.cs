@@ -34,11 +34,6 @@ public class AdoptionsController : ControllerBase
         try
         {
             var result = await adoptionService.RegisterAdoptionApplicationAsync(request, userId);
-            logger.LogInformation(
-                "Adoption application with ID {Id} successfully created for UserId: {UserId}",
-                result.Id,
-                userId
-            );
             return CreatedAtAction(nameof(GetAdoptionApplication), new { id = result.Id }, result);
         }
         catch (ValidationFailedException ex)
@@ -53,25 +48,12 @@ public class AdoptionsController : ControllerBase
                 new { Message = "Validation failed. Please check the errors.", Errors = ex.Errors }
             );
         }
-        catch (UserNotFoundException ex)
+        catch (UserNotFoundException)
         {
-            logger.LogWarning(
-                ex,
-                "User not found while creating an adoption application for UserId: {UserId}. Message: {Message}",
-                userId,
-                ex.Message
-            );
             return NotFound();
         }
-        catch (PetNotFoundException ex)
+        catch (PetNotFoundException)
         {
-            logger.LogWarning(
-                ex,
-                "Pet not found while creating an adoption application for UserId: {UserId}. Message: {Message}",
-                userId,
-                ex.Message
-            );
-
             return NotFound();
         }
         catch (Exception ex)
@@ -107,7 +89,7 @@ public class AdoptionsController : ControllerBase
         {
             return NotFound();
         }
-        catch (UnauthorizedAccessException)
+        catch (AdoptionApplicationOwnershipException)
         {
             return Unauthorized();
         }
@@ -147,11 +129,6 @@ public class AdoptionsController : ControllerBase
         try
         {
             var applications = await adoptionService.GetAllAdoptionApplicationsAsync(userId);
-            logger.LogInformation(
-                "Successfully retrieved {Count} adoption applications for user {UserId}",
-                applications.Count(),
-                userId
-            );
             return Ok(applications);
         }
         catch (Exception ex)
