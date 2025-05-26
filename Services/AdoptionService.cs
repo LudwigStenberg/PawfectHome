@@ -57,8 +57,6 @@ public class AdoptionService : IAdoptionService
             AdoptionStatus = AdoptionStatus.Pending,
         };
 
-        var createdAdoptionApplication = await adoptionRepository.CreateAdoptionAsync(
-
         var createdAdoptionApplication = await adoptionRepository.CreateAdoptionApplicationAsync(
             adoptionApplicationEntity
         );
