@@ -26,10 +26,10 @@ public class ShelterRepository : IShelterRepository
         return await context.Shelters.SingleOrDefaultAsync(s => s.UserId == userId);
     }
 
-    public async Task<ICollection<ShelterWithPetCountDto>> FetchAllSheltersAsync()
+    public async Task<ICollection<ShelterWithPetCount>> FetchAllSheltersAsync()
     {
         return await context
-            .Shelters.Select(s => new ShelterWithPetCountDto
+            .Shelters.Select(s => new ShelterWithPetCount
             {
                 Id = s.Id,
                 Name = s.Name,

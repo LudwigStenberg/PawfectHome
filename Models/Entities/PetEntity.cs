@@ -2,7 +2,7 @@ public class PetEntity
 {
     public int Id { get; set; }
     public required string Name { get; set; }
-    public DateTime Birthdate { get; set; } 
+    public DateTime Birthdate { get; set; }
     public Gender Gender { get; set; } = Gender.Unknown;
     public Species Species { get; set; } = Species.Undefined;
     public string Breed { get; set; } = "Undefined";
@@ -13,7 +13,7 @@ public class PetEntity
     public required int ShelterId { get; set; }
 
     // Navigation Props
-    public ShelterEntity Shelter { get; set; } // Many-to-One
+    public ShelterEntity? Shelter { get; set; } // Many-to-One
     public ICollection<AdoptionApplicationEntity> AdoptionApplications { get; set; } =
         new List<AdoptionApplicationEntity>(); // One-to-Many
 }

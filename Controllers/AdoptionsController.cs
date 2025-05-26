@@ -25,6 +25,12 @@ public class AdoptionsController : ControllerBase
     )
     {
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+        if (string.IsNullOrEmpty(userId))
+        {
+            return Unauthorized();
+        }
+
         try
         {
             var result = await adoptionService.RegisterAdoptionApplicationAsync(request, userId);
@@ -55,7 +61,7 @@ public class AdoptionsController : ControllerBase
                 userId,
                 ex.Message
             );
-            return NotFound(new { Message = ex.Message });
+            return NotFound();
         }
         catch (PetNotFoundException ex)
         {
@@ -66,7 +72,7 @@ public class AdoptionsController : ControllerBase
                 ex.Message
             );
 
-            return NotFound(new { Message = ex.Message });
+            return NotFound();
         }
         catch (Exception ex)
         {
@@ -97,9 +103,9 @@ public class AdoptionsController : ControllerBase
             var response = await adoptionService.GetAdoptionApplicationAsync(id, userId);
             return Ok(response);
         }
-        catch (AdoptionApplicationNotFoundException ex)
+        catch (AdoptionApplicationNotFoundException)
         {
-            return NotFound(ex.Message);
+            return NotFound();
         }
         catch (UnauthorizedAccessException)
         {
@@ -134,6 +140,10 @@ public class AdoptionsController : ControllerBase
     {
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
+        if (string.IsNullOrEmpty(userId))
+        {
+            return Unauthorized();
+        }
         try
         {
             var applications = await adoptionService.GetAllAdoptionApplicationsAsync(userId);

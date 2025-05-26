@@ -42,7 +42,7 @@ public class UserService : IUserService
         {
             Id = user.Id,
             Name = $"{user.FirstName} {user.LastName}",
-            Email = user.Email,
+            Email = user.Email!,
         };
         return response;
     }
