@@ -392,7 +392,7 @@ public class ShelterService : IShelterService
     /// </summary>
     /// <param name="userId">The string userId which needs to be checked for null and empty.</param>
     /// <param name="request">The request DTO that needs to be validated based on format of the Email provided, null and white space, Name.Length and Description.Length.</param>
-    /// <exception cref="ArgumentException">Thrown when the userId is null or empty or when the request object is null.</exception>
+    /// <exception cref="ArgumentException">Thrown when the userId is null or empty.</exception>
     /// <exception cref="ValidationException">Thrown when all of the nullable property fields of the request DTO are null, at least one property must be specified in order to update.</exception>
     /// <exception cref="ValidationFailedException">Thrown from within ValidateModel method when the validation for the request fails.</exception>
 
