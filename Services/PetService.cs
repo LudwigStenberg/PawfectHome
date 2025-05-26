@@ -1,6 +1,5 @@
 using System.ComponentModel.DataAnnotations;
 using System.Globalization;
-using Microsoft.EntityFrameworkCore;
 
 public class PetService : IPetService
 {
@@ -35,31 +34,8 @@ public class PetService : IPetService
 
         var pets = await petRepository.FetchAllPetsAsync();
 
-        var responses = pets.Select(pet => new GetPetResponse
-            {
-                Id = pet.Id,
-                Name = pet.Name,
-                Birthdate = pet.Birthdate,
-                Gender = pet.Gender,
-                Species = pet.Species,
-                Breed = pet.Breed,
-                Description = pet.Description,
-                ImageURL = pet.ImageURL,
-                IsNeutured = pet.IsNeutered,
-                HasPedigree = pet.HasPedigree,
-                ShelterId = pet.ShelterId,
-                Shelter =
-                    pet.Shelter != null
-                        ? new ShelterSummary
-                        {
-                            Id = pet.Shelter.Id,
-                            Name = pet.Shelter.Name ?? "Unknown",
-                            Description = pet.Shelter.Description ?? "No description",
-                            Email = pet.Shelter.Email ?? "noemail@example.com",
-                        }
-                        : null,
-            })
-            .ToList();
+        var responses = pets.Select(PetMapper.ToGetResponse).ToList();
+
         return responses;
     }
 
@@ -68,7 +44,7 @@ public class PetService : IPetService
     /// </summary>
     /// <param name="id">unique identifier of specific pet to be retrieved.</param>
     /// <returns>the task result contains the pet entity</returns>
-    /// <exception cref="KeyNotFoundException"> Throw when no pet with the specified id is found.</exception>
+    /// <exception cref="PetNotFoundException"> Throw when no pet with the specified id is found.</exception>
 
     public async Task<GetPetResponse> GetPetAsync(int id)
     {
@@ -77,33 +53,11 @@ public class PetService : IPetService
         if (pet == null)
         {
             logger.LogWarning("Pet with id {petId} was not found", id);
-            throw new KeyNotFoundException("Pet not found");
+            throw new PetNotFoundException(id);
         }
 
-        var response = new GetPetResponse
-        {
-            Id = pet.Id,
-            Name = pet.Name,
-            Birthdate = pet.Birthdate,
-            Gender = pet.Gender,
-            Species = pet.Species,
-            Breed = pet.Breed,
-            Description = pet.Description,
-            ImageURL = pet.ImageURL,
-            IsNeutured = pet.IsNeutered,
-            HasPedigree = pet.HasPedigree,
-            ShelterId = pet.ShelterId,
-        };
-        if (pet.Shelter != null)
-        {
-            response.Shelter = new ShelterSummary
-            {
-                Id = pet.Shelter.Id,
-                Name = pet.Shelter.Name ?? "Unknown",
-                Description = pet.Shelter.Description ?? "No description",
-                Email = pet.Shelter.Email ?? "noemail@example.com",
-            };
-        }
+        var response = PetMapper.ToGetResponse(pet);
+
         return response;
     }
 
@@ -111,9 +65,9 @@ public class PetService : IPetService
     /// Registers a new pet for the shelter associated with the requesting user.
     /// </summary>
     /// <param name="request">Details about the pet to register.</param>
-    /// <param name="userId">The user ID of the shelter representative submitting the request.</param>
+    /// <param name="userId">The user ID of the shelter owner submitting the request.</param>
     /// <returns>The registered pet’s details.</returns>
-    /// <exception cref="KeyNotFoundException">
+    /// <exception cref="ShelterNotFoundException">
     /// Thrown if the specified shelter does not exist.
     /// </exception>
     /// <exception cref="UnauthorizedAccessException">
@@ -162,7 +116,12 @@ public class PetService : IPetService
 
         if (shelter == null)
         {
-            throw new KeyNotFoundException($"No matching shelter found.");
+            logger.LogWarning(
+                "Pet registration failed - The shelter with ID: {ShelterId} could not be found. RequestedBy; {UserId}",
+                request.ShelterId,
+                userId
+            );
+            throw new ShelterNotFoundException(request.ShelterId);
         }
 
         if (userId != shelter.UserId)
@@ -177,37 +136,11 @@ public class PetService : IPetService
             throw new UnauthorizedAccessException("You are not authorized to register this pet.");
         }
 
-        var petEntity = new PetEntity
-        {
-            Name = request.Name,
-            Birthdate = parsedBirthdate,
-            Gender = request.Gender,
-            Species = request.Species,
-            Breed = request.Breed,
-            Description = request.Description,
-            ImageURL = request.ImageURL,
-            IsNeutered = request.IsNeutured,
-            HasPedigree = request.HasPedigree,
-            ShelterId = request.ShelterId,
-        };
+        var petEntity = PetMapper.ToEntity(request, parsedBirthdate);
 
         var result = await petRepository.CreatePetAsync(petEntity);
 
-        var response = new RegisterPetResponse
-        {
-            Id = result.Id,
-            Name = result.Name,
-            Birthdate = result.Birthdate,
-            Gender = result.Gender,
-            Species = result.Species,
-            Breed = result.Breed,
-            Description = result.Description,
-            ImageURL = result.ImageURL,
-            IsNeutered = result.IsNeutered,
-            HasPedigree = result.HasPedigree,
-            ShelterId = result.ShelterId,
-            CreatedAt = DateTime.UtcNow,
-        };
+        var response = PetMapper.ToRegisterResponse(result);
 
         logger.LogInformation(
             "Pet successfully registered. PetId: {PetId}, UserId: {UserId}, ShelterId: {ShelterId}",
@@ -223,8 +156,9 @@ public class PetService : IPetService
     /// Removes a pet from the database.
     /// </summary>
     /// <param name="id">The id of the pet to be removed.</param>
-    /// <exception cref="ArgumentException">Thrown when id is a non-positive integer.</exception>
-    /// <exception cref="KeyNotFoundException">Thrown when the specified pet is not found.</exception>
+    /// <exception cref="ValidationFailedException">Thrown when id is a non-positive integer.</exception>
+    /// <exception cref="PetNotFoundException">Thrown when the specified pet is not found.</exception>
+    /// <exception cref="ShelterNotFoundException">Thrown when the specified pet is not found.</exception>
     public async Task RemovePetAsync(int id, string userId)
     {
         logger.LogInformation(
@@ -240,9 +174,9 @@ public class PetService : IPetService
                 id,
                 userId
             );
-            throw new ArgumentException(
-                $"Pet ID must be a positive number. Value: {id}",
-                nameof(id)
+            throw modelValidator.CreateValidationFailure(
+                "Invalid ID. The Pet ID must be a positive number.",
+                "PetId"
             );
         }
 
@@ -251,17 +185,21 @@ public class PetService : IPetService
         if (pet == null)
         {
             logger.LogWarning(
-                "Pet deletion failed - Pet not found. PetId: {PetId}. RequestedBy: {UserId}",
+                "Pet deletion failed - Pet could not be found. PetId: {PetId}. RequestedBy: {UserId}",
                 id,
                 userId
             );
-            throw new KeyNotFoundException($"No Pet found with ID {id}.");
+            throw new PetNotFoundException(id);
         }
 
         var shelter = await shelterRepository.FetchShelterByUserIdAsync(userId);
 
         if (shelter == null)
         {
+            logger.LogWarning(
+                "Pet deletion failed - No shelter registered for UserId: {UserId} ",
+                userId
+            );
             throw new KeyNotFoundException($"No matching shelter found.");
         }
 
@@ -292,7 +230,6 @@ public class PetService : IPetService
     /// <param name="userId">The ID of the shelter representative making the request.</param>
     /// <param name="request">The fields to update for the pet.</param>
     /// <returns>The updated pet’s details.</returns>
-    /// <exception cref="ArgumentException">Thrown if <paramref name="petId"/> is not a positive number.</exception>
     /// <exception cref="KeyNotFoundException">Thrown if the pet or the user's shelter cannot be found.</exception>
     /// <exception cref="UnauthorizedAccessException">Thrown if the pet does not belong to the user's shelter.</exception>
     /// <exception cref="ValidationFailedException">Thrown if any update field is invalid (e.g., name length, birthdate format, invalid enum values).</exception>
@@ -315,9 +252,10 @@ public class PetService : IPetService
                 petId,
                 userId
             );
-            throw new ArgumentException(
-                $"Pet ID must be a positive number. Value: {petId}",
-                nameof(petId)
+
+            throw modelValidator.CreateValidationFailure(
+                "Invalid ID. The Pet ID must be a positive number.",
+                "PetId"
             );
         }
 
@@ -326,17 +264,21 @@ public class PetService : IPetService
         if (existingPet == null)
         {
             logger.LogWarning(
-                "Pet update failed - Pet not found. PetId: {PetId}. RequestedBy: {UserId}",
+                "Pet update failed - Pet could not be found. PetId: {PetId}. RequestedBy: {UserId}",
                 petId,
                 userId
             );
-            throw new KeyNotFoundException($"No Pet found with ID {petId}.");
+            throw new PetNotFoundException(petId);
         }
 
         var shelter = await shelterRepository.FetchShelterByUserIdAsync(userId);
 
         if (shelter == null)
         {
+            logger.LogWarning(
+                "Pet deletion failed - No shelter registered for UserId: {UserId} ",
+                userId
+            );
             throw new KeyNotFoundException($"No matching shelter found.");
         }
 
@@ -354,20 +296,15 @@ public class PetService : IPetService
         {
             if (request.Name.Length < 3 || request.Name.Length > 50)
             {
-                var errors = new List<ValidationResult>
-                {
-                    new ValidationResult(
-                        "Invalid name. The pet name must be between 3 and 50 characters.",
-                        new[] { "Name" }
-                    ),
-                };
                 logger.LogWarning(
-                    "Pet update failed - invalid name: {Name}. {@Errors} RequestedBy: {UserId}.",
+                    "Pet update failed - invalid name: {Name}. The pet name must be between 3 and 50 characters. RequestedBy: {UserId}.",
                     request.Name,
-                    errors,
                     userId
                 );
-                throw ValidationFailedException.FromValidationResults(errors);
+                throw modelValidator.CreateValidationFailure(
+                    "Invalid name. The pet name must be between 3 and 50 characters.",
+                    "Name"
+                );
             }
             existingPet.Name = request.Name;
         }
@@ -388,6 +325,7 @@ public class PetService : IPetService
                     errors,
                     userId
                 );
+
                 throw ValidationFailedException.FromValidationResults(errors);
             }
             existingPet.Birthdate = birthdate;
@@ -397,20 +335,16 @@ public class PetService : IPetService
         {
             if (!Enum.IsDefined(typeof(Gender), request.Gender))
             {
-                var errors = new List<ValidationResult>
-                {
-                    new ValidationResult(
-                        "Invalid gender. The pet gender must be a valid option",
-                        new[] { "Name" }
-                    ),
-                };
                 logger.LogWarning(
-                    "Pet update failed - invalid gender: {gender}. {@Errors} RequestedBy: {UserId}.",
+                    "Pet update failed - invalid gender: {gender}. Invalid gender. The pet gender must be a valid option RequestedBy: {UserId}.",
                     request.Gender,
-                    errors,
                     userId
                 );
-                throw ValidationFailedException.FromValidationResults(errors);
+
+                throw modelValidator.CreateValidationFailure(
+                    "Invalid gender. The pet gender must be a valid option",
+                    "Name"
+                );
             }
             existingPet.Gender = request.Gender.Value;
         }
@@ -418,20 +352,16 @@ public class PetService : IPetService
         {
             if (!Enum.IsDefined(typeof(Species), request.Species))
             {
-                var errors = new List<ValidationResult>
-                {
-                    new ValidationResult(
-                        "Invalid species. The pet species must be a valid option",
-                        new[] { "Name" }
-                    ),
-                };
                 logger.LogWarning(
-                    "Pet update failed - invalid species: {Species}. {@Errors} RequestedBy: {UserId}.",
+                    "Pet update failed - invalid species: {Species}. Invalid species. The pet species must be a valid option. RequestedBy: {UserId}.",
                     request.Species,
-                    errors,
                     userId
                 );
-                throw ValidationFailedException.FromValidationResults(errors);
+
+                throw modelValidator.CreateValidationFailure(
+                    "Invalid species. The pet species must be a valid option",
+                    "Name"
+                );
             }
             existingPet.Species = request.Species.Value;
         }
@@ -443,20 +373,16 @@ public class PetService : IPetService
         {
             if (request.Description.Length > 1000)
             {
-                var errors = new List<ValidationResult>
-                {
-                    new ValidationResult(
-                        "Invalid description. The pet description cannot be more than 1000 characters.",
-                        new[] { "Description" }
-                    ),
-                };
                 logger.LogWarning(
-                    "Pet update failed - invalid description: {Description}. {@Errors} RequestedBy: {UserId}.",
+                    "Pet update failed - invalid description: {Description}. The pet description cannot be more than 1000 characters. RequestedBy: {UserId}.",
                     request.Description,
-                    errors,
                     userId
                 );
-                throw ValidationFailedException.FromValidationResults(errors);
+
+                throw modelValidator.CreateValidationFailure(
+                    "Invalid description. The pet description cannot be more than 1000 characters.",
+                    "Description"
+                );
             }
             existingPet.Description = request.Description;
         }
@@ -472,21 +398,7 @@ public class PetService : IPetService
 
         await petRepository.UpdatePetAsync(existingPet);
 
-        var response = new UpdatePetResponse
-        {
-            Id = existingPet.Id,
-            Name = existingPet.Name,
-            Birthdate = existingPet.Birthdate,
-            Gender = existingPet.Gender,
-            Species = existingPet.Species,
-            Breed = existingPet.Breed,
-            Description = existingPet.Description,
-            ImageURL = existingPet.ImageURL,
-            IsNeutered = existingPet.IsNeutered,
-            HasPedigree = existingPet.HasPedigree,
-            ShelterId = existingPet.ShelterId,
-            UpdatedAt = DateTime.UtcNow,
-        };
+        var response = PetMapper.ToUpdateResponse(existingPet);
 
         logger.LogInformation(
             "Pet successfully updated. PetId: {PetId}, UserId: {UserId}, ShelterId: {ShelterId}",
