@@ -128,7 +128,9 @@ public class AdoptionsController : ControllerBase
 
     [HttpGet]
     [Authorize]
-    public async Task<ActionResult<IEnumerable<GetAdoptionApplicationResponse>>> GetAdoptionApplications()
+    public async Task<
+        ActionResult<IEnumerable<GetAdoptionApplicationResponse>>
+    > GetAdoptionApplications()
     {
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
@@ -149,8 +151,10 @@ public class AdoptionsController : ControllerBase
                 "An unexpected error occurred while retrieving adoption applications for user {UserId}",
                 userId
             );
-            return StatusCode(500, "An unexpected error occurred while retrieving adoption applications.");
-
+            return StatusCode(
+                500,
+                "An unexpected error occurred while retrieving adoption applications."
+            );
         }
     }
 
@@ -167,7 +171,6 @@ public class AdoptionsController : ControllerBase
             return Unauthorized();
         }
 
-
         try
         {
             var result = await adoptionService.UpdateAdoptionStatusAsync(id, request, userId);
@@ -178,7 +181,8 @@ public class AdoptionsController : ControllerBase
             return StatusCode(500);
         }
     }
-    //TODO Add check if adoption exist before trying to fetch. 
+
+    //TODO Add check if adoption exist before trying to fetch.
     [HttpDelete("{id}")]
     [Authorize]
     public async Task<IActionResult> DeleteAdoptionApplication(int id)
