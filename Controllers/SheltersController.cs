@@ -41,14 +41,10 @@ public class SheltersController : ControllerBase
 
             return CreatedAtAction(nameof(GetShelter), new { id = shelter.Id }, response);
         }
-        catch (DbUpdateException ex)
+        catch (ValidationFailedException ex)
         {
-            logger.LogError(
-                ex,
-                "Database error occurred while creating shelter for user {UserId}.",
-                userId
-            );
-            return StatusCode(500, "An error occurred while saving to the database");
+            logger.LogDebug("Validation failed for shelter creation: {@Errors}", ex.Errors);
+            return BadRequest(new { Message = "Validation failed. Please check the errors.", Errors = ex.Errors });
         }
         catch (MultipleSheltersNotAllowedException)
         {
