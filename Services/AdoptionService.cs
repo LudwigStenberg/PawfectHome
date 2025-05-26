@@ -159,7 +159,6 @@ public class AdoptionService : IAdoptionService
     }
 
     /// <summary>
-    ///  Removes an adoption application based on the ID passed as an argument. Retrieves the adoption application entity to make sure 
     /// Updates the adoption status of an adoption application.
     /// </summary>
     /// <param name="id">The unique identifier of the adoption application to update.</param>
