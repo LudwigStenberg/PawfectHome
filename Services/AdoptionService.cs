@@ -135,7 +135,10 @@ public class AdoptionService : IAdoptionService
         string userId
     )
     {
-        logger.LogInformation("Retrieving all adoption applications for user: {UserId}", userId);
+        logger.LogInformation(
+            "Retrieving all adoption applications for shelter owner: {UserId}",
+            userId
+        );
 
         var adoptionApplications = await adoptionRepository.FetchAllAdoptionsAsync(userId);
 
@@ -152,14 +155,25 @@ public class AdoptionService : IAdoptionService
         return response;
     }
 
+    /// <summary>
+    /// Retrieves all adoption applications for pets belonging to a shelter owned by the specified user.
+    /// </summary>
+    /// <param name="userId">The ID of the shelter owner.</param>
+    /// <returns>An enumerable collection of <see cref="AdoptionApplicationShelterSummary"/> containing application details.</returns>
+
     public async Task<
         IEnumerable<AdoptionApplicationShelterSummary>
     > GetAllShelterAdoptionApplicationsAsync(string userId)
     {
+        logger.LogInformation(
+            "Retrieving all adoption applications for shelter owned by user: {UserId}",
+            userId
+        );
+
         var shelterAdoptionApplications = await adoptionRepository.FetchAllShelterAdoptionsAsync(
             userId
         );
-        return shelterAdoptionApplications
+        var response = shelterAdoptionApplications
             .Select(a => new AdoptionApplicationShelterSummary
             {
                 Id = a.Id,
@@ -170,6 +184,14 @@ public class AdoptionService : IAdoptionService
                 PetId = a.Pet.Id,
             })
             .ToList();
+
+        logger.LogInformation(
+            "Successfully retrieved {Count} adoption applications for shelter owned by user {UserId}",
+            response.Count,
+            userId
+        );
+
+        return response;
     }
 
     /// <summary>
@@ -178,8 +200,8 @@ public class AdoptionService : IAdoptionService
     /// <param name="id">The unique identifier of the adoption application to update.</param>
     /// <param name="request">The request containing the new adoption status.</param>
     /// <param name="userId">The ID of the user making the update request.</param>
-    /// <returns>The updated adoption application entity.</returns>
-    /// <exception cref="ArgumentException">Thrown when the request is null.</exception>
+    /// <returns>A summary of the updated adoption application</returns>
+    /// <exception cref="ArgumentException">Thrown when the adoption application is not found or the user lacks permission.</exception>
     public async Task<AdoptionApplicationShelterSummary> UpdateAdoptionStatusAsync(
         int id,
         UpdateAdoptionStatusRequest request,
@@ -187,11 +209,24 @@ public class AdoptionService : IAdoptionService
     )
     {
         var shelterApplications = await GetAllShelterAdoptionApplicationsAsync(userId);
+        if (shelterApplications == null)
+        {
+            logger.LogWarning(
+                "Application status update failed - no applications found related to shelter. RequestedBy: {userId}",
+                userId
+            );
+            throw new ArgumentException($"No applications found related to shelter");
+        }
         var applicationExists = shelterApplications.Any(a => a.Id == id);
 
-        if (applicationExists == null)
+        if (!applicationExists)
         {
-            throw new ArgumentException($"Adoption application not found");
+            logger.LogWarning(
+                "Application status update failed - application not found. ApplicationId: {id}. Requested by: {userId}",
+                id,
+                userId
+            );
+            throw new ArgumentException($"No application with ID {id}");
         }
 
         var updatedApplication = await adoptionRepository.UpdateAdoptionStatusAsync(
