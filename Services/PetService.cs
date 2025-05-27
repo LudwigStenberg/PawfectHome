@@ -3,7 +3,6 @@ using System.Globalization;
 
 public class PetService : IPetService
 {
-    private readonly AppDbContext dbContext;
     private readonly ILogger<IPetService> logger;
     private readonly IPetRepository petRepository;
     private readonly ModelValidator modelValidator;
@@ -13,52 +12,13 @@ public class PetService : IPetService
         IPetRepository petRepository,
         IShelterRepository shelterRepository,
         ILogger<IPetService> logger,
-        AppDbContext appdbContext,
         ModelValidator modelValidator
     )
     {
-        dbContext = appdbContext;
         this.petRepository = petRepository;
         this.modelValidator = modelValidator;
         this.logger = logger;
         this.shelterRepository = shelterRepository;
-    }
-
-    /// <summary>
-    /// Retrieves all pets from database
-    /// </summary>
-    /// <returns> A collection of pets</returns>
-    public async Task<IEnumerable<GetPetResponse>> GetAllPetsAsync()
-    {
-        logger.LogInformation("Retrieveing all pets");
-
-        var pets = await petRepository.FetchAllPetsAsync();
-
-        var responses = pets.Select(PetMapper.ToGetResponse).ToList();
-
-        return responses;
-    }
-
-    /// <summary>
-    /// Retrieves a pet from the database by its ID, or throws an exception if not found.
-    /// </summary>
-    /// <param name="id">unique identifier of specific pet to be retrieved.</param>
-    /// <returns>the task result contains the pet entity</returns>
-    /// <exception cref="PetNotFoundException"> Throw when no pet with the specified id is found.</exception>
-
-    public async Task<GetPetResponse> GetPetAsync(int id)
-    {
-        var pet = await petRepository.FetchPetAsync(id);
-
-        if (pet == null)
-        {
-            logger.LogWarning("Pet with id {petId} was not found", id);
-            throw new PetNotFoundException(id);
-        }
-
-        var response = PetMapper.ToGetResponse(pet);
-
-        return response;
     }
 
     /// <summary>
@@ -67,18 +27,12 @@ public class PetService : IPetService
     /// <param name="request">Details about the pet to register.</param>
     /// <param name="userId">The user ID of the shelter owner submitting the request.</param>
     /// <returns>The registered pet’s details.</returns>
-    /// <exception cref="ShelterNotFoundException">
-    /// Thrown if the specified shelter does not exist.
-    /// </exception>
-    /// <exception cref="UnauthorizedAccessException">
-    /// Thrown if the user is not authorized to register a pet for the specified shelter.
-    /// </exception>
-    /// <exception cref="ValidationFailedException">
-    /// Thrown if the request data is invalid or the birthdate format is incorrect.
-    /// </exception>
+    /// <exception cref="ValidationFailedException">Thrown if the request data is invalid or the birthdate format is incorrect.</exception>
+    /// <exception cref="ShelterNotFoundException">Thrown if the specified shelter does not exist.</exception>
+    /// <exception cref="ShelterOwnershipException">Thrown if the pet does not belong to the user's shelter.</exception>
     public async Task<RegisterPetResponse> RegisterPetAsync(
-        RegisterPetRequest request,
-        string userId
+        string userId,
+        RegisterPetRequest request
     )
     {
         logger.LogInformation("Validating RegisterPetRequest for registration");
@@ -90,7 +44,10 @@ public class PetService : IPetService
         catch (ValidationFailedException ex)
         {
             logger.LogWarning(
-                $"Pet registration failed when validating - {ex.Errors} RequestedBy: {userId}."
+                ex,
+                "Pet registration failed when validating - Errors: {@Errors} RequestedBy: {UserId}.",
+                ex.Errors,
+                userId
             );
             throw;
         }
@@ -133,7 +90,7 @@ public class PetService : IPetService
                 shelter.UserId,
                 shelter.Id
             );
-            throw new UnauthorizedAccessException("You are not authorized to register this pet.");
+            throw new ShelterOwnershipException(shelter.Id, userId);
         }
 
         var petEntity = PetMapper.ToEntity(request, parsedBirthdate);
@@ -153,16 +110,61 @@ public class PetService : IPetService
     }
 
     /// <summary>
-    /// Removes a pet from the database.
+    /// Retrieves all pets from database
     /// </summary>
-    /// <param name="id">The id of the pet to be removed.</param>
-    /// <exception cref="ValidationFailedException">Thrown when id is a non-positive integer.</exception>
+    /// <returns> A collection of pets</returns>
+    public async Task<IEnumerable<GetPetResponse>> GetAllPetsAsync()
+    {
+        logger.LogInformation("Retrieveing all pets");
+
+        var pets = await petRepository.FetchAllPetsAsync();
+
+        var responses = pets.Select(PetMapper.ToGetResponse).ToList();
+
+        return responses;
+    }
+
+    /// <summary>
+    /// Retrieves a pet from the database by its ID, or throws an exception if not found.
+    /// </summary>
+    /// <param name="id">unique identifier of specific pet to be retrieved.</param>
+    /// <returns>the task result contains the pet entity</returns>
+    /// <exception cref="PetNotFoundException"> Throw when no pet with the specified id is found.</exception>
+
+    public async Task<GetPetResponse> GetPetAsync(int id)
+    {
+        var pet = await petRepository.FetchPetAsync(id);
+
+        if (pet == null)
+        {
+            logger.LogWarning("Pet with id {petId} was not found", id);
+            throw new PetNotFoundException(id);
+        }
+
+        var response = PetMapper.ToGetResponse(pet);
+
+        return response;
+    }
+
+    /// <summary>
+    /// Updates the details of a pet if it belongs to the user's shelter.
+    /// </summary>
+    /// <param name="id">The ID of the pet to update. Must be a positive number.</param>
+    /// <param name="userId">The ID of the shelter representative making the request.</param>
+    /// <param name="request">The fields to update for the pet.</param>
+    /// <returns>The updated pet’s details.</returns>
+    /// <exception cref="ValidationFailedException">Thrown if any update field is invalid (e.g., name length, birthdate format, invalid enum values).</exception>
     /// <exception cref="PetNotFoundException">Thrown when the specified pet is not found.</exception>
-    /// <exception cref="ShelterNotFoundException">Thrown when the specified pet is not found.</exception>
-    public async Task RemovePetAsync(int id, string userId)
+    /// <exception cref="ShelterNotFoundException"> Thrown if the specified shelter does not exist.</exception>
+    /// <exception cref="ShelterOwnershipException">Thrown if the pet does not belong to the user's shelter.</exception>
+    public async Task<UpdatePetResponse> UpdatePetAsync(
+        int id,
+        string userId,
+        UpdatePetRequest request
+    )
     {
         logger.LogInformation(
-            "Starting pet deletion operation. PetId: {PetId}, UserId: {UserId}",
+            "Starting pet update operation. PetId: {PetId}, UserId: {UserId}",
             id,
             userId
         );
@@ -170,126 +172,51 @@ public class PetService : IPetService
         if (id <= 0)
         {
             logger.LogWarning(
-                "Pet deletion failed - Invalid PetId: {PetId}. Pet ID must be a positive number. RequestedBy: {UserId}",
+                "Pet update failed - Invalid PetId: {PetId}. Pet ID must be a positive number. RequestedBy: {UserId}",
                 id,
                 userId
             );
+
             throw modelValidator.CreateValidationFailure(
-                "Invalid ID. The Pet ID must be a positive number.",
+                "Validation failed: Invalid ID. The Pet ID must be a positive number.",
                 "PetId"
             );
         }
 
-        var pet = await petRepository.FetchPetAsync(id);
+        var existingPet = await petRepository.FetchPetAsync(id);
 
-        if (pet == null)
+        if (existingPet == null)
         {
             logger.LogWarning(
-                "Pet deletion failed - Pet could not be found. PetId: {PetId}. RequestedBy: {UserId}",
+                "Pet update failed - Pet could not be found. PetId: {PetId}. RequestedBy: {UserId}",
                 id,
                 userId
             );
             throw new PetNotFoundException(id);
         }
 
-        var shelter = await shelterRepository.FetchShelterByUserIdAsync(userId);
+        var shelter = await shelterRepository.FetchShelterByIdAsync(existingPet.ShelterId);
 
         if (shelter == null)
         {
             logger.LogWarning(
-                "Pet deletion failed - No shelter registered for UserId: {UserId} ",
+                "Pet update failed - No shelter registered for UserId: {UserId} ",
                 userId
             );
-            throw new KeyNotFoundException($"No matching shelter found.");
+            throw new ShelterNotFoundException(existingPet.ShelterId);
         }
 
-        if (shelter.Id != pet.ShelterId)
+        if (userId != shelter.UserId)
         {
             logger.LogWarning(
-                "Pet deletion failed - Unauthorized access. PetId: {PetId}, RequestedBy: {UserId}, ",
+                "Pet update failed - Unauthorized access. PetId: {PetId}, RequestedBy: {UserId}, "
+                    + "OwnerUserId: {OwnerUserId}. ShelterId: {ShelterId}",
                 id,
-                userId
+                userId,
+                shelter.UserId,
+                shelter.Id
             );
-            throw new UnauthorizedAccessException("You are not authorized to delete this pet.");
-        }
-
-        await petRepository.DeletePetAsync(pet);
-
-        logger.LogInformation(
-            "Pet successfully deleted. PetId: {PetId}, ShelterId: {ShelterId} UserId: {UserId}",
-            id,
-            shelter.Id,
-            userId
-        );
-    }
-
-    /// <summary>
-    /// Updates the details of a pet if it belongs to the user's shelter.
-    /// </summary>
-    /// <param name="petId">The ID of the pet to update. Must be a positive number.</param>
-    /// <param name="userId">The ID of the shelter representative making the request.</param>
-    /// <param name="request">The fields to update for the pet.</param>
-    /// <returns>The updated pet’s details.</returns>
-    /// <exception cref="KeyNotFoundException">Thrown if the pet or the user's shelter cannot be found.</exception>
-    /// <exception cref="UnauthorizedAccessException">Thrown if the pet does not belong to the user's shelter.</exception>
-    /// <exception cref="ValidationFailedException">Thrown if any update field is invalid (e.g., name length, birthdate format, invalid enum values).</exception>
-    public async Task<UpdatePetResponse> UpdatePetAsync(
-        int petId,
-        string userId,
-        UpdatePetRequest request
-    )
-    {
-        logger.LogInformation(
-            "Starting pet update operation. PetId: {PetId}, UserId: {UserId}",
-            petId,
-            userId
-        );
-
-        if (petId <= 0)
-        {
-            logger.LogWarning(
-                "Pet update failed - Invalid PetId: {PetId}. Pet ID must be a positive number. RequestedBy: {UserId}",
-                petId,
-                userId
-            );
-
-            throw modelValidator.CreateValidationFailure(
-                "Invalid ID. The Pet ID must be a positive number.",
-                "PetId"
-            );
-        }
-
-        var existingPet = await petRepository.FetchPetAsync(petId);
-
-        if (existingPet == null)
-        {
-            logger.LogWarning(
-                "Pet update failed - Pet could not be found. PetId: {PetId}. RequestedBy: {UserId}",
-                petId,
-                userId
-            );
-            throw new PetNotFoundException(petId);
-        }
-
-        var shelter = await shelterRepository.FetchShelterByUserIdAsync(userId);
-
-        if (shelter == null)
-        {
-            logger.LogWarning(
-                "Pet deletion failed - No shelter registered for UserId: {UserId} ",
-                userId
-            );
-            throw new KeyNotFoundException($"No matching shelter found.");
-        }
-
-        if (shelter.Id != existingPet.ShelterId)
-        {
-            logger.LogWarning(
-                "Pet update failed - Unauthorized access. PetId: {PetId}, RequestedBy: {UserId}, ",
-                petId,
-                userId
-            );
-            throw new UnauthorizedAccessException("You are not authorized to update this pet.");
+            throw new ShelterOwnershipException(shelter.Id, userId);
         }
 
         if (request.Name != null)
@@ -302,7 +229,7 @@ public class PetService : IPetService
                     userId
                 );
                 throw modelValidator.CreateValidationFailure(
-                    "Invalid name. The pet name must be between 3 and 50 characters.",
+                    "Validation failed: Invalid name. The pet name must be between 3 and 50 characters.",
                     "Name"
                 );
             }
@@ -342,8 +269,8 @@ public class PetService : IPetService
                 );
 
                 throw modelValidator.CreateValidationFailure(
-                    "Invalid gender. The pet gender must be a valid option",
-                    "Name"
+                    "Validation failed: Invalid gender. The pet gender must be a valid option",
+                    "Gender"
                 );
             }
             existingPet.Gender = request.Gender.Value;
@@ -359,8 +286,8 @@ public class PetService : IPetService
                 );
 
                 throw modelValidator.CreateValidationFailure(
-                    "Invalid species. The pet species must be a valid option",
-                    "Name"
+                    "Validation failed: Invalid species. The pet species must be a valid option",
+                    "Species"
                 );
             }
             existingPet.Species = request.Species.Value;
@@ -380,7 +307,7 @@ public class PetService : IPetService
                 );
 
                 throw modelValidator.CreateValidationFailure(
-                    "Invalid description. The pet description cannot be more than 1000 characters.",
+                    "Validation failed: Invalid description. The pet description cannot be more than 1000 characters.",
                     "Description"
                 );
             }
@@ -410,6 +337,82 @@ public class PetService : IPetService
         return response;
     }
 
+    /// <summary>
+    /// Removes a pet from the database.
+    /// </summary>
+    /// <param name="id">The id of the pet to be removed.</param>
+    /// <exception cref="ValidationFailedException">Thrown when id is a non-positive integer.</exception>
+    /// <exception cref="PetNotFoundException">Thrown when the specified pet is not found.</exception>
+    /// <exception cref="ShelterNotFoundException">Thrown when the specified shelter is not found.</exception>
+    /// <exception cref="ShelterOwnershipException">Thrown if the pet does not belong to the user's shelter.</exception>
+    public async Task RemovePetAsync(int id, string userId)
+    {
+        logger.LogInformation(
+            "Starting pet deletion operation. PetId: {PetId}, UserId: {UserId}",
+            id,
+            userId
+        );
+
+        if (id <= 0)
+        {
+            logger.LogWarning(
+                "Pet deletion failed - Invalid PetId: {PetId}. Pet ID must be a positive number. RequestedBy: {UserId}",
+                id,
+                userId
+            );
+            throw modelValidator.CreateValidationFailure(
+                "Validation failed: Invalid ID. The Pet ID must be a positive number.",
+                "PetId"
+            );
+        }
+
+        var pet = await petRepository.FetchPetAsync(id);
+
+        if (pet == null)
+        {
+            logger.LogWarning(
+                "Pet deletion failed - Pet could not be found. PetId: {PetId}. RequestedBy: {UserId}",
+                id,
+                userId
+            );
+            throw new PetNotFoundException(id);
+        }
+
+        var shelter = await shelterRepository.FetchShelterByIdAsync(pet.ShelterId);
+
+        if (shelter == null)
+        {
+            logger.LogWarning(
+                "Pet deletion failed - The shelter with ID: {ShelterId} could not be found. RequestedBy; {UserId}",
+                pet.ShelterId,
+                userId
+            );
+            throw new ShelterNotFoundException(pet.ShelterId);
+        }
+
+        if (userId != shelter.UserId)
+        {
+            logger.LogWarning(
+                "Pet deletion failed - Unauthorized access. PetId: {PetId}, RequestedBy: {UserId}, "
+                    + "OwnerUserId: {OwnerUserId}. ShelterId: {ShelterId}",
+                id,
+                userId,
+                shelter.UserId,
+                shelter.Id
+            );
+            throw new ShelterOwnershipException(shelter.Id, userId);
+        }
+
+        await petRepository.DeletePetAsync(pet);
+
+        logger.LogInformation(
+            "Pet successfully deleted. PetId: {PetId}, ShelterId: {ShelterId} UserId: {UserId}",
+            id,
+            shelter.Id,
+            userId
+        );
+    }
+
     #region Helper Methods
     /// <summary>
     /// Parses and validates a pet's birthdate string. Ensures format and logical constraints like not being in the future.
@@ -424,7 +427,7 @@ public class PetService : IPetService
         out List<ValidationResult> errors
     )
     {
-        errors = [];
+        errors = new List<ValidationResult>();
         if (
             !DateTime.TryParseExact(
                 input,
