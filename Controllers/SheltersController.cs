@@ -95,9 +95,7 @@ public class SheltersController : ControllerBase
         catch (Exception ex)
         {
             logger.LogError(
-                ex,
-                "An unexpected error occurred while attempting to retrieve all shelters"
-            );
+                ex, "An unexpected error occurred while attempting to retrieve all shelters");
             return StatusCode(500, "An error occurred while processing your request.");
         }
     }
@@ -121,6 +119,15 @@ public class SheltersController : ControllerBase
         {
             var response = await shelterService.UpdateShelterAsync(id, userId, request);
             return Ok(response);
+        }
+        catch (UserIdRequiredException)
+        {
+            return BadRequest();
+        }
+        catch (ValidationFailedException ex)
+        {
+            logger.LogDebug("Validation failed for shelter creation: {@Errors}", ex.Errors);
+            return BadRequest(new { Message = "Validation failed. Please check the errors.", Errors = ex.Errors });
         }
         catch (ShelterNotFoundException)
         {
