@@ -286,11 +286,9 @@ namespace PawfectHome.Migrations
                         .HasColumnType("boolean");
 
                     b.Property<string>("FirstName")
-                        .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<string>("LastName")
-                        .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<bool>("LockoutEnabled")
@@ -444,8 +442,7 @@ namespace PawfectHome.Migrations
                 {
                     b.Navigation("AdoptionApplications");
 
-                    b.Navigation("Shelter")
-                        .IsRequired();
+                    b.Navigation("Shelter");
                 });
 #pragma warning restore 612, 618
         }
