@@ -66,7 +66,8 @@ public class ShelterService : IShelterService
         logger.LogInformation(
             "Successfully created shelter {ShelterId} for user {UserId}.",
             createdShelter.Id,
-            userId);
+            userId
+        );
 
         return (Shelter: shelter, AuthChanged: authChanged);
     }
@@ -81,7 +82,8 @@ public class ShelterService : IShelterService
     {
         logger.LogInformation(
             "Starting retrieval of shelter information for shelter with ID: {ShelterId}.",
-            id);
+            id
+        );
 
         var shelter = await shelterRepository.FetchShelterByIdAsync(id);
 
