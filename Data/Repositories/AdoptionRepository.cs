@@ -39,6 +39,19 @@ public class AdoptionRepository : IAdoptionRepository
             .ToListAsync();
     }
 
+    public async Task<IEnumerable<AdoptionApplicationEntity>> FetchAllShelterAdoptionsAsync(
+        string userId
+    )
+    {
+        return await context
+            .AdoptionApplications.Include(a => a.User)
+            .Include(a => a.Pet)
+            .ThenInclude(p => p!.Shelter)
+            .Where(a => a.Pet!.Shelter!.UserId == userId)
+            .OrderByDescending(a => a.CreatedDate)
+            .ToListAsync();
+    }
+
     public async Task<AdoptionApplicationEntity?> UpdateAdoptionStatusAsync(
         int id,
         AdoptionStatus updatedStatus,
@@ -46,14 +59,10 @@ public class AdoptionRepository : IAdoptionRepository
     )
     {
         var application = await context
-            .AdoptionApplications.Where(a => a.Id == id && a.Pet.Shelter.UserId == userId)
+            .AdoptionApplications.Where(a => a.Id == id && a.Pet!.Shelter!.UserId == userId)
             .FirstOrDefaultAsync();
 
-        if (application == null)
-        {
-            return null;
-        }
-        application.AdoptionStatus = updatedStatus;
+        application!.AdoptionStatus = updatedStatus;
         await context.SaveChangesAsync();
         return application;
     }
