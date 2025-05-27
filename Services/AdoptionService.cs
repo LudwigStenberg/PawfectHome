@@ -237,7 +237,7 @@ public class AdoptionService : IAdoptionService
 
         return new AdoptionApplicationShelterSummary
         {
-            Id = updatedApplication.Id,
+            Id = updatedApplication!.Id,
             CreatedDate = updatedApplication.CreatedDate,
             AdoptionStatus = updatedApplication.AdoptionStatus,
             ApplicantName =
