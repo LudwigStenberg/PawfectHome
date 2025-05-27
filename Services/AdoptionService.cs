@@ -157,6 +157,26 @@ public class AdoptionService : IAdoptionService
         return responses;
     }
 
+    public async Task<
+        IEnumerable<AdoptionApplicationShelterSummary>
+    > GetAllShelterAdoptionApplicationsAsync(string userId)
+    {
+        var shelterAdoptionApplications = await adoptionRepository.FetchAllShelterAdoptionsAsync(
+            userId
+        );
+        return shelterAdoptionApplications
+            .Select(a => new AdoptionApplicationShelterSummary
+            {
+                Id = a.Id,
+                CreatedDate = a.CreatedDate,
+                AdoptionStatus = a.AdoptionStatus,
+                ApplicantName = $"{a.User!.FirstName} {a.User.LastName}".Trim(),
+                PetName = a.Pet!.Name,
+                PetId = a.Pet.Id,
+            })
+            .ToList();
+    }
+
     /// <summary>
     /// Updates the adoption status of an adoption application.
     /// </summary>
@@ -165,21 +185,36 @@ public class AdoptionService : IAdoptionService
     /// <param name="userId">The ID of the user making the update request.</param>
     /// <returns>The updated adoption application entity.</returns>
     /// <exception cref="ArgumentException">Thrown when the request is null.</exception>
-    public async Task<AdoptionApplicationEntity> UpdateAdoptionStatusAsync(
+    public async Task<AdoptionApplicationShelterSummary> UpdateAdoptionStatusAsync(
         int id,
         UpdateAdoptionStatusRequest request,
         string userId
     )
     {
-        if (request != null)
+        var shelterApplications = await GetAllShelterAdoptionApplicationsAsync(userId);
+        var applicationExists = shelterApplications.Any(a => a.Id == id);
+
+        if (applicationExists == null)
         {
-            return await adoptionRepository.UpdateAdoptionStatusAsync(
-                id,
-                request.AdoptionStatus,
-                userId
-            );
+            throw new ArgumentException($"Adoption application not found");
         }
-        throw new ArgumentException();
+
+        var updatedApplication = await adoptionRepository.UpdateAdoptionStatusAsync(
+            id,
+            request.AdoptionStatus,
+            userId
+        );
+
+        return new AdoptionApplicationShelterSummary
+        {
+            Id = updatedApplication.Id,
+            CreatedDate = updatedApplication.CreatedDate,
+            AdoptionStatus = updatedApplication.AdoptionStatus,
+            ApplicantName =
+                $"{updatedApplication.User?.FirstName} {updatedApplication.User?.LastName}".Trim(),
+            PetName = updatedApplication.Pet?.Name ?? "",
+            PetId = updatedApplication.Pet?.Id ?? 0,
+        };
     }
 
     /// <summary>

@@ -168,6 +168,27 @@ public class AdoptionsController : ControllerBase
         }
     }
 
+    [HttpGet("shelter")]
+    [Authorize(Roles = "ShelterOwner")]
+    public async Task<IActionResult> GetAllShelterAdoptionApplication()
+    {
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+        if (string.IsNullOrEmpty(userId))
+        {
+            return Unauthorized();
+        }
+        try
+        {
+            var applications = await adoptionService.GetAllShelterAdoptionApplicationsAsync(userId);
+            return Ok(applications);
+        }
+        catch
+        {
+            return Empty;
+        }
+    }
+
     [HttpPut("{id}")]
     [Authorize(Roles = "ShelterOwner")]
     public async Task<IActionResult> UpdateAdoptionStatus(
@@ -192,7 +213,6 @@ public class AdoptionsController : ControllerBase
         }
     }
 
-    //TODO Add check if adoption exist before trying to fetch.
     [HttpDelete("{id}")]
     [Authorize]
     public async Task<IActionResult> DeleteAdoptionApplication(int id)
