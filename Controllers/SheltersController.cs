@@ -41,14 +41,14 @@ public class SheltersController : ControllerBase
 
             return CreatedAtAction(nameof(GetShelter), new { id = shelter.Id }, response);
         }
-        catch (DbUpdateException ex)
+        catch (UserIdRequiredException)
         {
-            logger.LogError(
-                ex,
-                "Database error occurred while creating shelter for user {UserId}.",
-                userId
-            );
-            return StatusCode(500, "An error occurred while saving to the database");
+            return BadRequest();
+        }
+        catch (ValidationFailedException ex)
+        {
+            logger.LogDebug("Validation failed for shelter creation: {@Errors}", ex.Errors);
+            return BadRequest(new { Message = "Validation failed. Please check the errors.", Errors = ex.Errors });
         }
         catch (MultipleSheltersNotAllowedException)
         {
@@ -56,11 +56,7 @@ public class SheltersController : ControllerBase
         }
         catch (Exception ex)
         {
-            logger.LogError(
-                ex,
-                "An unexpected error occurred while creating shelter for user {UserId}",
-                userId
-            );
+            logger.LogError(ex, "An unexpected error occurred while creating shelter for user {UserId}", userId);
             return StatusCode(500, "An unexpected error occurred");
         }
     }
@@ -99,9 +95,7 @@ public class SheltersController : ControllerBase
         catch (Exception ex)
         {
             logger.LogError(
-                ex,
-                "An unexpected error occurred while attempting to retrieve all shelters"
-            );
+                ex, "An unexpected error occurred while attempting to retrieve all shelters");
             return StatusCode(500, "An error occurred while processing your request.");
         }
     }
@@ -125,6 +119,15 @@ public class SheltersController : ControllerBase
         {
             var response = await shelterService.UpdateShelterAsync(id, userId, request);
             return Ok(response);
+        }
+        catch (UserIdRequiredException)
+        {
+            return BadRequest();
+        }
+        catch (ValidationFailedException ex)
+        {
+            logger.LogDebug("Validation failed for shelter creation: {@Errors}", ex.Errors);
+            return BadRequest(new { Message = "Validation failed. Please check the errors.", Errors = ex.Errors });
         }
         catch (ShelterNotFoundException)
         {
