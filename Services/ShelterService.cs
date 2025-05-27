@@ -406,7 +406,7 @@ public class ShelterService : IShelterService
         if (request.Name == null && request.Description == null && request.Email == null)
         {
             logger.LogWarning("Shelter update rejected: No properties specified for update.");
-            throw CreateValidationFailure("At least one property must be specified for update.");
+            throw modelValidator.CreateValidationFailure("At least one property must be specified for update.");
         }
 
         modelValidator.ValidateModel(request);
