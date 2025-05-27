@@ -8,7 +8,10 @@ public interface IAdoptionService
     Task<IEnumerable<GetAdoptionApplicationResponse>> GetAllAdoptionApplicationsAsync(
         string userId
     );
-    Task<AdoptionApplicationEntity> UpdateAdoptionStatusAsync(
+    Task<IEnumerable<AdoptionApplicationShelterSummary>> GetAllShelterAdoptionApplicationsAsync(
+        string userId
+    );
+    Task<AdoptionApplicationShelterSummary> UpdateAdoptionStatusAsync(
         int id,
         UpdateAdoptionStatusRequest updateAdoptionStatus,
         string userId
