@@ -34,4 +34,18 @@ public static class AdoptionApplicationMapper
             PetName = adoptionApplication.Pet?.Name ?? "Unknown Pet"
         };
     }
+
+    public static AdoptionApplicationShelterSummary ToUpdateResponse(AdoptionApplicationEntity updatedApplication)
+    {
+        return new AdoptionApplicationShelterSummary
+        {
+            Id = updatedApplication.Id,
+            CreatedDate = updatedApplication.CreatedDate,
+            AdoptionStatus = updatedApplication.AdoptionStatus,
+            ApplicantName =
+                $"{updatedApplication.User?.FirstName} {updatedApplication.User?.LastName}".Trim(),
+            PetName = updatedApplication.Pet?.Name ?? "",
+            PetId = updatedApplication.Pet?.Id ?? 0,
+        };
+    }
 }

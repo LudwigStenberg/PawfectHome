@@ -235,16 +235,9 @@ public class AdoptionService : IAdoptionService
             userId
         );
 
-        return new AdoptionApplicationShelterSummary
-        {
-            Id = updatedApplication.Id,
-            CreatedDate = updatedApplication.CreatedDate,
-            AdoptionStatus = updatedApplication.AdoptionStatus,
-            ApplicantName =
-                $"{updatedApplication.User?.FirstName} {updatedApplication.User?.LastName}".Trim(),
-            PetName = updatedApplication.Pet?.Name ?? "",
-            PetId = updatedApplication.Pet?.Id ?? 0,
-        };
+        var response = AdoptionApplicationMapper.ToUpdateResponse(updatedApplication);
+
+        return response;
     }
 
     /// <summary>
