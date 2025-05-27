@@ -21,14 +21,14 @@ public class PetsController : ControllerBase
     {
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
-        if (string.IsNullOrWhiteSpace(userId))
+        if (string.IsNullOrEmpty(userId))
         {
             return Unauthorized();
         }
 
         try
         {
-            var result = await petService.RegisterPetAsync(request, userId);
+            var result = await petService.RegisterPetAsync(userId, request);
             return CreatedAtAction(nameof(GetPet), new { id = result.Id }, result);
         }
         catch (ValidationFailedException ex)
@@ -37,11 +37,11 @@ public class PetsController : ControllerBase
                 new { Message = "Validation failed. Please check the errors.", Errors = ex.Errors }
             );
         }
-        catch (UnauthorizedAccessException)
+        catch (ShelterOwnershipException)
         {
             return Forbid();
         }
-        catch (KeyNotFoundException)
+        catch (ShelterNotFoundException)
         {
             return NotFound();
         }
@@ -65,7 +65,7 @@ public class PetsController : ControllerBase
 
             return Ok(pet);
         }
-        catch (KeyNotFoundException)
+        catch (PetNotFoundException)
         {
             return NotFound();
         }
@@ -89,7 +89,7 @@ public class PetsController : ControllerBase
     {
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
-        if (string.IsNullOrWhiteSpace(userId))
+        if (string.IsNullOrEmpty(userId))
         {
             return Unauthorized();
         }
@@ -105,15 +105,11 @@ public class PetsController : ControllerBase
                 new { Message = "Validation failed. Please check the errors.", Errors = ex.Errors }
             );
         }
-        catch (ArgumentException ex)
-        {
-            return BadRequest(new { Message = ex.Message });
-        }
-        catch (UnauthorizedAccessException)
+        catch (ShelterOwnershipException)
         {
             return Forbid();
         }
-        catch (KeyNotFoundException)
+        catch (Exception ex) when (ex is PetNotFoundException || ex is ShelterNotFoundException)
         {
             return NotFound();
         }
@@ -135,7 +131,7 @@ public class PetsController : ControllerBase
     {
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
-        if (string.IsNullOrWhiteSpace(userId))
+        if (string.IsNullOrEmpty(userId))
         {
             return Unauthorized();
         }
@@ -145,15 +141,11 @@ public class PetsController : ControllerBase
             await petService.RemovePetAsync(id, userId);
             return NoContent();
         }
-        catch (ArgumentException ex)
-        {
-            return BadRequest(new { Message = ex.Message });
-        }
-        catch (UnauthorizedAccessException)
+        catch (ShelterOwnershipException)
         {
             return Forbid();
         }
-        catch (KeyNotFoundException)
+        catch (Exception ex) when (ex is PetNotFoundException || ex is ShelterNotFoundException)
         {
             return NotFound();
         }
