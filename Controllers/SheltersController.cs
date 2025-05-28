@@ -104,11 +104,6 @@ public class SheltersController : ControllerBase
     [Authorize(Roles = "ShelterOwner")]
     public async Task<IActionResult> UpdateShelter(int id, [FromBody] ShelterUpdateRequest request)
     {
-        if (request.Id != 0 && request.Id != id)
-        {
-            return BadRequest("ID in the URL must match ID in the request body");
-        }
-
         string? userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
         if (string.IsNullOrEmpty(userId))
         {
@@ -126,7 +121,7 @@ public class SheltersController : ControllerBase
         }
         catch (ValidationFailedException ex)
         {
-            logger.LogDebug("Validation failed for shelter creation: {@Errors}", ex.Errors);
+            logger.LogDebug("Validation failed for shelter update: {@Errors}", ex.Errors);
             return BadRequest(new { Message = "Validation failed. Please check the errors.", Errors = ex.Errors });
         }
         catch (ShelterNotFoundException)
