@@ -11,4 +11,15 @@ public static class UserMapper
             LastName = user.LastName,
         };
     }
+
+    public static RegisterUserResponse ToRegisterResponse(UserEntity user)
+    {
+        return new RegisterUserResponse
+        {
+            Id = user.Id,
+            Email = user.Email!,
+            FirstName = user.FirstName!,
+            LastName = user.LastName!,
+        };
+    }
 }
