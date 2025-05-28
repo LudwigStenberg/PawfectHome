@@ -34,7 +34,6 @@ public static class AdoptionApplicationMapper
         };
     }
 
-
     public static AdoptionApplicationShelterSummary ToUpdateResponse(
         AdoptionApplicationEntity updatedApplication
     )

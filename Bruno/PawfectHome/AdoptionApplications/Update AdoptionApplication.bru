@@ -1,0 +1,22 @@
+meta {
+  name: Update AdoptionApplication
+  type: http
+  seq: 5
+}
+
+put {
+  url: http://localhost:5245/Adoptions/{id}
+  body: json
+  auth: inherit
+}
+
+headers {
+  Authorization: Bearer
+}
+
+body:json {
+  {
+    "id": 1,
+    "adoptionStatus": 1 
+  }
+}
