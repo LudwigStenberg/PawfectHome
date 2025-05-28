@@ -16,6 +16,15 @@ public class UserService : IUserService
         this.modelValidator = modelValidator;
     }
 
+    /// <summary>
+    /// Asynchronously registers a new user in the system with validation and error handling.
+    /// </summary>
+    /// <param name="request">The registration request containing user details (email, password, names).</param>
+    /// <returns>A RegisterUserResponse containing the newly created user's information.</returns>
+    /// <exception cref="ValidationFailedException">
+    /// Thrown when the request model fails validation (invalid email format, missing required fields, etc.) 
+    /// or when user creation fails (duplicate email, weak password, etc.).
+    /// </exception>
     public async Task<RegisterUserResponse> RegisterUserAsync(RegisterUserRequest request)
     {
         logger.LogInformation("Starting user registration for email: {Email}", request.Email);

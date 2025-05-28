@@ -1,30 +1,34 @@
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 
 [ApiController]
 [Route("[controller]")]
 public class AuthController : ControllerBase
 {
-    private readonly UserManager<UserEntity> userManager;
+    private readonly UserService userService;
+    private readonly ILogger<AuthController> logger;
 
-    public AuthController(UserManager<UserEntity> userManager)
+    public AuthController(UserService userService, ILogger<AuthController> logger)
     {
-        this.userManager = userManager;
+        this.userService = userService;
+        this.logger = logger;
     }
 
     [HttpPost("register")]
     public async Task<IActionResult> Register([FromBody] RegisterUserRequest request)
     {
-        if (!ModelState.IsValid)
-            return BadRequest(ModelState);
-
-        var user = UserMapper.ToEntity(request);
-
-        var result = await userManager.CreateAsync(user, request.Password);
-
-        if (!result.Succeeded)
-            return BadRequest(result.Errors);
-
-        return Ok(new { message = "User registered successfully!" });
+        try
+        {
+            var response = await userService.RegisterUserAsync(request);
+            return Ok(response);
+        }
+        catch (ValidationFailedException ex)
+        {
+            return BadRequest(new { Message = "Registration failed. Please check the errors.", Errors = ex.Errors });
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "An unexpected error occurred during user registration");
+            return StatusCode(500, "An unexpected error occurred during registration");
+        }
     }
 }

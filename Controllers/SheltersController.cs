@@ -21,11 +21,6 @@ public class SheltersController : ControllerBase
     [Authorize]
     public async Task<IActionResult> CreateShelter(RegisterShelterRequest request)
     {
-        if (!ModelState.IsValid)
-        {
-            return BadRequest(ModelState);
-        }
-
         string? userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
         if (string.IsNullOrEmpty(userId))
         {
