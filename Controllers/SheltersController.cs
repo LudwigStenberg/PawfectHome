@@ -52,7 +52,7 @@ public class SheltersController : ControllerBase
         catch (Exception ex)
         {
             logger.LogError(ex, "An unexpected error occurred while creating shelter for user {UserId}", userId);
-            return StatusCode(500, "An unexpected error occurred");
+            return StatusCode(500, "An unexpected error occurred while processing your request.");
         }
     }
 

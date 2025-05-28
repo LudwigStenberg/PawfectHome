@@ -7,7 +7,7 @@ public class AuthController : ControllerBase
     private readonly IUserService userService;
     private readonly ILogger<AuthController> logger;
 
-    public AuthController(UserService userService, ILogger<AuthController> logger)
+    public AuthController(IUserService userService, ILogger<AuthController> logger)
     {
         this.userService = userService;
         this.logger = logger;
