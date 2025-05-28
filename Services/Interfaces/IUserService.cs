@@ -1,6 +1,6 @@
 public interface IUserService
 {
-    public Task<UserSummaryResponse> GetUserAsync(string id, string userId);
-
-    public Task RemoveUserAsync(string id, string userId);
+    Task<RegisterUserResponse> RegisterUserAsync(RegisterUserRequest newUser);
+    Task<UserSummaryResponse> GetUserAsync(string id, string userId);
+    Task RemoveUserAsync(string id, string userId);
 }
