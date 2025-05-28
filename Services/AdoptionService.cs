@@ -173,6 +173,15 @@ public class AdoptionService : IAdoptionService
         var shelterAdoptionApplications = await adoptionRepository.FetchAllShelterAdoptionsAsync(
             userId
         );
+        if (!shelterAdoptionApplications.Any())
+        {
+            logger.LogWarning(
+                "No adoption applications found for shelter owned by user: {UserId}",
+                userId
+            );
+            throw new InvalidOperationException("No adoption applications found for this shelter");
+        }
+
         var response = shelterAdoptionApplications
             .Select(a => new AdoptionApplicationShelterSummary
             {
@@ -226,7 +235,7 @@ public class AdoptionService : IAdoptionService
                 id,
                 userId
             );
-            throw new ArgumentException($"No application with ID {id}");
+            throw new KeyNotFoundException($"No application with ID {id}");
         }
 
         var updatedApplication = await adoptionRepository.UpdateAdoptionStatusAsync(

@@ -160,9 +160,9 @@ public class AdoptionsController : ControllerBase
             var applications = await adoptionService.GetAllShelterAdoptionApplicationsAsync(userId);
             return Ok(applications);
         }
-        catch
+        catch (InvalidOperationException)
         {
-            return Empty;
+            return NotFound();
         }
     }
 
@@ -183,6 +183,14 @@ public class AdoptionsController : ControllerBase
         {
             var result = await adoptionService.UpdateAdoptionStatusAsync(id, request, userId);
             return Ok(result);
+        }
+        catch (ArgumentException)
+        {
+            return BadRequest();
+        }
+        catch (KeyNotFoundException)
+        {
+            return NotFound();
         }
         catch
         {
