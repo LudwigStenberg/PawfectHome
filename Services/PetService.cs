@@ -16,9 +16,9 @@ public class PetService : IPetService
     )
     {
         this.petRepository = petRepository;
-        this.modelValidator = modelValidator;
-        this.logger = logger;
         this.shelterRepository = shelterRepository;
+        this.logger = logger;
+        this.modelValidator = modelValidator;
     }
 
     /// <summary>
@@ -130,7 +130,6 @@ public class PetService : IPetService
     /// <param name="id">unique identifier of specific pet to be retrieved.</param>
     /// <returns>the task result contains the pet entity</returns>
     /// <exception cref="PetNotFoundException"> Throw when no pet with the specified id is found.</exception>
-
     public async Task<GetPetResponse> GetPetAsync(int id)
     {
         var pet = await petRepository.FetchPetAsync(id);
