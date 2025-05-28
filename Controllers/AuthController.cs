@@ -18,13 +18,7 @@ public class AuthController : ControllerBase
         if (!ModelState.IsValid)
             return BadRequest(ModelState);
 
-        var user = new UserEntity
-        {
-            UserName = request.Email,
-            Email = request.Email,
-            FirstName = request.FirstName,
-            LastName = request.LastName,
-        };
+        var user = UserMapper.ToEntity(request);
 
         var result = await userManager.CreateAsync(user, request.Password);
 
