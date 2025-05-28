@@ -1,5 +1,3 @@
-using System.Security.Claims;
-using Microsoft.EntityFrameworkCore;
 
 public class UserService : IUserService
 {
@@ -11,6 +9,12 @@ public class UserService : IUserService
         this.logger = logger;
         this.userRepository = userRepository;
     }
+
+    public async Task<RegisterUserResponse> RegisterUserAsync()
+    {
+
+    }
+
 
     /// <summary>
     /// Recieves a request for fetching a specific user. Compare with id from logged in user using ClaimsPrinciple.
