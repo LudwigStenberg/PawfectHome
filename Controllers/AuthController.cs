@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 [Route("[controller]")]
 public class AuthController : ControllerBase
 {
-    private readonly UserService userService;
+    private readonly IUserService userService;
     private readonly ILogger<AuthController> logger;
 
     public AuthController(UserService userService, ILogger<AuthController> logger)

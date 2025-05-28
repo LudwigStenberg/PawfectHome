@@ -46,7 +46,6 @@ public class UserService : IUserService
         }
 
         logger.LogInformation("User successfully registered with ID: '{UserId}'", user.Id);
-
         return UserMapper.ToRegisterResponse(user);
     }
 
