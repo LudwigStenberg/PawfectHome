@@ -160,6 +160,7 @@ public class AdoptionService : IAdoptionService
     /// </summary>
     /// <param name="userId">The ID of the shelter owner.</param>
     /// <returns>An enumerable collection of <see cref="AdoptionApplicationShelterSummary"/> containing application details.</returns>
+    /// <exception cref="InvalidOperationException" .</<exception>
 
     public async Task<
         IEnumerable<AdoptionApplicationShelterSummary>
@@ -182,18 +183,20 @@ public class AdoptionService : IAdoptionService
             throw new InvalidOperationException("No adoption applications found for this shelter");
         }
 
+        // var response = shelterAdoptionApplications
+        //     .Select(a => new AdoptionApplicationShelterSummary
+        //     {
+        //         Id = a.Id,
+        //         CreatedDate = a.CreatedDate,
+        //         AdoptionStatus = a.AdoptionStatus,
+        //         ApplicantName = $"{a.User!.FirstName} {a.User.LastName}".Trim(),
+        //         PetName = a.Pet!.Name,
+        //         PetId = a.Pet.Id,
+        //     })
+        //     .ToList();
         var response = shelterAdoptionApplications
-            .Select(a => new AdoptionApplicationShelterSummary
-            {
-                Id = a.Id,
-                CreatedDate = a.CreatedDate,
-                AdoptionStatus = a.AdoptionStatus,
-                ApplicantName = $"{a.User!.FirstName} {a.User.LastName}".Trim(),
-                PetName = a.Pet!.Name,
-                PetId = a.Pet.Id,
-            })
+            .Select(AdoptionApplicationMapper.ToUpdateResponse)
             .ToList();
-
         logger.LogInformation(
             "Successfully retrieved {Count} adoption applications for shelter owned by user {UserId}",
             response.Count,
@@ -210,7 +213,9 @@ public class AdoptionService : IAdoptionService
     /// <param name="request">The request containing the new adoption status.</param>
     /// <param name="userId">The ID of the user making the update request.</param>
     /// <returns>A summary of the updated adoption application</returns>
-    /// <exception cref="ArgumentException">Thrown when the adoption application is not found or the user lacks permission.</exception>
+    /// <exception cref="ArgumentException">Thrown when any adoption application is not found or the user lacks permission.</exception>
+    /// <exception cref="KeyNotFoundException" Thrown when the adoption application is not found.</<exception>
+
     public async Task<AdoptionApplicationShelterSummary> UpdateAdoptionStatusAsync(
         int id,
         UpdateAdoptionStatusRequest request,
