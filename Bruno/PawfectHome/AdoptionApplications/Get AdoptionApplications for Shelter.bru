@@ -1,0 +1,15 @@
+meta {
+  name: Get AdoptionApplications for Shelter
+  type: http
+  seq: 6
+}
+
+get {
+  url: http://localhost:5245/Adoptions/shelter
+  body: none
+  auth: inherit
+}
+
+headers {
+  Authorization: Bearer
+}
