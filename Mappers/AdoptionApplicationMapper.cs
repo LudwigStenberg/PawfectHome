@@ -1,16 +1,13 @@
-
 public static class AdoptionApplicationMapper
 {
     public static AdoptionApplicationEntity ToEntity(RegisterAdoptionRequest request, string userId)
     {
-        return new AdoptionApplicationEntity
-        {
-            PetId = request.PetId,
-            UserId = userId,
-        };
+        return new AdoptionApplicationEntity { PetId = request.PetId, UserId = userId };
     }
 
-    public static RegisterAdoptionResponse ToRegisterResponse(AdoptionApplicationEntity adoptionApplication)
+    public static RegisterAdoptionResponse ToRegisterResponse(
+        AdoptionApplicationEntity adoptionApplication
+    )
     {
         return new RegisterAdoptionResponse
         {
@@ -18,11 +15,13 @@ public static class AdoptionApplicationMapper
             CreatedDate = adoptionApplication.CreatedDate,
             AdoptionStatus = adoptionApplication.AdoptionStatus,
             UserId = adoptionApplication.UserId,
-            PetId = adoptionApplication.PetId
+            PetId = adoptionApplication.PetId,
         };
     }
 
-    public static GetAdoptionApplicationResponse ToGetResponse(AdoptionApplicationEntity adoptionApplication)
+    public static GetAdoptionApplicationResponse ToGetResponse(
+        AdoptionApplicationEntity adoptionApplication
+    )
     {
         return new GetAdoptionApplicationResponse
         {
@@ -31,7 +30,7 @@ public static class AdoptionApplicationMapper
             AdoptionStatus = adoptionApplication.AdoptionStatus,
             UserId = adoptionApplication.UserId,
             PetId = adoptionApplication.PetId,
-            PetName = adoptionApplication.Pet?.Name ?? "Unknown Pet"
+            PetName = adoptionApplication.Pet?.Name ?? "Unknown Pet",
         };
     }
 
