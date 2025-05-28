@@ -1,18 +1,44 @@
 
+using Microsoft.AspNetCore.Identity;
+
 public class UserService : IUserService
 {
     private readonly ILogger<IUserService> logger;
     private readonly IUserRepository userRepository;
+    private readonly UserManager<UserEntity> userManager;
+    private readonly ModelValidator modelValidator;
 
-    public UserService(IUserRepository userRepository, ILogger<UserService> logger)
+    public UserService(IUserRepository userRepository, ILogger<UserService> logger, UserManager<UserEntity> userManager, ModelValidator modelValidator)
     {
         this.logger = logger;
         this.userRepository = userRepository;
+        this.userManager = userManager;
+        this.modelValidator = modelValidator;
     }
 
-    public async Task<RegisterUserResponse> RegisterUserAsync()
+    public async Task<RegisterUserResponse> RegisterUserAsync(RegisterUserRequest request)
     {
+        logger.LogInformation("Starting user registration for email: {Email}", request.Email);
 
+        modelValidator.ValidateModel(request);
+
+        var user = UserMapper.ToEntity(request);
+
+        var result = await userManager.CreateAsync(user, request.Password);
+
+        if (!result.Succeeded)
+        {
+            logger.LogWarning("User registration failed for email: {Email}. Errors: {Errors}",
+            request.Email,
+            string.Join(", ", result.Errors.Select(e => e.Description)));
+
+            var errors = result.Errors.Select(e => new ValidationError("Registration", e.Description));
+            throw new ValidationFailedException("User registration failed", errors);
+        }
+
+        logger.LogInformation("User successfully registered with ID: '{UserId}'", user.Id);
+
+        return UserMapper.ToRegisterResponse(user);
     }
 
 
