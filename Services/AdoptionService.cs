@@ -182,18 +182,6 @@ public class AdoptionService : IAdoptionService
             );
             throw new InvalidOperationException("No adoption applications found for this shelter");
         }
-
-        // var response = shelterAdoptionApplications
-        //     .Select(a => new AdoptionApplicationShelterSummary
-        //     {
-        //         Id = a.Id,
-        //         CreatedDate = a.CreatedDate,
-        //         AdoptionStatus = a.AdoptionStatus,
-        //         ApplicantName = $"{a.User!.FirstName} {a.User.LastName}".Trim(),
-        //         PetName = a.Pet!.Name,
-        //         PetId = a.Pet.Id,
-        //     })
-        //     .ToList();
         var response = shelterAdoptionApplications
             .Select(AdoptionApplicationMapper.ToUpdateResponse)
             .ToList();

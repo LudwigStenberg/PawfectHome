@@ -11,10 +11,12 @@ public class Program
     {
         var builder = WebApplication.CreateBuilder(args);
 
-        builder.Services.AddScoped<IShelterRepository, ShelterRepository>();
-        builder.Services.AddScoped<IShelterService, ShelterService>();
+        builder.Services.AddScoped<IAdoptionService, AdoptionService>();
+        builder.Services.AddScoped<IAdoptionRepository, AdoptionRepository>();
         builder.Services.AddScoped<IPetService, PetService>();
         builder.Services.AddScoped<IPetRepository, PetRepository>();
+        builder.Services.AddScoped<IShelterRepository, ShelterRepository>();
+        builder.Services.AddScoped<IShelterService, ShelterService>();
         builder.Services.AddScoped<IUserService, UserService>();
         builder.Services.AddScoped<IUserRepository, UserRepository>();
         builder.Services.AddScoped<ModelValidator>();
@@ -35,13 +37,6 @@ public class Program
         builder.Services.AddDbContext<AppDbContext>(options =>
             options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"))
         );
-
-        builder.Services.AddScoped<IAdoptionService, AdoptionService>();
-        builder.Services.AddScoped<IAdoptionRepository, AdoptionRepository>();
-
-        // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
-        builder.Services.AddScoped<IPetService, PetService>();
-        builder.Services.AddScoped<IPetRepository, PetRepository>();
 
         var app = builder.Build();
 

@@ -164,6 +164,10 @@ public class AdoptionsController : ControllerBase
         {
             return NotFound();
         }
+        catch
+        {
+            return StatusCode(500);
+        }
     }
 
     [HttpPut("{id}")]
