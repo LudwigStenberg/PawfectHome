@@ -1,3 +1,4 @@
+using System.ComponentModel.DataAnnotations;
 using Microsoft.AspNetCore.Identity;
 
 public class ShelterService : IShelterService
@@ -114,13 +115,14 @@ public class ShelterService : IShelterService
     /// Updates a shelter entity using a ShelterUpdateRequest DTO containing nullable properties,
     /// enabling partial updates to the shelter model.
     /// </summary>
-    /// </summary>
     /// <param name="id">The ID of the shelter resource to be updated.</param>
     /// <param name="userId">The ID of the user requesting the update.</param>
     /// <param name="request">The ShelterUpdateRequest DTO which contains the new value or values.</param>
     /// <returns>A ShelterDetailResponse DTO containing Id, Name, Description, Email, UserId and a list of Pets.</returns>
     /// <exception cref="ShelterNotFoundException">Thrown when FetchShelterById method fails and the shelter cannot be found.</exception>
     /// <exception cref="ShelterOwnershipException">Thrown when the retrieved shelter's UserId does not match the userId method parameter.</exception>
+    /// <exception cref="UserIdRequiredException">Thrown when the userId is null or empty.</exception>
+    /// <exception cref="ValidationFailedException">Thrown when the request data fails validation (invalid name length, email format, etc.).</exception>
     public async Task<ShelterDetailResponse> UpdateShelterAsync(
         int id,
         string userId,
@@ -387,18 +389,18 @@ public class ShelterService : IShelterService
     }
 
     /// <summary>
-    /// Validates input parameters for shelter creation, ensuring all required data is present and properly formatted.
+    /// Validates input parameters for shelter updates, ensuring all required data is present and properly formatted.
     /// This is a private helper method called by UpdateShelterAsync().
     /// </summary>
     /// <param name="userId">The string userId which needs to be checked for null and empty.</param>
     /// <param name="request">The request DTO that needs to be validated based on format of the Email provided, null and white space, Name.Length and Description.Length.</param>
     /// <exception cref="UserIdRequiredException">Thrown when the userId is null or empty.</exception>
-    /// <exception cref="ValidationFailedException">Thrown when all of the nullable property fields of the request DTO are null or when the validation within ValidateModel fails.</exception>
+    /// <exception cref="ValidationFailedException">Thrown when all of the nullable property fields of the request DTO are null or when field validation fails.</exception>
     private void ValidateShelterUpdateRequest(string userId, ShelterUpdateRequest request)
     {
         if (string.IsNullOrEmpty(userId))
         {
-            logger.LogWarning("Shelter registration rejected: User ID is null or empty.");
+            logger.LogWarning("Shelter update rejected: User ID is null or empty.");
             throw new UserIdRequiredException();
         }
 
@@ -410,7 +412,57 @@ public class ShelterService : IShelterService
             );
         }
 
-        modelValidator.ValidateModel(request);
+        // Validate Name if provided
+        if (request.Name != null)
+        {
+            if (string.IsNullOrWhiteSpace(request.Name) ||
+                request.Name.Trim().Length < 3 ||
+                request.Name.Trim().Length > 50)
+            {
+                logger.LogWarning(
+                    "Shelter update failed - invalid name: {Name}. RequestedBy: {UserId}.",
+                    request.Name, userId);
+
+                throw modelValidator.CreateValidationFailure(
+                    "Shelter name must be between 3 and 50 characters.",
+                    "Name");
+            }
+
+            request.Name = request.Name.Trim();
+        }
+
+        // Validate Description if provided
+        if (request.Description != null)
+        {
+            if (request.Description.Length > 1000)
+            {
+                logger.LogWarning(
+                    "Shelter update failed - description too long: {Length} characters. RequestedBy: {UserId}.",
+                    request.Description.Length, userId);
+
+                throw modelValidator.CreateValidationFailure(
+                    "Description cannot exceed 1000 characters.",
+                    "Description");
+            }
+        }
+
+        // Validate Email if provided
+        if (request.Email != null)
+        {
+            if (string.IsNullOrWhiteSpace(request.Email) ||
+                !new EmailAddressAttribute().IsValid(request.Email))
+            {
+                logger.LogWarning(
+                    "Shelter update failed - invalid email: {Email}. RequestedBy: {UserId}.",
+                    request.Email, userId);
+
+                throw modelValidator.CreateValidationFailure(
+                    "Please provide a valid email address.",
+                    "Email");
+            }
+
+            request.Email = request.Email.Trim();
+        }
     }
 
     #endregion
