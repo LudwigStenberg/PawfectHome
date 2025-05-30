@@ -415,17 +415,22 @@ public class ShelterService : IShelterService
         // Validate Name if provided
         if (request.Name != null)
         {
-            if (string.IsNullOrWhiteSpace(request.Name) ||
-                request.Name.Trim().Length < 3 ||
-                request.Name.Trim().Length > 50)
+            if (
+                string.IsNullOrWhiteSpace(request.Name)
+                || request.Name.Trim().Length < 3
+                || request.Name.Trim().Length > 50
+            )
             {
                 logger.LogWarning(
                     "Shelter update failed - invalid name: {Name}. RequestedBy: {UserId}.",
-                    request.Name, userId);
+                    request.Name,
+                    userId
+                );
 
                 throw modelValidator.CreateValidationFailure(
                     "Shelter name must be between 3 and 50 characters.",
-                    "Name");
+                    "Name"
+                );
             }
 
             request.Name = request.Name.Trim();
@@ -438,27 +443,35 @@ public class ShelterService : IShelterService
             {
                 logger.LogWarning(
                     "Shelter update failed - description too long: {Length} characters. RequestedBy: {UserId}.",
-                    request.Description.Length, userId);
+                    request.Description.Length,
+                    userId
+                );
 
                 throw modelValidator.CreateValidationFailure(
                     "Description cannot exceed 1000 characters.",
-                    "Description");
+                    "Description"
+                );
             }
         }
 
         // Validate Email if provided
         if (request.Email != null)
         {
-            if (string.IsNullOrWhiteSpace(request.Email) ||
-                !new EmailAddressAttribute().IsValid(request.Email))
+            if (
+                string.IsNullOrWhiteSpace(request.Email)
+                || !new EmailAddressAttribute().IsValid(request.Email)
+            )
             {
                 logger.LogWarning(
                     "Shelter update failed - invalid email: {Email}. RequestedBy: {UserId}.",
-                    request.Email, userId);
+                    request.Email,
+                    userId
+                );
 
                 throw modelValidator.CreateValidationFailure(
                     "Please provide a valid email address.",
-                    "Email");
+                    "Email"
+                );
             }
 
             request.Email = request.Email.Trim();

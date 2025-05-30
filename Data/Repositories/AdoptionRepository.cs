@@ -33,7 +33,7 @@ public class AdoptionRepository : IAdoptionRepository
         return await context
             .AdoptionApplications.Include(a => a.User)
             .Include(a => a.Pet)
-            .ThenInclude(p => p.Shelter)
+            .ThenInclude(p => p!.Shelter)
             .Where(a => a.UserId == userId)
             .OrderByDescending(a => a.CreatedDate)
             .ToListAsync();

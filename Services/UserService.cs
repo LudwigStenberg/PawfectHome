@@ -73,7 +73,7 @@ public class UserService : IUserService
         if (user == null)
         {
             logger.LogWarning("User with id {userId} was not found", id);
-            throw new KeyNotFoundException("User not found");
+            throw new UserNotFoundException("User not found");
         }
         var response = new UserSummaryResponse
         {
@@ -105,7 +105,7 @@ public class UserService : IUserService
         if (user == null)
         {
             logger.LogWarning("User with id {userId} was not found", id);
-            throw new KeyNotFoundException("User not found");
+            throw new UserNotFoundException("User not found");
         }
         await userRepository.DeleteUserAsync(id);
     }
