@@ -209,8 +209,8 @@ public class AdoptionService : IAdoptionService
         string userId
     )
     {
-        var shelterApplications = await GetAllShelterAdoptionApplicationsAsync(userId);
-        if (shelterApplications == null)
+        var shelterApplications = await adoptionRepository.FetchAllShelterAdoptionsAsync(userId);
+        if (!shelterApplications.Any())
         {
             logger.LogWarning(
                 "Application status update failed - no applications found related to shelter. RequestedBy: {userId}",
