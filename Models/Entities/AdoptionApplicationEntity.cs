@@ -7,8 +7,8 @@ public class AdoptionApplicationEntity
     public int PetId { get; set; }
 
     // Navigation Props
-    public UserEntity? User { get; set; } // Many-to-One
-    public PetEntity? Pet { get; set; } //  Many-to-One
+    public UserEntity User { get; set; } = null!; // Many-to-One
+    public PetEntity Pet { get; set; } = null!; //  Many-to-One
 }
 
 public enum AdoptionStatus

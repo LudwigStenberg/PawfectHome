@@ -209,8 +209,8 @@ public class AdoptionService : IAdoptionService
         string userId
     )
     {
-        var shelterApplications = await GetAllShelterAdoptionApplicationsAsync(userId);
-        if (shelterApplications == null)
+        var shelterApplications = await adoptionRepository.FetchAllShelterAdoptionsAsync(userId);
+        if (!shelterApplications.Any())
         {
             logger.LogWarning(
                 "Application status update failed - no applications found related to shelter. RequestedBy: {userId}",
@@ -218,9 +218,9 @@ public class AdoptionService : IAdoptionService
             );
             throw new ArgumentException($"No applications found related to shelter");
         }
-        var applicationExists = shelterApplications.Any(a => a.Id == id);
+        var application = shelterApplications.FirstOrDefault(a => a.Id == id);
 
-        if (!applicationExists)
+        if (application == null)
         {
             logger.LogWarning(
                 "Application status update failed - application not found. ApplicationId: {id}. Requested by: {userId}",
@@ -230,13 +230,11 @@ public class AdoptionService : IAdoptionService
             throw new KeyNotFoundException($"No application with ID {id}");
         }
 
-        var updatedApplication = await adoptionRepository.UpdateAdoptionStatusAsync(
-            id,
-            request.AdoptionStatus,
-            userId
-        );
+        application.AdoptionStatus = request.AdoptionStatus;
 
-        var response = AdoptionApplicationMapper.ToUpdateResponse(updatedApplication!);
+        var updatedApplication = await adoptionRepository.UpdateAdoptionStatusAsync(application);
+
+        var response = AdoptionApplicationMapper.ToUpdateResponse(application);
 
         return response;
     }

@@ -14,7 +14,6 @@ public class ModelValidator
     /// <exception cref="ValidationFailedException">Thrown when the model fails validation.</exception>
     public void ValidateModel(object model)
     {
-
         if (model == null)
         {
             throw CreateValidationFailure("The model cannot be null.", "Model");
@@ -91,7 +90,10 @@ public class ModelValidator
     /// <param name="propertyName">The name of the property that failed validation. If empty, defaults to "Request"
     /// to indicate a request-level validation issue rather than a specific property.</param>
     /// <returns>A ValidationFailedException containing a single validation error with the specified message and property.</returns>
-    public ValidationFailedException CreateValidationFailure(string message, string propertyName = "")
+    public ValidationFailedException CreateValidationFailure(
+        string message,
+        string propertyName = ""
+    )
     {
         var fieldName = string.IsNullOrEmpty(propertyName) ? "Request" : propertyName;
         var error = new ValidationResult(message, new[] { fieldName });
