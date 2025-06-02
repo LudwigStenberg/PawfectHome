@@ -7,6 +7,6 @@ public class ShelterEntity
     public required string UserId { get; set; }
 
     // Navigation props
-    public UserEntity? User { get; set; } // One-to-One
+    public UserEntity User { get; set; } = null!; // One-to-One
     public ICollection<PetEntity> Pets { get; set; } = new List<PetEntity>(); // One-to-Many
 }

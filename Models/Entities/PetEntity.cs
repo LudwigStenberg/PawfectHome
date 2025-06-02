@@ -13,7 +13,7 @@ public class PetEntity
     public required int ShelterId { get; set; }
 
     // Navigation Props
-    public ShelterEntity? Shelter { get; set; } // Many-to-One
+    public ShelterEntity Shelter { get; set; } = null!; // Many-to-One
     public ICollection<AdoptionApplicationEntity> AdoptionApplications { get; set; } =
         new List<AdoptionApplicationEntity>(); // One-to-Many
 }
