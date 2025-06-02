@@ -23,4 +23,3 @@ public class UpdatePetRequest
     public bool? IsNeutered { get; set; }
     public bool? HasPedigree { get; set; }
 }
-
