@@ -24,7 +24,7 @@ public class AdoptionRepository : IAdoptionRepository
         return await context
             .AdoptionApplications.Include(a => a.User)
             .Include(a => a.Pet)
-            .ThenInclude(p => p!.Shelter)
+            .ThenInclude(p => p.Shelter)
             .FirstOrDefaultAsync(a => a.Id == id);
     }
 
@@ -33,7 +33,7 @@ public class AdoptionRepository : IAdoptionRepository
         return await context
             .AdoptionApplications.Include(a => a.User)
             .Include(a => a.Pet)
-            .ThenInclude(p => p!.Shelter)
+            .ThenInclude(p => p.Shelter)
             .Where(a => a.UserId == userId)
             .OrderByDescending(a => a.CreatedDate)
             .ToListAsync();
@@ -46,23 +46,18 @@ public class AdoptionRepository : IAdoptionRepository
         return await context
             .AdoptionApplications.Include(a => a.User)
             .Include(a => a.Pet)
-            .ThenInclude(p => p!.Shelter)
-            .Where(a => a.Pet!.Shelter!.UserId == userId)
+            .ThenInclude(p => p.Shelter)
+            .Where(a => a.Pet.Shelter.UserId == userId)
             .OrderByDescending(a => a.CreatedDate)
             .ToListAsync();
     }
 
-    public async Task<AdoptionApplicationEntity?> UpdateAdoptionStatusAsync(
-        int id,
-        AdoptionStatus updatedStatus,
-        string userId
+    public async Task<AdoptionApplicationEntity> UpdateAdoptionStatusAsync(
+        AdoptionApplicationEntity application
     )
     {
-        var application = await context
-            .AdoptionApplications.Where(a => a.Id == id && a.Pet!.Shelter!.UserId == userId)
-            .FirstOrDefaultAsync();
+        context.AdoptionApplications.Update(application);
 
-        application!.AdoptionStatus = updatedStatus;
         await context.SaveChangesAsync();
         return application;
     }
