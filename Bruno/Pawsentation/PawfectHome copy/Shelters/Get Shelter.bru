@@ -1,0 +1,15 @@
+meta {
+  name: Get Shelter
+  type: http
+  seq: 2
+}
+
+get {
+  url: http://localhost:5245/Shelters/:id
+  body: none
+  auth: none
+}
+
+params:path {
+  id: 1
+}

@@ -1,0 +1,19 @@
+meta {
+  name: Delete Pet
+  type: http
+  seq: 4
+}
+
+delete {
+  url: http://localhost:5245/Pets/:Id
+  body: none
+  auth: none
+}
+
+params:path {
+  Id: 1
+}
+
+headers {
+  Authorization: Bearer 
+}

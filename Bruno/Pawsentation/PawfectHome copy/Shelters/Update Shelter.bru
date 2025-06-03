@@ -1,0 +1,31 @@
+meta {
+  name: Update Shelter
+  type: http
+  seq: 4
+}
+
+put {
+  url: http://localhost:5245/Shelters/:id
+  body: json
+  auth: bearer
+}
+
+params:path {
+  id: 1
+}
+
+headers {
+  ~Authorization: Bearer
+}
+
+auth:bearer {
+  token: 
+}
+
+body:json {
+  {
+    "name": "Pawfect Home",
+    "description": "Cats and Dogs",
+    "email": "Pawsentation@guy.com"
+  }
+}

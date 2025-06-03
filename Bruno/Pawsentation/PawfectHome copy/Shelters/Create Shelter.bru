@@ -1,0 +1,27 @@
+meta {
+  name: Create Shelter
+  type: http
+  seq: 1
+}
+
+post {
+  url: http://localhost:5245/Shelters/
+  body: json
+  auth: bearer
+}
+
+headers {
+  ~Authorization: Bearer CfDJ8M8-x_egCt9Mtqt7NMCwVz0p_pFFTU0v76iDrycowBn2JXGZbT39zyJuzVPwDjcHm8BBUrFY933wA3w8tRHDkto8Ky2rOZ5rl3uqVYkbqL3QMQBPOTumYHRfZ5Rixz4fEzFv3mypVW0q4iwMsgz3AvwYo9BM56j930Zl0NPMwWlRdHuPgnwtg5nH8u4XbawOKSTVfA15YGcvuuRDIC-YdHo8JcnTts2OjUu5LBRWWX9HugA_TMZoEcjMoU9-Apo-lagcYMEdVDQPzmjh5dQOuCbfIoHP2jZNHeRQLa95CyF59SNWOhKMtBO-6nOiti940B3egrKKYVLmXfNi_JqE436FDxthxvmyY8Dskkr3pWsy97EU02k-NK4nxsusDoJAckRlDaCAC78Z_V2xaJNYX_16T2h_Ytr3fk345nepq7vjxlEbcOyjqMUZy4Uvs1h5O8ltV4O54fDHfOwKU9bIgkMPjv5v7ioD2gWHn7CMukAy8xAkUTWXhLZP101NCpjVrOegI19RnjdNPGCP6UQ1Fjpv9zJclU5HrM01C0DEVvxJRHs86SI8hQppDoVm4ILN9Qx99pUSQwUQbyFoLkHgvKK8GrtF0ytL43fz8G7WUZUb7RiyrMuuv4S9rp64xuiWdVuK8krzdoNNCHwU_wmK_y901fVFJndHmfQljzXaOIWXmdevX3okvogZzB8G2k70BPFr5NnTSpU6PcvMiJykTiM
+}
+
+auth:bearer {
+  token: 
+}
+
+body:json {
+  {
+    "name": "Pawfect Home",
+    "description": "Dogs and cats and stuff",
+    "email": "Pawsentation@guy.com"
+  }
+}
