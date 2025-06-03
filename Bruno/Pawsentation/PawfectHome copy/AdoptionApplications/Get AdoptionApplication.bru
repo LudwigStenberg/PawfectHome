@@ -1,0 +1,23 @@
+meta {
+  name: Get AdoptionApplication
+  type: http
+  seq: 2
+}
+
+get {
+  url: http://localhost:5245/Adoptions/:id
+  body: none
+  auth: bearer
+}
+
+params:path {
+  id: 1
+}
+
+headers {
+  ~Authorization: Bearer
+}
+
+auth:bearer {
+  token: 
+}

@@ -1,0 +1,20 @@
+meta {
+  name: Register User
+  type: http
+  seq: 2
+}
+
+post {
+  url: http://localhost:5245/Auth/register
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "firstName": "Pawster",
+    "lastName": "Sentation",
+    "email": "pawstersentation@guy.com",
+    "password": "Password123!"
+  }
+}

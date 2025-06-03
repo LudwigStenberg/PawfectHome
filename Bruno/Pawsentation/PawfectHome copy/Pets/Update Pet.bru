@@ -1,0 +1,37 @@
+meta {
+  name: Update Pet
+  type: http
+  seq: 5
+}
+
+put {
+  url: http://localhost:5245/Pets/:id
+  body: json
+  auth: bearer
+}
+
+params:path {
+  id: 1
+}
+
+headers {
+  ~Authorization: Bearer
+}
+
+auth:bearer {
+  token: 
+}
+
+body:json {
+  {
+    "name": null,
+    "birthdate": null,
+    "gender": null,
+    "species": null,
+    "breed": null,
+    "description": null,
+    "imageURL": null,
+    "isNeutered": null,
+    "hasPedigree": null
+  }
+}

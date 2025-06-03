@@ -1,0 +1,25 @@
+meta {
+  name: Create AdoptionApplication
+  type: http
+  seq: 2
+}
+
+post {
+  url: http://localhost:5245/Adoptions
+  body: json
+  auth: bearer
+}
+
+headers {
+  ~Authorization: Bearer
+}
+
+auth:bearer {
+  token: 
+}
+
+body:json {
+  {
+    "PetId": 1
+  }
+}
